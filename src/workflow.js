@@ -1,4 +1,5 @@
 import get_request_signature from "./signature";
+import https from "https";
 
 class Workflow {
   constructor(ss_instance, data) {
@@ -42,7 +43,35 @@ class Workflow {
       );
       headers["Authorization"] = `${this.ss_instance.env_key}:${signature}`;
     }
+
     // make api call
+    const request_object = {
+      method: "POST",
+      headers: headers,
+    };
+
+    const request = https.request(this.url, request_object, (response) => {
+      let data = "";
+
+      response.on("data", (chunk) => {
+        data = data + chunk.toString();
+      });
+
+      response.on("end", () => {
+        return {
+          status_code: response.statusCode,
+          success: true,
+          message: response.statusMessage,
+        };
+      });
+    });
+
+    request.on("error", (error) => {
+      throw new Error("Suprsend: API Error", error);
+    });
+
+    req.write(content_text);
+    request.end();
   }
 }
 
