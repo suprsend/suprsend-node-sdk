@@ -5,7 +5,7 @@ function get_path(url) {
   return url_info.pathname + url_info.search;
 }
 
-export default async function get_request_signature(
+export default function get_request_signature(
   url,
   http_verb,
   content,
