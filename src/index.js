@@ -1,12 +1,12 @@
 import config from "./config";
-import Workflow from "../workflow";
+import Workflow from "./workflow";
 
 const package = import("../package.json");
 
 class Suprsend {
-  init(workspace_env, workspace_secret, config = {}) {
-    this.env = workspace_env;
-    this.secret = workspace_secret;
+  constructor(workspace_env, workspace_secret, config = {}) {
+    this.env_key = workspace_env;
+    this.env_secret = workspace_secret;
     this.config = config;
     this.base_url = this._get_url(config.base_url);
     this.user_agent = `suprsend/${package.version};node/${process.version.slice(
@@ -16,9 +16,9 @@ class Suprsend {
   }
 
   _validate() {
-    if (!this.env) {
+    if (!this.env_key) {
       throw new Error("Surpsend: Missing Mandatory WORKSPACE_ENVIRONEMENT");
-    } else if (!this.secret) {
+    } else if (!this.env_secret) {
       throw new Error("Surpsend: Missing Mandatory WORKSPACE_SECRET");
     } else if (!this.base_url) {
       throw new Error("Surpsend: Missing Mandatory base url");
@@ -43,5 +43,11 @@ class Suprsend {
     return base_url;
   }
 
-  trigger_workflow() {}
+  trigger_workflow(data) {
+    const wf = Workflow(this, data);
+    wf.validate_data();
+    return wf.execute_workflow();
+  }
 }
+
+export default Suprsend;
