@@ -1,5 +1,7 @@
 import get_request_signature from "./signature";
 import https from "https";
+import { Validator, SchemaError, ValidationError } from "jsonschema";
+import { _get_schema } from "./utils";
 
 class Workflow {
   constructor(ss_instance, data) {
@@ -67,11 +69,32 @@ class Workflow {
     });
 
     request.on("error", (error) => {
-      throw new Error("Suprsend: API Error", error);
+      throw new Error("SuprsendError: API Error", error);
     });
 
     req.write(content_text);
     request.end();
+  }
+
+  validate_data() {
+    if (!this.data?.data) {
+      this.data.data = {};
+    }
+    if (!(this.data.data instanceof Object)) {
+      throw new Error("SuprsendError: data must be a object");
+    }
+    const schema = _get_schema("workflow");
+    try {
+      var v = new Validator();
+      v.validate(this.data, schema);
+    } catch (e) {
+      if (e instanceof SchemaError) {
+        throw new Error(`SuprsendSchemaError:${e.message}`);
+      } else if (e instanceof ValidationError) {
+        throw new Error(`SuprsendValidationError:${e.message}`);
+      }
+    }
+    return this.data;
   }
 }
 

@@ -20,11 +20,13 @@ class Suprsend {
 
   _validate() {
     if (!this.env_key) {
-      throw new Error("Surpsend: Missing Mandatory WORKSPACE_ENVIRONEMENT");
+      throw new Error(
+        "SuprsendError: Missing Mandatory WORKSPACE_ENVIRONEMENT"
+      );
     } else if (!this.env_secret) {
-      throw new Error("Surpsend: Missing Mandatory WORKSPACE_SECRET");
+      throw new Error("SuprsendError: Missing Mandatory WORKSPACE_SECRET");
     } else if (!this.base_url) {
-      throw new Error("Surpsend: Missing Mandatory base url");
+      throw new Error("SuprsendError: Missing Mandatory base url");
     }
   }
 
@@ -51,7 +53,7 @@ class Suprsend {
       body.data = {};
     }
     if (!body.data instanceof Object) {
-      throw new Error("Suprsend: data must be an object");
+      throw new Error("SuprsendError: data must be an object");
     }
     const attachment = this._get_attachment_json_for_file(file_path);
     if (!body.data["$attachments"]) {

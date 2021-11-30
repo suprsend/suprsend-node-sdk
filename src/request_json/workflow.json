@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://github.com/suprsend/suprsend-node-sdk/request_json/workflow.json",
+  "title": "workflow_request",
+  "description": "Json schema for workflow request",
+  "$comment": "Json schema for workflow request",
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "#/definitions/non_empty_string",
+      "description": "name of workflow"
+    },
+    "template": {
+      "$ref": "#/definitions/non_empty_string",
+      "description": "slug of Template"
+    },
+    "notification_category": {
+      "$ref": "#/definitions/non_empty_string",
+      "description": "slug of Notification category"
+    },
+    "delay": {
+      "type": ["string", "integer"],
+      "minimum": 0,
+      "description": "If string: format [XX]d[XX]h[XX]m[XX]s e.g 1d2h30m10s(for 1day 2hours 30minutes 10sec). If integer: value in number of seconds"
+    },
+    "trigger_at": {
+      "$ref": "#/definitions/non_empty_string",
+      "description": "timestamp in ISO-8601 format. e.g 2021-08-27T20:14:51.643Z"
+    },
+    "priority_algorithm": {
+      "type": "boolean"
+    },
+    "users": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/user_setting"
+      },
+      "description": "user object to run workflow for"
+    },
+    "data": {
+      "type": "object",
+      "description": "variables to be used in workflow. e.g replacing templates variables."
+    }
+  },
+  "required": ["name", "template", "notification_category", "users", "data"],
+  "definitions": {
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "user_setting": {
+      "type": "object",
+      "properties": {
+        "distinct_id": {
+          "$ref": "#/definitions/non_empty_string"
+        },
+        "$email": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/non_empty_string"
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/non_empty_string"
+              }
+            }
+          ]
+        },
+        "$sms": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/non_empty_string"
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/non_empty_string"
+              }
+            }
+          ]
+        },
+        "$androidpush": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/non_empty_string"
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/non_empty_string"
+              }
+            }
+          ]
+        },
+        "$iospush": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/non_empty_string"
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/non_empty_string"
+              }
+            }
+          ]
+        },
+        "$whatsapp": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/non_empty_string"
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/non_empty_string"
+              }
+            }
+          ]
+        },
+        "$webpush": {
+          "oneOf": [
+            {
+              "type": "object",
+              "minProperties": 1
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "minProperties": 1
+              }
+            }
+          ]
+        },
+        "$inbox": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/non_empty_string"
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/non_empty_string"
+              }
+            }
+          ]
+        },
+        "$messenger": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/non_empty_string"
+            },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/non_empty_string"
+              }
+            }
+          ]
+        }
+      },
+      "required": ["distinct_id"],
+      "additionalProperties": false
+    }
+  }
+}
