@@ -1,5 +1,8 @@
 import config from "./config";
 import Workflow from "./workflow";
+import path from "path";
+import mime from "mime-types";
+import { base64Encode, resolveTilde } from "./utils";
 
 const package = import("../package.json");
 
@@ -41,6 +44,30 @@ class Suprsend {
       base_url += "/";
     }
     return base_url;
+  }
+
+  add_attachment(body, file_path) {
+    if (!body.data) {
+      body.data = {};
+    }
+    if (!body.data instanceof Object) {
+      throw new Error("Suprsend: data must be an object");
+    }
+    const attachment = this._get_attachment_json_for_file(file_path);
+    if (!body.data["$attachments"]) {
+      body["data"]["$attachments"] = [];
+    }
+    body["data"]["$attachments"].push(attachment);
+    return body;
+  }
+
+  _get_attachment_json_for_file(file_path) {
+    const abs_path = path.resolve(resolveTilde(file_path));
+    return {
+      filename: path.basename(abs_path),
+      contentType: mime.lookup(abs_path),
+      data: base64Encode(abs_path),
+    };
   }
 
   trigger_workflow(data) {

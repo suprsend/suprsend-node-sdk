@@ -11,5 +11,8 @@
     "workflow"
   ],
   "author": "Sivaram Katta",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "mime-types": "^2.1.34"
+  }
 }
