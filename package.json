@@ -1,10 +1,11 @@
 {
-  "name": "suprsend-node-sdk",
-  "version": "1.0.0",
+  "name": "@suprsend/node-sdk",
+  "version": "0.0.2",
   "description": "Suprsend Node SDK to trigger workflow from backend",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf dist && babel ./src --out-dir dist && mkdir ./dist/request_json && cp ./src/request_json/workflow.json ./dist/request_json/"
+    "build": "rm -rf dist && babel ./src --out-dir dist && mkdir ./dist/request_json && cp ./src/request_json/workflow.json ./dist/request_json/",
+    "publish_sdk": "npm run build && npm publish"
   },
   "keywords": [
     "suprsend-node-sdk",
@@ -12,6 +13,13 @@
   ],
   "author": "Sivaram Katta",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/suprsend/suprsend-node-sdk.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
     "axios": "^0.24.0",
@@ -22,6 +30,7 @@
     "@babel/cli": "^7.16.0",
     "@babel/core": "^7.16.0",
     "@babel/plugin-transform-runtime": "^7.16.4",
-    "@babel/preset-env": "^7.16.4"
+    "@babel/preset-env": "^7.16.4",
+    "babel-plugin-add-module-exports": "^1.0.4"
   }
 }
