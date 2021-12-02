@@ -37,7 +37,7 @@ class Suprsend {
       base_url = base_url.trim();
     }
     if (!base_url) {
-      if (config.is_staging) {
+      if (this.config.is_staging) {
         base_url = config.staging;
       } else {
         base_url = config.prod;
