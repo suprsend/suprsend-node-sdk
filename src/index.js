@@ -4,7 +4,7 @@ import path from "path";
 import mime from "mime-types";
 import { base64Encode, resolveTilde } from "./utils";
 
-const package = import("../package.json");
+const package_json = import("../package.json");
 
 class Suprsend {
   constructor(workspace_env, workspace_secret, config = {}) {
@@ -12,9 +12,9 @@ class Suprsend {
     this.env_secret = workspace_secret;
     this.config = config;
     this.base_url = this._get_url(config.base_url);
-    this.user_agent = `suprsend/${package.version};node/${process.version.slice(
-      1
-    )}`;
+    this.user_agent = `suprsend/${
+      package_json.version
+    };node/${process.version.slice(1)}`;
     this._validate();
   }
 
