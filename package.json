@@ -4,7 +4,7 @@
   "description": "Suprsend Node SDK to trigger workflow from backend",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf dist && babel ./src --out-dir dist"
+    "build": "rm -rf dist && babel ./src --out-dir dist && mkdir ./dist/request_json && cp ./src/request_json/workflow.json ./dist/request_json/"
   },
   "keywords": [
     "suprsend-node-sdk",
@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@babel/runtime": "^7.16.3",
+    "axios": "^0.24.0",
     "jsonschema": "^1.4.0",
     "mime-types": "^2.1.34"
   },

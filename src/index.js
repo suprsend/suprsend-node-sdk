@@ -4,7 +4,7 @@ import path from "path";
 import mime from "mime-types";
 import { base64Encode, resolveTilde } from "./utils";
 
-const package_json = import("../package.json");
+const package_json = require("../package.json");
 
 class Suprsend {
   constructor(workspace_env, workspace_secret, config = {}) {
@@ -12,6 +12,8 @@ class Suprsend {
     this.env_secret = workspace_secret;
     this.config = config;
     this.base_url = this._get_url(config.base_url);
+    this.auth_enabled = config.auth_enabled !== false;
+    this.include_signature_param = config.include_signature_param !== false;
     this.user_agent = `suprsend/${
       package_json.version
     };node/${process.version.slice(1)}`;
@@ -73,7 +75,7 @@ class Suprsend {
   }
 
   trigger_workflow(data) {
-    const wf = Workflow(this, data);
+    const wf = new Workflow(this, data);
     wf.validate_data();
     return wf.execute_workflow();
   }
