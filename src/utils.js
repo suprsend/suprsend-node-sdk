@@ -37,7 +37,14 @@ function _load_json_schema(schema_name) {
     var schema_string = fs.readFileSync(file_path, "utf8");
     json_schema = JSON.parse(schema_string);
   } catch (e) {
-    throw new Error("SuprsendError: Missing Schema");
+    throw new SuprsendError("Missing Schema");
   }
   return json_schema;
+}
+
+export class SuprsendError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "SuprsendError";
+  }
 }

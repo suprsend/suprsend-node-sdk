@@ -2,7 +2,7 @@ import config from "./config";
 import Workflow from "./workflow";
 import path from "path";
 import mime from "mime-types";
-import { base64Encode, resolveTilde } from "./utils";
+import { base64Encode, resolveTilde, SuprsendError } from "./utils";
 
 const package_json = require("../package.json");
 
@@ -22,13 +22,11 @@ class Suprsend {
 
   _validate() {
     if (!this.env_key) {
-      throw new Error(
-        "SuprsendError: Missing Mandatory WORKSPACE_ENVIRONEMENT"
-      );
+      throw new SuprsendError("Missing Mandatory WORKSPACE_ENVIRONEMENT");
     } else if (!this.env_secret) {
-      throw new Error("SuprsendError: Missing Mandatory WORKSPACE_SECRET");
+      throw new SuprsendError("Missing Mandatory WORKSPACE_SECRET");
     } else if (!this.base_url) {
-      throw new Error("SuprsendError: Missing Mandatory base url");
+      throw new SuprsendError("Missing Mandatory base url");
     }
   }
 
@@ -55,7 +53,7 @@ class Suprsend {
       body.data = {};
     }
     if (!body.data instanceof Object) {
-      throw new Error("SuprsendError: data must be an object");
+      throw new SuprsendError("data must be an object");
     }
     const attachment = this._get_attachment_json_for_file(file_path);
     if (!body.data["$attachments"]) {

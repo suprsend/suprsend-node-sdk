@@ -1,7 +1,6 @@
 import get_request_signature from "./signature";
-import https from "https";
-import { Validator, SchemaError, ValidationError } from "jsonschema";
-import { _get_schema } from "./utils";
+import { Validator } from "jsonschema";
+import { _get_schema, SuprsendError } from "./utils";
 import axios from "axios";
 
 class Workflow {
@@ -66,20 +65,17 @@ class Workflow {
       this.data.data = {};
     }
     if (!(this.data.data instanceof Object)) {
-      throw new Error("SuprsendError: data must be a object");
+      throw new SuprsendError("data must be a object");
     }
     const schema = _get_schema("workflow");
-    try {
-      var v = new Validator();
-      v.validate(this.data, schema);
-    } catch (e) {
-      if (e instanceof SchemaError) {
-        throw new Error(`SuprsendSchemaError:${e.message}`);
-      } else if (e instanceof ValidationError) {
-        throw new Error(`SuprsendValidationError:${e.message}`);
-      }
+    var v = new Validator();
+    const validated_data = v.validate(this.data, schema);
+    if (validated_data.valid) {
+      return this.data;
+    } else {
+      const error_msg = validated_data.errors[0].message;
+      throw new SuprsendError(error_msg);
     }
-    return this.data;
   }
 }
 
