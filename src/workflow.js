@@ -73,7 +73,8 @@ class Workflow {
     if (validated_data.valid) {
       return this.data;
     } else {
-      const error_msg = validated_data.errors[0].message;
+      const error_obj = validated_data.errors[0];
+      const error_msg = `${error_obj.property} ${error_obj.message}`;
       throw new SuprsendError(error_msg);
     }
   }
