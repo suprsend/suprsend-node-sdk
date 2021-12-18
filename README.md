@@ -1,6 +1,8 @@
 # suprsend-node-sdk
 This package can be included in a node project to easily integrate with `Suprsend` platform.
 
+Refer full documentation [here](https://docs.suprsend.com/docs/node)
+
 We're working towards creating SDK in other languages as well.
 
 ### Suprsend SDKs available in following languages
