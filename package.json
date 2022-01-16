@@ -1,6 +1,6 @@
 {
   "name": "@suprsend/node-sdk",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Suprsend Node SDK to trigger workflow from backend",
   "main": "dist/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "workflow"
   ],
   "author": "Sivaram Katta",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/suprsend/suprsend-node-sdk.git"
