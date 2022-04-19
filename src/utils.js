@@ -52,3 +52,7 @@ export class SuprsendError extends Error {
 export function is_object() {
   return typeof value === "object" && !Array.isArray(value) && value !== null;
 }
+
+export const has_special_char = (str) => {
+  return str.startsWith("$") || str?.toLowerCase()?.startsWith("ss_");
+};

@@ -1,4 +1,4 @@
-import { is_object } from "./utils";
+import { is_object, has_special_char } from "./utils";
 
 const EMAIL_REGEX = /^S+@S+.S+$/;
 const MOBILE_REGEX = /^\+[0-9\s]+/;
@@ -53,6 +53,15 @@ class User {
     return [value, true];
   }
 
+  _validate_key_prefix(key) {
+    if (!this._is_channel_event(key)) {
+      if (has_special_char(key)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   append(key, value) {
     if (!(key instanceof String) && !is_object(key)) {
       return;
@@ -64,9 +73,25 @@ class User {
         this._append_kv(key, value);
       }
     } else {
-      // key is object
       for (let item in key) {
         this._append_kv(item, key[item], key);
+      }
+    }
+  }
+
+  remove(key, value) {
+    if (!(key instanceof String) && !is_object(key)) {
+      return;
+    }
+    if (key instanceof String) {
+      if (!value) {
+        return;
+      } else {
+        this._remove_kv(key, value);
+      }
+    } else {
+      for (let item in key) {
+        this._remove_kv(item, key[item], key);
       }
     }
   }
@@ -100,7 +125,7 @@ class User {
     }
   }
 
-  _remove_channel_event(key, value) {
+  _remove_channel_event(key, value, args) {
     switch (key) {
       case CHANNEL_MAP.EMAIL:
         this.remove_email(value);
@@ -112,13 +137,13 @@ class User {
         this.remove_whatsapp(value);
         break;
       case CHANNEL_MAP.ANDROID_PUSH:
-        this.remove_androidpush(value);
+        this.remove_androidpush(value, args[PUSH_VENDOR]);
         break;
       case CHANNEL_MAP.IOS_PUSH:
-        this.remove_iospush(value);
+        this.remove_iospush(value, args[PUSH_VENDOR]);
         break;
       case CHANNEL_MAP.WEB_PUSH:
-        this.remove_webpush(value);
+        this.remove_webpush(value, args[PUSH_VENDOR]);
         break;
       default:
         break;
@@ -133,7 +158,25 @@ class User {
     if (this._is_channel_event(key)) {
       this._add_channel_event(key, value, args);
     } else {
-      // code from here
+      const is_valid = this.__validate_key_prefix(key);
+      if (is_valid) {
+        this.append_obj[key] = value;
+      }
+    }
+  }
+
+  _remove_kv(key, value, args = {}) {
+    const [key, is_valid] = this._validate_string(key);
+    if (!is_valid) {
+      return;
+    }
+    if (this._is_channel_event(key)) {
+      this._remove_channel_event(key, value, args);
+    } else {
+      const is_valid = this.__validate_key_prefix(key);
+      if (is_valid) {
+        this.remove_obj[key] = value;
+      }
     }
   }
 
