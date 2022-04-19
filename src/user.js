@@ -2,6 +2,15 @@ import { is_object } from "./utils";
 
 const EMAIL_REGEX = /^S+@S+.S+$/;
 const MOBILE_REGEX = /^\+[0-9\s]+/;
+const PUSH_VENDOR = "$pushvendor";
+const CHANNEL_MAP = {
+  EMAIL: "$email",
+  SMS: "$sms",
+  WHATSAPP: "$whatsapp",
+  ANDROID_PUSH: "$androidpush",
+  IOS_PUSH: "$iospush",
+  WEB_PUSH: "$webpush",
+};
 
 class UserIdentity {
   constructor(config) {
@@ -45,16 +54,86 @@ class User {
   }
 
   append(key, value) {
-    if (!(key instanceof String) && is_object(key)) {
+    if (!(key instanceof String) && !is_object(key)) {
       return;
     }
     if (key instanceof String) {
       if (!value) {
         return;
       } else {
-        // continue from here
+        this._append_kv(key, value);
       }
     } else {
+      // key is object
+      for (let item in key) {
+        this._append_kv(item, key[item], key);
+      }
+    }
+  }
+
+  _is_channel_event() {
+    return Object.values(CHANNEL_MAP).includes(key);
+  }
+
+  _add_channel_event(key, value, args) {
+    switch (key) {
+      case CHANNEL_MAP.EMAIL:
+        this.add_email(value);
+        break;
+      case CHANNEL_MAP.SMS:
+        this.add_sms(value);
+        break;
+      case CHANNEL_MAP.WHATSAPP:
+        this.add_whatsapp(value);
+        break;
+      case CHANNEL_MAP.ANDROID_PUSH:
+        this.add_androidpush(value, args[PUSH_VENDOR]);
+        break;
+      case CHANNEL_MAP.IOS_PUSH:
+        this.add_iospush(value, args[PUSH_VENDOR]);
+        break;
+      case CHANNEL_MAP.WEB_PUSH:
+        this.add_webpush(value, args[PUSH_VENDOR]);
+        break;
+      default:
+        break;
+    }
+  }
+
+  _remove_channel_event(key, value) {
+    switch (key) {
+      case CHANNEL_MAP.EMAIL:
+        this.remove_email(value);
+        break;
+      case CHANNEL_MAP.SMS:
+        this.remove_sms(value);
+        break;
+      case CHANNEL_MAP.WHATSAPP:
+        this.remove_whatsapp(value);
+        break;
+      case CHANNEL_MAP.ANDROID_PUSH:
+        this.remove_androidpush(value);
+        break;
+      case CHANNEL_MAP.IOS_PUSH:
+        this.remove_iospush(value);
+        break;
+      case CHANNEL_MAP.WEB_PUSH:
+        this.remove_webpush(value);
+        break;
+      default:
+        break;
+    }
+  }
+
+  _append_kv(key, value, args = {}) {
+    const [key, is_valid] = this._validate_string(key);
+    if (!is_valid) {
+      return;
+    }
+    if (this._is_channel_event(key)) {
+      this._add_channel_event(key, value, args);
+    } else {
+      // code from here
     }
   }
 
@@ -82,7 +161,7 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.append_obj["$email"] = value;
+    this.append_obj[CHANNEL_MAP.EMAIL] = value;
   }
 
   remove_email(email) {
@@ -90,7 +169,7 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.remove_obj["$email"] = value;
+    this.remove_obj[CHANNEL_MAP.EMAIL] = value;
   }
 
   // mobile methods
@@ -116,7 +195,7 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.append_obj["$sms"] = value;
+    this.append_obj[CHANNEL_MAP.SMS] = value;
   }
 
   remove_sms(mobile_no) {
@@ -124,7 +203,7 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.remove_obj["$sms"] = value;
+    this.remove_obj[CHANNEL_MAP.SMS] = value;
   }
 
   add_whatsapp(mobile_no) {
@@ -132,7 +211,7 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.append_obj["$whatsapp"] = value;
+    this.append_obj[CHANNEL_MAP.WHATSAPP] = value;
   }
 
   remove_whatsapp(mobile_no) {
@@ -140,7 +219,7 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.remove_obj["$whatsapp"] = value;
+    this.remove_obj[CHANNEL_MAP.WHATSAPP] = value;
   }
 
   // android push methods [providers: fcm / xiaomi / oppo]
@@ -162,13 +241,13 @@ class User {
     const [value, provider, is_valid] = this._validate_android_push(
       push_token,
       provider,
-      "add_whatsapp"
+      "add_androidpush"
     );
     if (!is_valid) {
       return;
     }
-    this.append_obj["$androidpush"] = value;
-    this.append_obj["$pushvendor"] = provider;
+    this.append_obj[CHANNEL_MAP.ANDROID_PUSH] = value;
+    this.append_obj[PUSH_VENDOR] = provider;
   }
 
   remove_androidpush(push_token, provider = "fcm") {
@@ -180,8 +259,8 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.remove_obj["$androidpush"] = value;
-    this.remove_obj["$pushvendor"] = provider;
+    this.remove_obj[CHANNEL_MAP.ANDROID_PUSH] = value;
+    this.remove_obj[PUSH_VENDOR] = provider;
   }
 
   // ios push methods [providers: apns]
@@ -208,8 +287,8 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.append_obj["$iospush"] = value;
-    this.append_obj["$pushvendor"] = provider;
+    this.append_obj[CHANNEL_MAP.IOS_PUSH] = value;
+    this.append_obj[PUSH_VENDOR] = provider;
   }
 
   remove_iospush(push_token, provider = "apns") {
@@ -221,8 +300,8 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.remove_obj["$iospush"] = value;
-    this.remove_obj["$pushvendor"] = provider;
+    this.remove_obj[CHANNEL_MAP.IOS_PUSH] = value;
+    this.remove_obj[PUSH_VENDOR] = provider;
   }
 
   // web push methods [providers: vapid]
@@ -248,8 +327,8 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.append_obj["$webpush"] = value;
-    this.append_obj["$pushvendor"] = provider;
+    this.append_obj[CHANNEL_MAP.WEB_PUSH] = value;
+    this.append_obj[PUSH_VENDOR] = provider;
   }
 
   remove_webpush(push_token, provider = "vapid") {
@@ -261,7 +340,7 @@ class User {
     if (!is_valid) {
       return;
     }
-    this.remove_obj["$webpush"] = value;
-    this.remove_obj["$pushvendor"] = provider;
+    this.remove_obj[CHANNEL_MAP.WEB_PUSH] = value;
+    this.remove_obj[PUSH_VENDOR] = provider;
   }
 }
