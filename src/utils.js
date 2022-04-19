@@ -48,3 +48,7 @@ export class SuprsendError extends Error {
     this.name = "SuprsendError";
   }
 }
+
+export function is_object() {
+  return typeof value === "object" && !Array.isArray(value) && value !== null;
+}
