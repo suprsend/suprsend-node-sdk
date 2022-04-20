@@ -3,6 +3,7 @@ import Workflow from "./workflow";
 import path from "path";
 import mime from "mime-types";
 import { base64Encode, resolveTilde, SuprsendError } from "./utils";
+import UserIdentity from "./user";
 
 const package_json = require("../package.json");
 
@@ -17,7 +18,7 @@ class Suprsend {
     this.user_agent = `suprsend/${
       package_json.version
     };node/${process.version.slice(1)}`;
-    this.user = new User();
+    this.user = new UserIdentity();
     this._validate();
   }
 

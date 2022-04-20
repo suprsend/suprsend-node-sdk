@@ -1,4 +1,12 @@
-import { is_object, has_special_char } from "./utils";
+import {
+  is_object,
+  has_special_char,
+  SuprsendError,
+  epoch_milliseconds,
+  uuid,
+} from "./utils";
+import get_request_signature from "./signature";
+import axios from "axios";
 
 const EMAIL_REGEX = /^S+@S+.S+$/;
 const MOBILE_REGEX = /^\+[0-9\s]+/;
@@ -12,7 +20,7 @@ const CHANNEL_MAP = {
   WEB_PUSH: "$webpush",
 };
 
-class UserIdentity {
+export default class UserIdentity {
   constructor(config) {
     this.config = config;
   }
@@ -39,7 +47,14 @@ class User {
     this.distinct_id = distinct_id;
     this.append_obj = {};
     this.remove_obj = {};
-    this.errors = {};
+    this.errors = [];
+    this.url = this._get_url();
+  }
+
+  _validate_body() {
+    if (this.errors.length > 0) {
+      throw new SuprsendError("ERROR: " + this.errors.join("\n"));
+    }
   }
 
   _validate_string(value) {
@@ -60,6 +75,67 @@ class User {
       }
     }
     return true;
+  }
+
+  _get_headers() {
+    return {
+      "Content-Type": "application/json; charset=utf-8",
+      Date: new Date().toUTCString(),
+      "User-Agent": this.config.user_agent,
+    };
+  }
+
+  _get_url() {
+    let url_template = "/event/";
+    if (this.config.include_signature_param) {
+      if (this.config.auth_enabled) {
+        url_template = url_template + "?verify=true";
+      } else {
+        url_template = url_template + "?verify=false";
+      }
+    }
+    return `${this.config.base_url}${url_template}`;
+  }
+
+  _get_events() {
+    let events = {
+      $insert_id: uuid(),
+      $time: epoch_milliseconds(),
+      env: self.config.env_key,
+      distinct_id: this.distinct_id,
+    };
+    // add all events
+  }
+
+  async save() {
+    this._validate_body();
+    headers = this._get_headers();
+    events = this._get_events();
+    const content_text = JSON.stringify(events);
+    if (this.config.auth_enabled) {
+      const signature = get_request_signature(
+        this.url,
+        "POST",
+        this.data,
+        headers,
+        this.config.env_secret
+      );
+      headers["Authorization"] = `${this.ss_instance.env_key}:${signature}`;
+    }
+    try {
+      const response = await axios.post(this.url, content_text, { headers });
+      return {
+        status_code: response.status,
+        success: true,
+        message: response.statusText,
+      };
+    } catch (err) {
+      return {
+        status_code: 400,
+        success: false,
+        message: err.message,
+      };
+    }
   }
 
   append(key, value) {
