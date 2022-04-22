@@ -38,7 +38,7 @@ class Workflow {
       const signature = get_request_signature(
         this.url,
         "POST",
-        this.data,
+        content_text,
         headers,
         this.ss_instance.env_secret
       );

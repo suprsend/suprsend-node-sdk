@@ -49,8 +49,20 @@ export class SuprsendError extends Error {
   }
 }
 
-export function is_object() {
+export function is_string(value) {
+  return typeof value === "string";
+}
+
+export function is_object(value) {
   return typeof value === "object" && !Array.isArray(value) && value !== null;
+}
+
+export function is_empty(value) {
+  if (is_object(value)) {
+    return Object.keys(value) <= 0;
+  } else if (Array.isArray(value)) {
+    return value.length <= 0;
+  }
 }
 
 export const has_special_char = (str) => {

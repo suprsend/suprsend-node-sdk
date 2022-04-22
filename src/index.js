@@ -18,7 +18,7 @@ class Suprsend {
     this.user_agent = `suprsend/${
       package_json.version
     };node/${process.version.slice(1)}`;
-    this.user = new UserIdentity();
+    this.user = new UserIdentity(this);
     this._validate();
   }
 
