@@ -11,21 +11,6 @@ import get_request_signature from "./signature";
 import axios from "axios";
 import _IdentityEventInternalHelper from "./identity_helper";
 
-const EMAIL_REGEX = /\S+@\S+\.\S+/;
-const MOBILE_REGEX = /^\+[0-9\s]+/;
-const PUSH_VENDOR = "$pushvendor";
-const CHANNEL_MAP = {
-  EMAIL: "$email",
-  SMS: "$sms",
-  WHATSAPP: "$whatsapp",
-  ANDROID_PUSH: "$androidpush",
-  IOS_PUSH: "$iospush",
-  WEB_PUSH: "$webpush",
-};
-const ANDROID_PUSH_VENDORS = ["fcm", "xiaomi", "oppo"];
-const IOS_PUSH_VENDORS = ["apns"];
-const WEB_PUSH_VENDORS = ["vapid"];
-
 export default class UserIdentityFactory {
   constructor(config) {
     this.config = config;
