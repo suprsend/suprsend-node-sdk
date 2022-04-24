@@ -91,12 +91,14 @@ export default class _IdentityEventInternalHelper {
 
   __validate_key_basic(key, caller) {
     if (!is_string(key)) {
-      this.info.push(`[${caller}] skipping key: ${key}. key must be a string`);
+      this.__info.push(
+        `[${caller}] skipping key: ${key}. key must be a string`
+      );
       return [key, false];
     }
     key = key.trim();
     if (!key) {
-      this.info.push(`[${caller}] skipping key: empty string`);
+      this.__info.push(`[${caller}] skipping key: empty string`);
       return [key, false];
     }
     return [key, true];
@@ -105,7 +107,7 @@ export default class _IdentityEventInternalHelper {
   __validate_key_prefix(key, caller) {
     if (!this._is_channel_event(key)) {
       if (has_special_char(key)) {
-        this.info.push(
+        this.__info.push(
           `[${caller}] skipping key: ${key}. key starting with [$,ss_] are reserved`
         );
         return false;

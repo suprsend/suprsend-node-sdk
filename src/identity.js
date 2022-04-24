@@ -1,6 +1,5 @@
 import {
   is_object,
-  has_special_char,
   SuprsendError,
   epoch_milliseconds,
   uuid,
@@ -141,23 +140,6 @@ class UserIdentity {
         success: false,
         message: err.message,
       };
-    }
-  }
-
-  _append_identity() {
-    if (!is_empty(this.append_obj)) {
-      const user_identity_event = {
-        $insert_id: uuid(),
-        $time: epoch_milliseconds(),
-        env: this.config.env_key,
-        event: "$identify",
-        properties: {
-          $anon_id: this.distinct_id,
-          $identified_id: this.distinct_id,
-          ...this.super_properties,
-        },
-      };
-      this.events.push(user_identity_event);
     }
   }
 
