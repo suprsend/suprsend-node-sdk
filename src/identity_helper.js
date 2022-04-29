@@ -105,7 +105,7 @@ export default class _IdentityEventInternalHelper {
   }
 
   __validate_key_prefix(key, caller) {
-    if (!this._is_channel_event(key)) {
+    if (!this.__is_identity_key(key)) {
       if (has_special_char(key)) {
         this.__info.push(
           `[${caller}] skipping key: ${key}. key starting with [$,ss_] are reserved`

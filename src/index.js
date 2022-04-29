@@ -4,6 +4,7 @@ import path from "path";
 import mime from "mime-types";
 import { base64Encode, resolveTilde, SuprsendError } from "./utils";
 import UserIdentityFactory from "./identity";
+import EventCollector from "./event";
 
 const package_json = require("../package.json");
 
@@ -19,6 +20,7 @@ class Suprsend {
       package_json.version
     };node/${process.version.slice(1)}`;
     this.user = new UserIdentityFactory(this);
+    this._eventcollector = new EventCollector(this);
     this._validate();
   }
 
@@ -78,6 +80,10 @@ class Suprsend {
     const wf = new Workflow(this, data);
     wf.validate_data();
     return wf.execute_workflow();
+  }
+
+  track(distinct_id, event_name, properties = {}) {
+    return this._eventcollector.collect(distinct_id, event_name, properties);
   }
 }
 
