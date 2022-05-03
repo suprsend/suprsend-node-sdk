@@ -72,7 +72,7 @@ class EventCollector {
 
   __validate_event_name(event_name) {
     if (!is_string(event_name)) {
-      return event_name;
+      throw new SuprsendError("event_name must be a string");
     }
     event_name = event_name.trim();
     this.__check_event_prefix(event_name);

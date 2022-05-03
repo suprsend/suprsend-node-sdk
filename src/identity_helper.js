@@ -9,7 +9,7 @@ import {
 
 const EMAIL_REGEX = /\S+@\S+\.\S+/;
 const MOBILE_REGEX = /^\+[0-9\s]+/;
-const PUSH_VENDOR = "$pushvendor";
+const KEY_PUSHVENDOR = "$pushvendor";
 const CHANNEL_MAP = {
   EMAIL: "$email",
   SMS: "$sms",
@@ -162,19 +162,19 @@ export default class _IdentityEventInternalHelper {
         this._add_whatsapp(value, caller);
         break;
       case CHANNEL_MAP.ANDROID_PUSH:
-        this._add_androidpush(value, args[PUSH_VENDOR], caller);
+        this._add_androidpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_append[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
         }
         break;
       case CHANNEL_MAP.IOS_PUSH:
-        this._add_iospush(value, args[PUSH_VENDOR], caller);
+        this._add_iospush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_append[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
         }
         break;
       case CHANNEL_MAP.WEB_PUSH:
-        this._add_webpush(value, args[PUSH_VENDOR], caller);
+        this._add_webpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_append[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
         }
@@ -196,19 +196,19 @@ export default class _IdentityEventInternalHelper {
         this._remove_whatsapp(value, caller);
         break;
       case CHANNEL_MAP.ANDROID_PUSH:
-        this._remove_androidpush(value, args[PUSH_VENDOR], caller);
+        this._remove_androidpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_remove[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
         }
         break;
       case CHANNEL_MAP.IOS_PUSH:
-        this._remove_iospush(value, args[PUSH_VENDOR], caller);
+        this._remove_iospush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_remove[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
         }
         break;
       case CHANNEL_MAP.WEB_PUSH:
-        this._remove_webpush(value, args[PUSH_VENDOR], caller);
+        this._remove_webpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_remove[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
         }
@@ -354,7 +354,7 @@ export default class _IdentityEventInternalHelper {
       return;
     }
     this.__dict_append[CHANNEL_MAP.ANDROID_PUSH] = value;
-    this.__dict_append[PUSH_VENDOR] = vendor;
+    this.__dict_append[KEY_PUSHVENDOR] = vendor;
   }
 
   _remove_androidpush(push_token, provider = "fcm") {
@@ -368,7 +368,7 @@ export default class _IdentityEventInternalHelper {
       return;
     }
     this.__dict_remove[CHANNEL_MAP.ANDROID_PUSH] = value;
-    this.__dict_remove[PUSH_VENDOR] = vendor;
+    this.__dict_remove[KEY_PUSHVENDOR] = vendor;
   }
 
   // ios push methods
@@ -399,7 +399,7 @@ export default class _IdentityEventInternalHelper {
       return;
     }
     this.__dict_append[CHANNEL_MAP.IOS_PUSH] = value;
-    this.__dict_append[PUSH_VENDOR] = vendor;
+    this.__dict_append[KEY_PUSHVENDOR] = vendor;
   }
 
   _remove_iospush(push_token, provider = "apns", caller) {
@@ -412,7 +412,7 @@ export default class _IdentityEventInternalHelper {
       return;
     }
     this.__dict_remove[CHANNEL_MAP.IOS_PUSH] = value;
-    this.__dict_remove[PUSH_VENDOR] = vendor;
+    this.__dict_remove[KEY_PUSHVENDOR] = vendor;
   }
 
   // web push methods
@@ -445,7 +445,7 @@ export default class _IdentityEventInternalHelper {
       return;
     }
     this.__dict_append[CHANNEL_MAP.WEB_PUSH] = value;
-    this.__dict_append[PUSH_VENDOR] = vendor;
+    this.__dict_append[KEY_PUSHVENDOR] = vendor;
   }
 
   _remove_webpush(push_token, provider = "vapid", caller) {
@@ -458,6 +458,6 @@ export default class _IdentityEventInternalHelper {
       return;
     }
     this.__dict_remove[CHANNEL_MAP.WEB_PUSH] = value;
-    this.__dict_remove[PUSH_VENDOR] = vendor;
+    this.__dict_remove[KEY_PUSHVENDOR] = vendor;
   }
 }
