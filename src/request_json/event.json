@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://github.com/suprsend/suprsend-py-sdk/request_json/event.json",
+  "$id": "http://github.com/suprsend/suprsend-node-sdk/request_json/event.json",
   "title": "track_event",
   "description": "Json schema for Track event",
   "$comment": "Json schema for Track event",
