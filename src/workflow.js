@@ -1,7 +1,9 @@
 import get_request_signature from "./signature";
 import { Validator } from "jsonschema";
-import { _get_schema, SuprsendError } from "./utils";
+import { SuprsendError } from "./utils";
 import axios from "axios";
+
+const workflow_schema = require("./request_json/workflow.json");
 
 class Workflow {
   constructor(ss_instance, data) {
@@ -38,7 +40,7 @@ class Workflow {
       const signature = get_request_signature(
         this.url,
         "POST",
-        this.data,
+        content_text,
         headers,
         this.ss_instance.env_secret
       );
@@ -67,7 +69,7 @@ class Workflow {
     if (!(this.data.data instanceof Object)) {
       throw new SuprsendError("data must be a object");
     }
-    const schema = _get_schema("workflow");
+    const schema = workflow_schema;
     var v = new Validator();
     const validated_data = v.validate(this.data, schema);
     if (validated_data.valid) {

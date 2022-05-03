@@ -15,10 +15,7 @@ export default function get_request_signature(
   if (http_verb === "GET") {
     return "";
   }
-  const content_md5 = crypto
-    .createHash("md5")
-    .update(JSON.stringify(content))
-    .digest("hex");
+  const content_md5 = crypto.createHash("md5").update(content).digest("hex");
   const request_uri = get_path(url);
   const sign_string =
     http_verb +
