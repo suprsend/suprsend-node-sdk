@@ -1,9 +1,9 @@
-import config from "./config";
 import { SuprsendError, SuprsendConfigError } from "./utils";
 import EventCollector from "./event";
 import get_attachment_json_for_file from "./attachment";
 import { BulkWorkflowsFactory } from "./workflow_batch";
 import Workflow, { _WorkflowTrigger } from "./workflow";
+import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
 
@@ -47,9 +47,9 @@ export default class Suprsend {
     }
     if (!base_url) {
       if (this.config.is_staging) {
-        base_url = config.staging;
+        base_url = DEFAULT_UAT_URL;
       } else {
-        base_url = config.prod;
+        base_url = DEFAULT_URL;
       }
     }
     base_url = base_url.trim();

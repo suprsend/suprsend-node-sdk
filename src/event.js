@@ -5,12 +5,16 @@ import {
   has_special_char,
   uuid,
   epoch_milliseconds,
+  validate_track_event_schema,
+  get_apparent_event_size,
 } from "./utils";
 import get_request_signature from "./signature";
-import { Validator } from "jsonschema";
 import axios from "axios";
-
-const event_schema = require("./request_json/event.json");
+import get_attachment_json_for_file from "./attachment";
+import {
+  BODY_MAX_APPARENT_SIZE_IN_BYTES,
+  BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
+} from "./constants";
 
 const RESERVED_EVENT_NAMES = [
   "$identify",
@@ -22,12 +26,93 @@ const RESERVED_EVENT_NAMES = [
   "$user_logout",
 ];
 
+class Event {
+  constructor(distinct_id, event_name, properties) {
+    this.distinct_id = distinct_id;
+    this.event_name = event_name;
+    this.properties = properties;
+    // --- validate
+    this.__validate_distinct_id();
+    this.__validate_event_name();
+    this.__validate_properties();
+  }
+
+  __validate_distinct_id() {
+    if (this.distinct_id instanceof String) {
+      throw new SuprsendError(
+        "distinct_id must be a string. an Id which uniquely identify a user in your app"
+      );
+    }
+    const distinct_id = self.distinct_id.trim();
+    if (!distinct_id) {
+      throw new SuprsendError("distinct_id missing");
+    }
+    this.distinct_id = distinct_id;
+  }
+
+  __validate_properties() {
+    if (!this.properties) {
+      this.properties = {};
+    }
+    if (!(this.properties instanceof Object)) {
+      throw new SuprsendError("properties must be a dictionary");
+    }
+  }
+
+  __check_event_prefix(event_name) {
+    if (!RESERVED_EVENT_NAMES.includes(event_name)) {
+      if (has_special_char(event_name)) {
+        throw new SuprsendError(
+          "event_names starting with [$,ss_] are reserved by SuprSend"
+        );
+      }
+    }
+  }
+
+  __validate_event_name() {
+    if (!is_string(this.event_name)) {
+      throw new SuprsendError("event_name must be a string");
+    }
+    const event_name = this.event_name.trim();
+    this.__check_event_prefix(event_name);
+    this.event_name = event_name;
+  }
+
+  add_attachment(file_path) {
+    const attachment = get_attachment_json_for_file(file_path);
+    // --- add the attachment to body->data->$attachments
+    if (!this.properties["$attachments"]) {
+      this.properties["$attachments"] = [];
+    }
+    this.properties["$attachments"].push(attachment);
+  }
+
+  get_final_json(config, is_part_of_bulk = false) {
+    const super_props = { $ss_sdk_version: config.user_agent };
+    let event_dict = {
+      $insert_id: uuid(),
+      $time: epoch_milliseconds(),
+      event: this.event_name,
+      env: config.workspace_key,
+      distinct_id: this.distinct_id,
+      properties: { ...this.properties, ...super_props },
+    };
+    event_dict = validate_track_event_schema(event_dict);
+    const apparent_size = get_apparent_event_size(event_dict, is_part_of_bulk);
+    if (apparent_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+      throw new SuprsendError(
+        `Event properties too big - ${apparent_size} Bytes,must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+      );
+    }
+    return [event_dict, apparent_size];
+  }
+}
+
 class EventCollector {
   constructor(config) {
     this.config = config;
     this.__url = this.__get_url();
     this.__headers = this.__common_headers();
-    this.__supr_props = this.__super_properties();
   }
 
   __get_url() {
@@ -54,63 +139,9 @@ class EventCollector {
     };
   }
 
-  __super_properties() {
-    return {
-      $ss_sdk_version: this.config.user_agent,
-    };
-  }
-
-  __check_event_prefix(event_name) {
-    if (!RESERVED_EVENT_NAMES.includes(event_name)) {
-      if (has_special_char(event_name)) {
-        throw new SuprsendError(
-          "event_names starting with [$,ss_] are reserved"
-        );
-      }
-    }
-  }
-
-  __validate_event_name(event_name) {
-    if (!is_string(event_name)) {
-      throw new SuprsendError("event_name must be a string");
-    }
-    event_name = event_name.trim();
-    this.__check_event_prefix(event_name);
-    return event_name;
-  }
-
-  validate_track_event_schema(data) {
-    if (!data["properties"]) {
-      data["properties"] = {};
-    }
-    const schema = event_schema;
-    var v = new Validator();
-    const validated_data = v.validate(data, schema);
-    if (validated_data.valid) {
-      return data;
-    } else {
-      const error_obj = validated_data.errors[0];
-      const error_msg = `${error_obj.property} ${error_obj.message}`;
-      throw new SuprsendError(error_msg);
-    }
-  }
-
-  collect(distinct_id, event_name, properties = {}) {
-    event_name = this.__validate_event_name(event_name);
-    if (!is_object(properties)) {
-      throw new SuprsendError("properties must be a dictionary");
-    }
-    properties = { ...properties, ...this.__supr_props };
-    let event = {
-      $insert_id: uuid(),
-      $time: epoch_milliseconds(),
-      event: event_name,
-      env: this.config.env_key,
-      distinct_id: distinct_id,
-      properties: properties,
-    };
-    event = this.validate_track_event_schema(event);
-    return this.send(event);
+  collect(event) {
+    const [event_dict, event_size] = event.get_final_json(self.config, false);
+    return this.send(event_dict);
   }
 
   async send(event) {
@@ -122,23 +153,33 @@ class EventCollector {
         "POST",
         content_text,
         headers,
-        this.config.env_secret
+        this.config.workspace_secret
       );
-      headers["Authorization"] = `${this.config.env_key}:${signature}`;
+      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
     }
     try {
-      const response = await axios.post(this.__url, content_text, {
-        headers,
-      });
-      return {
-        status_code: response.status,
-        success: true,
-        message: response.statusText,
-      };
+      const response = await axios.post(this.__url, content_text, { headers });
+      const ok_response = Math.floor(response.status / 100) == 2;
+      if (ok_response) {
+        return {
+          success: true,
+          status: "success",
+          status_code: response.status,
+          message: response.statusText,
+        };
+      } else {
+        return {
+          success: false,
+          status: "fail",
+          status_code: response.status,
+          message: response.statusText,
+        };
+      }
     } catch (err) {
       return {
-        status_code: 400,
         success: false,
+        status: "fail",
+        status_code: err.status || 500,
         message: err.message,
       };
     }
