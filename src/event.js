@@ -26,7 +26,7 @@ const RESERVED_EVENT_NAMES = [
   "$user_logout",
 ];
 
-class Event {
+export default class Event {
   constructor(distinct_id, event_name, properties) {
     this.distinct_id = distinct_id;
     this.event_name = event_name;
@@ -108,7 +108,7 @@ class Event {
   }
 }
 
-class EventCollector {
+export class EventCollector {
   constructor(config) {
     this.config = config;
     this.__url = this.__get_url();
@@ -185,5 +185,3 @@ class EventCollector {
     }
   }
 }
-
-export default EventCollector;

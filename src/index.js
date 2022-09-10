@@ -1,8 +1,9 @@
 import { SuprsendError, SuprsendConfigError } from "./utils";
-import EventCollector from "./event";
 import get_attachment_json_for_file from "./attachment";
-import { BulkWorkflowsFactory } from "./workflow_batch";
 import Workflow, { _WorkflowTrigger } from "./workflow";
+import { BulkWorkflowsFactory } from "./workflows_bulk";
+import Event, { EventCollector } from "./event";
+import { BulkEventsFactory } from "./events_bulk";
 import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
@@ -24,11 +25,16 @@ export default class Suprsend {
     this._eventcollector = new EventCollector(this);
 
     this._bulk_workflows = new BulkWorkflowsFactory(this);
+    this._bulk_events = new BulkEventsFactory(this);
     this._validate();
   }
 
   get bulk_workflows() {
     return this._bulk_workflows;
+  }
+
+  get bulk_events() {
+    return this._bulk_events;
   }
 
   _validate() {

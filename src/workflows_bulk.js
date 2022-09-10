@@ -1,8 +1,8 @@
 import {
   BODY_MAX_APPARENT_SIZE_IN_BYTES,
   BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
-  MAX_WORKFLOWS_IN_BATCH,
-  ALLOW_ATTACHMENTS_IN_BATCH,
+  MAX_WORKFLOWS_IN_BULK_API,
+  ALLOW_ATTACHMENTS_IN_BULK_API,
 } from "./constants";
 import { SuprsendError } from "./utils";
 import Workflow from "./workflow";
@@ -68,8 +68,8 @@ class _BulkWorkflowsChunk {
 
   __check_limit_reached() {
     if (
-      this.__running_length >= this._max_records_in_chunk ||
-      this.__running_size >= this._chunk_apparent_size_in_bytes
+      this.__running_length >= MAX_WORKFLOWS_IN_BULK_API ||
+      this.__running_size >= BODY_MAX_APPARENT_SIZE_IN_BYTES
     ) {
       return true;
     } else {
@@ -89,10 +89,10 @@ class _BulkWorkflowsChunk {
         `workflow body (discounting attachment if any) too big - ${apparent_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
-    if (this.__running_size + body_size > this._chunk_apparent_size_in_bytes) {
+    if (this.__running_size + body_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
       return false;
     }
-    if (!ALLOW_ATTACHMENTS_IN_BATCH) {
+    if (!ALLOW_ATTACHMENTS_IN_BULK_API) {
       delete body.data["$attachments"];
     }
 
@@ -170,7 +170,7 @@ class BulkWorkflows {
 
   __validate_workflows() {
     if (!this.__workflows) {
-      throw new SuprsendError("workflow list is empty in batch request");
+      throw new SuprsendError("workflow list is empty in bulk request");
     }
     for (let wf of this.__workflows) {
       const is_part_of_bulk = true;
@@ -205,11 +205,11 @@ class BulkWorkflows {
     }
     for (let wf of workflows) {
       if (!wf) {
-        throw new SuprsendError("null/empty batch element");
+        throw new SuprsendError("null/empty element found in bulk instance");
       }
       if (!(wf instanceof Workflow)) {
         throw new SuprsendError(
-          "batch element must be an instance of suprsend.Workflow"
+          "element must be an instance of suprsend.Workflow"
         );
       }
       const wf_copy = cloneDeep(wf);

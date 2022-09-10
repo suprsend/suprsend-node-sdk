@@ -5,17 +5,27 @@ import {
   uuid,
   is_empty,
   is_string,
+  get_apparent_identity_event_size,
 } from "./utils";
 import get_request_signature from "./signature";
 import axios from "axios";
-import _IdentityEventInternalHelper from "./identity_helper";
+import _IdentityEventInternalHelper from "./subscriber_helper";
+import {
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
+} from "./constants";
+import _SubscriberInternalHelper from "./subscriber_helper";
 
-export default class UserIdentityFactory {
+export default class SubscriberFactory {
   constructor(config) {
     this.config = config;
   }
 
   new_user(distinct_id) {
+    return this.get_instance(distinct_id);
+  }
+
+  get_instance(distinct_id) {
     if (!is_string(distinct_id)) {
       throw new SuprsendError(
         "distinct_id must be a string. an Id which uniquely identify a user in your app"
@@ -25,11 +35,11 @@ export default class UserIdentityFactory {
     if (!distinct_id) {
       throw new SuprsendError("distinct_id must be passed");
     }
-    return new UserIdentity(this.config, distinct_id);
+    return new Subscriber(this.config, distinct_id);
   }
 }
 
-class UserIdentity {
+class Subscriber {
   constructor(config, distinct_id) {
     this.config = config;
     this.distinct_id = distinct_id;
@@ -40,10 +50,11 @@ class UserIdentity {
     this.__info = [];
     this._append_count = 0;
     this._remove_count = 0;
+    this._unset_count = 0;
     this._events = [];
-    this._helper = new _IdentityEventInternalHelper(
+    this._helper = new _SubscriberInternalHelper(
       distinct_id,
-      config.env_key
+      config.workspace_key
     );
   }
 
@@ -73,27 +84,36 @@ class UserIdentity {
     };
   }
 
-  __get_events() {
-    let all_events = this._events;
+  events() {
+    let all_events = [...this._events];
     for (let e of all_events) {
       e["properties"] = this.__supr_props;
     }
 
-    if (this._append_count > 0) {
+    if (this._append_count > 0 || all_events.length === 0) {
       const user_identify_event = {
         $insert_id: uuid(),
         $time: epoch_milliseconds(),
-        env: this.config.env_key,
+        env: this.config.workspace_key,
         event: "$identify",
         properties: {
-          $anon_id: this.distinct_id,
           $identified_id: this.distinct_id,
-          ...this.__super_properties,
+          ...this.__supr_props,
         },
       };
-      all_events.push(user_identify_event);
+      all_events = [user_identify_event, ...all_events];
     }
     return all_events;
+  }
+
+  validate_event_size(event_dict) {
+    const apparent_size = get_apparent_identity_event_size(event_dict);
+    if (apparent_size > IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
+      throw new SuprsendError(
+        `User Event size too big - ${apparent_size} Bytes, must not cross ${IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+      );
+    }
+    return [event_dict, apparent_size];
   }
 
   __validate_body() {
@@ -103,17 +123,16 @@ class UserIdentity {
     if (!is_empty(this.__errors)) {
       throw new SuprsendError("ERROR: " + this.__errors.join("\n"));
     }
-    if (is_empty(this._events)) {
-      throw new SuprsendError(
-        "ERROR: no user properties have been edited. Use user.append/remove/unset method to update user properties"
-      );
-    }
   }
 
   async save() {
     this.__validate_body();
     const headers = this.__get_headers();
-    const events = this.__get_events();
+    const events = this.events();
+    for (ev in events) {
+      const [ev, size] = this.validate_event_size(ev);
+    }
+
     const content_text = JSON.stringify(events);
     if (this.config.auth_enabled) {
       const signature = get_request_signature(
@@ -126,18 +145,28 @@ class UserIdentity {
       headers["Authorization"] = `${this.config.env_key}:${signature}`;
     }
     try {
-      const response = await axios.post(this.__url, content_text, {
-        headers,
-      });
-      return {
-        status_code: response.status,
-        success: true,
-        message: response.statusText,
-      };
+      const response = await axios.post(this.__url, content_text, { headers });
+      const ok_response = Math.floor(response.status / 100) == 2;
+      if (ok_response) {
+        return {
+          success: true,
+          status: "success",
+          status_code: response.status,
+          message: response.statusText,
+        };
+      } else {
+        return {
+          success: false,
+          status: "fail",
+          status_code: response.status,
+          message: response.statusText,
+        };
+      }
     } catch (err) {
       return {
-        status_code: 400,
         success: false,
+        status: "fail",
+        status_code: err.status || 500,
         message: err.message,
       };
     }
@@ -202,6 +231,23 @@ class UserIdentity {
     } else {
       for (let item in key) {
         this._helper._remove_kv(item, key[item], key, caller);
+      }
+      this._collect_event();
+    }
+  }
+
+  unset(key) {
+    const caller = "unset";
+    if (!is_string(key) && !Array.isArray(key)) {
+      this.__errors.push(`[${caller}] key must be either string or array`);
+      return;
+    }
+    if (is_string(key)) {
+      this._helper._unset_k(key, caller);
+      this._collect_event();
+    } else {
+      for (let item in key) {
+        this._helper._unset_k(item, caller);
       }
       this._collect_event();
     }
@@ -276,6 +322,30 @@ class UserIdentity {
   remove_webpush(push_token, provider = "vapid") {
     const caller = "remove_webpush";
     this._helper._remove_webpush(push_token, provider, caller);
+    this._collect_event();
+  }
+
+  add_slack_email(value) {
+    const caller = "add_slack_email";
+    this._helper._add_slack({ email: value }, caller);
+    this._collect_event();
+  }
+
+  remove_slack_email(value) {
+    const caller = "remove_slack_email";
+    this._helper._remove_slack({ email: value }, caller);
+    this._collect_event();
+  }
+
+  add_slack_userid(value) {
+    const caller = "add_slack_userid";
+    this._helper._add_slack({ user_id: value }, caller);
+    this._collect_event();
+  }
+
+  remove_slack_userid(value) {
+    const caller = "remove_slack_userid";
+    this._helper._remove_slack({ user_id: value }, caller);
     this._collect_event();
   }
 }
