@@ -4,9 +4,9 @@ import {
   BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
   MAX_EVENTS_IN_BULK_API,
 } from "./constants";
-import { get_request_signature } from "./signature";
-import { BulkResponse } from "./bulk_response";
-import { Event } from "./event";
+import get_request_signature from "./signature";
+import BulkResponse from "./bulk_response";
+import Event from "./event";
 import { SuprsendError } from "./utils";
 import { cloneDeep } from "lodash";
 import axios from "axios";
@@ -34,7 +34,7 @@ class _BulkEventsChunk {
   }
 
   __get_url() {
-    let url_template = "/event/";
+    let url_template = "event/";
     if (this.config.include_signature_param) {
       if (this.config.auth_enabled) {
         url_template = url_template + "?verify=true";
@@ -42,7 +42,7 @@ class _BulkEventsChunk {
         url_template = url_template + "?verify=false";
       }
     }
-    const url_formatted = `${this.config.base_url}${this.config.workspace_key}${url_template}`;
+    const url_formatted = `${this.config.base_url}${url_template}`;
     return url_formatted;
   }
 
@@ -93,7 +93,7 @@ class _BulkEventsChunk {
       return false;
     }
     if (!ALLOW_ATTACHMENTS_IN_BULK_API) {
-      delete body.properties["$attachments"];
+      delete event.properties["$attachments"];
     }
 
     this.__add_event_to_chunk(event, event_size);
@@ -174,7 +174,7 @@ class BulkEvents {
     }
     for (let ev of this.__events) {
       const is_part_of_bulk = true;
-      const [ev_json, body_size] = wf.get_final_json(
+      const [ev_json, body_size] = ev.get_final_json(
         this.config,
         is_part_of_bulk
       );
