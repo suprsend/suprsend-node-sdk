@@ -182,3 +182,8 @@ export function get_apparent_event_size(event, is_part_of_bulk) {
   const apparent_size = body_size + extra_bytes;
   return apparent_size;
 }
+
+export function get_apparent_identity_event_size(event) {
+  const body_size = JSON.stringify(event);
+  return body_size;
+}

@@ -43,7 +43,7 @@ export default class Event {
         "distinct_id must be a string. an Id which uniquely identify a user in your app"
       );
     }
-    const distinct_id = self.distinct_id.trim();
+    const distinct_id = this.distinct_id.trim();
     if (!distinct_id) {
       throw new SuprsendError("distinct_id missing");
     }
@@ -140,7 +140,7 @@ export class EventCollector {
   }
 
   collect(event) {
-    const [event_dict, event_size] = event.get_final_json(self.config, false);
+    const [event_dict, event_size] = event.get_final_json(this.config, false);
     return this.send(event_dict);
   }
 

@@ -4,6 +4,8 @@ import Workflow, { _WorkflowTrigger } from "./workflow";
 import { BulkWorkflowsFactory } from "./workflows_bulk";
 import Event, { EventCollector } from "./event";
 import { BulkEventsFactory } from "./events_bulk";
+import SubscriberFactory from "./subscriber";
+import BulkSubscribersFactory from "./subscribers_bulk";
 import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
@@ -26,6 +28,9 @@ export default class Suprsend {
 
     this._bulk_workflows = new BulkWorkflowsFactory(this);
     this._bulk_events = new BulkEventsFactory(this);
+    this._bulk_users = new BulkSubscribersFactory(this);
+
+    this._user = new SubscriberFactory(this);
     this._validate();
   }
 
@@ -35,6 +40,14 @@ export default class Suprsend {
 
   get bulk_events() {
     return this._bulk_events;
+  }
+
+  get bulk_users() {
+    return this._bulk_users;
+  }
+
+  get user() {
+    return this._user;
   }
 
   _validate() {

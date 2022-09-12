@@ -7,6 +7,9 @@ import {
 import { get_request_signature } from "./signature";
 import { BulkResponse } from "./bulk_response";
 import { Event } from "./event";
+import { SuprsendError } from "./utils";
+import { cloneDeep } from "lodash";
+import axios from "axios";
 
 export class BulkEventsFactory {
   constructor(config) {
@@ -83,7 +86,7 @@ class _BulkEventsChunk {
     }
     if (event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new SuprsendError(
-        `workflow body (discounting attachment if any) too big - ${apparent_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `workflow body (discounting attachment if any) too big - ${event_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     if (this.__running_size + event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
@@ -196,7 +199,9 @@ class BulkEvents {
 
   append(...events) {
     if (!events) {
-      throw SuprsendError("events list empty. must pass one or more events");
+      throw new SuprsendError(
+        "events list empty. must pass one or more events"
+      );
     }
     for (let ev of events) {
       if (!ev) {

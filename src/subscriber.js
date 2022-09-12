@@ -39,7 +39,7 @@ export default class SubscriberFactory {
   }
 }
 
-class Subscriber {
+export class Subscriber {
   constructor(config, distinct_id) {
     this.config = config;
     this.distinct_id = distinct_id;
@@ -129,8 +129,8 @@ class Subscriber {
     this.__validate_body();
     const headers = this.__get_headers();
     const events = this.events();
-    for (ev in events) {
-      const [ev, size] = this.validate_event_size(ev);
+    for (let ev of events) {
+      const [validated_ev, size] = this.validate_event_size(ev);
     }
 
     const content_text = JSON.stringify(events);
@@ -140,9 +140,9 @@ class Subscriber {
         "POST",
         content_text,
         headers,
-        this.config.env_secret
+        this.config.workspace_secret
       );
-      headers["Authorization"] = `${this.config.env_key}:${signature}`;
+      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
     }
     try {
       const response = await axios.post(this.__url, content_text, { headers });
@@ -246,7 +246,7 @@ class Subscriber {
       this._helper._unset_k(key, caller);
       this._collect_event();
     } else {
-      for (let item in key) {
+      for (let item of key) {
         this._helper._unset_k(item, caller);
       }
       this._collect_event();

@@ -1,27 +1,25 @@
 import {
   BODY_MAX_APPARENT_SIZE_IN_BYTES,
   BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
-  MAX_WORKFLOWS_IN_BULK_API,
-  ALLOW_ATTACHMENTS_IN_BULK_API,
+  MAX_IDENTITY_EVENTS_IN_BULK_API,
 } from "./constants";
-import { SuprsendError } from "./utils";
-import Workflow from "./workflow";
+import get_request_signature from "./signature";
+import BulkResponse from "./bulk_response";
+import { Subscriber } from "./subscriber";
 import { cloneDeep } from "lodash";
 import axios from "axios";
-import BulkResponse from "./bulk_response";
-import get_request_signature from "./signature";
 
-export class BulkWorkflowsFactory {
+export default class BulkSubscribersFactory {
   constructor(config) {
     this.config = config;
   }
 
   new_instance() {
-    return new BulkWorkflows(this.config);
+    return new BulkSubscribers(this.config);
   }
 }
 
-class _BulkWorkflowsChunk {
+class _BulkSubscribersChunk {
   constructor(config) {
     this.config = config;
     this.__chunk = [];
@@ -34,7 +32,7 @@ class _BulkWorkflowsChunk {
   }
 
   __get_url() {
-    let url_template = "/trigger/";
+    let url_template = "event/";
     if (this.config.include_signature_param) {
       if (this.config.auth_enabled) {
         url_template = url_template + "?verify=true";
@@ -42,7 +40,7 @@ class _BulkWorkflowsChunk {
         url_template = url_template + "?verify=false";
       }
     }
-    const url_formatted = `${this.config.base_url}${this.config.workspace_key}${url_template}`;
+    const url_formatted = `${this.config.base_url}${url_template}`;
     return url_formatted;
   }
 
@@ -59,16 +57,16 @@ class _BulkWorkflowsChunk {
     };
   }
 
-  __add_body_to_chunk(body, body_size) {
+  __add_event_to_chunk(event, event_size) {
     //  First add size, then body to reduce effects of race condition
-    this.__running_size += body_size;
-    this.__chunk.push(body);
+    this.__running_size += event_size;
+    this.__chunk.push(event);
     this.__running_length += 1;
   }
 
   __check_limit_reached() {
     if (
-      this.__running_length >= MAX_WORKFLOWS_IN_BULK_API ||
+      this.__running_length >= MAX_IDENTITY_EVENTS_IN_BULK_API ||
       this.__running_size >= BODY_MAX_APPARENT_SIZE_IN_BYTES
     ) {
       return true;
@@ -77,26 +75,23 @@ class _BulkWorkflowsChunk {
     }
   }
 
-  try_to_add_into_chunk(body, body_size) {
-    if (!body) {
+  try_to_add_into_chunk(event, event_size) {
+    if (!event) {
       return true;
     }
     if (this.__check_limit_reached()) {
       return false;
     }
-    if (body_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new SuprsendError(
-        `workflow body (discounting attachment if any) too big - ${body_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `workflow body (discounting attachment if any) too big - ${event_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
-    if (this.__running_size + body_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (this.__running_size + event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
       return false;
     }
-    if (!ALLOW_ATTACHMENTS_IN_BULK_API) {
-      delete body.data["$attachments"];
-    }
 
-    this.__add_body_to_chunk(body, body_size);
+    this.__add_event_to_chunk(event, event_size);
     return true;
   }
 
@@ -159,31 +154,30 @@ class _BulkWorkflowsChunk {
   }
 }
 
-class BulkWorkflows {
+class BulkSubscribers {
   constructor(config) {
     this.config = config;
-    this.__workflows = [];
+    this.__subscribers = [];
     this.__pending_records = [];
     this.chunks = [];
     this.response = new BulkResponse();
   }
 
-  __validate_workflows() {
-    if (!this.__workflows) {
-      throw new SuprsendError("workflow list is empty in bulk request");
+  __validate_subscriber_events() {
+    if (!this.__subscribers) {
+      throw new SuprsendError("users list is empty in bulk request");
     }
-    for (let wf of this.__workflows) {
-      const is_part_of_bulk = true;
-      const [wf_body, body_size] = wf.get_final_json(
-        this.config,
-        is_part_of_bulk
-      );
-      this.__pending_records.push([wf_body, body_size]);
+    for (let sub of this.__subscribers) {
+      const ev_arr = sub.events();
+      for (let ev of ev_arr) {
+        const [ev_json, body_size] = sub.validate_event_size(ev);
+        this.__pending_records.push([ev_json, body_size]);
+      }
     }
   }
 
   __chunkify(start_idx = 0) {
-    const curr_chunk = new _BulkWorkflowsChunk(this.config);
+    const curr_chunk = new _BulkSubscribersChunk(this.config);
     this.chunks.push(curr_chunk);
     const entries = this.__pending_records.slice(start_idx).entries();
     for (const [rel_idx, rec] of entries) {
@@ -197,28 +191,30 @@ class BulkWorkflows {
     }
   }
 
-  append(...workflows) {
-    if (!workflows) {
-      throw new SuprsendError(
-        "workflow list empty. must pass one or more valid workflow instances"
-      );
+  append(...subscribers) {
+    if (!subscribers) {
+      throw SuprsendError("users list empty. must pass one or more users");
     }
-    for (let wf of workflows) {
-      if (!wf) {
+    for (let sub of subscribers) {
+      if (!sub) {
         throw new SuprsendError("null/empty element found in bulk instance");
       }
-      if (!(wf instanceof Workflow)) {
+      if (!(sub instanceof Subscriber)) {
         throw new SuprsendError(
-          "element must be an instance of suprsend.Workflow"
+          "element must be an instance of suprsend.Subscriber"
         );
       }
-      const wf_copy = cloneDeep(wf);
-      this.__workflows.push(wf_copy);
+      const sub_copy = cloneDeep(sub);
+      this.__subscribers.push(sub_copy);
     }
   }
 
-  async trigger() {
-    this.__validate_workflows();
+  trigger() {
+    this.save();
+  }
+
+  async save() {
+    this.__validate_subscriber_events();
     this.__chunkify();
     for (const [c_idx, ch] of this.chunks.entries()) {
       if (this.config.req_log_level > 0) {

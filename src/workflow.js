@@ -28,8 +28,8 @@ export default class Workflow {
     }
     const attachment = get_attachment_json_for_file(file_path);
 
-    if (!body.data["$attachments"]) {
-      body["data"]["$attachments"] = [];
+    if (!this.body.data["$attachments"]) {
+      this.body["data"]["$attachments"] = [];
     }
     this.body["data"]["$attachments"].push(attachment);
   }

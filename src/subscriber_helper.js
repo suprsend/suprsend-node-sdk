@@ -137,7 +137,7 @@ export default class _SubscriberInternalHelper {
         event["$remove"] = this.__dict_remove;
         this.__remove_count += 1;
       }
-      if (!is_empty(this.__dict_remove)) {
+      if (!is_empty(this.__list_unset)) {
         event["$unset"] = this.__list_unset;
         this.__unset_count += 1;
       }
@@ -283,7 +283,7 @@ export default class _SubscriberInternalHelper {
         }
         break;
       case IDENT_KEY_SLACK:
-        self._remove_slack(val, caller);
+        this._remove_slack(val, caller);
         break;
       default:
         break;
