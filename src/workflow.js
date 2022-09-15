@@ -9,7 +9,7 @@ import get_attachment_json_for_file from "./attachment";
 import {
   BODY_MAX_APPARENT_SIZE_IN_BYTES,
   BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
-} from "constants";
+} from "./constants";
 
 export default class Workflow {
   constructor(body) {

@@ -57,6 +57,8 @@ export function is_empty(value) {
     return Object.keys(value) <= 0;
   } else if (Array.isArray(value)) {
     return value.length <= 0;
+  } else {
+    return !value;
   }
 }
 

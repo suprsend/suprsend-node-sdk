@@ -559,7 +559,7 @@ export default class _SubscriberInternalHelper {
       return [value, false];
     }
     let user_id = value.user_id;
-    const email = value.email;
+    let email = value.email;
     if (user_id && user_id.trim()) {
       user_id = user_id.trim();
       let [user_id, is_valid] = this.__validate_slack_userid(user_id, caller);
@@ -570,11 +570,11 @@ export default class _SubscriberInternalHelper {
       }
     } else if (email && email.trim()) {
       email = email.trim();
-      let [email, is_valid] = this.__validate_slack_userid(email, caller);
+      let [validated_email, is_valid] = this.__validate_email(email, caller);
       if (!is_valid) {
         return [value, false];
       } else {
-        return [{ email: email }, true];
+        return [{ email: validated_email }, true];
       }
     } else {
       this.__errors.push(`[${caller}] ${msg}`);

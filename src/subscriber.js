@@ -90,7 +90,7 @@ export class Subscriber {
       e["properties"] = this.__supr_props;
     }
 
-    if (this._append_count > 0 || all_events.length === 0) {
+    if (all_events.length === 0 || this._append_count > 0) {
       const user_identify_event = {
         $insert_id: uuid(),
         $time: epoch_milliseconds(),

@@ -10,7 +10,7 @@ import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
 
-export default class Suprsend {
+class Suprsend {
   constructor(workspace_key, workspace_secret, config = {}) {
     this.workspace_key = workspace_key;
     this.workspace_secret = workspace_secret;
@@ -115,3 +115,5 @@ export default class Suprsend {
     return this._eventcollector.collect(event);
   }
 }
+
+export { Suprsend, Event, Workflow };
