@@ -116,17 +116,31 @@ export class Subscriber {
     return [event_dict, apparent_size];
   }
 
-  __validate_body() {
+  validate_body(is_part_of_bulk = false) {
+    const warnings_list = [];
     if (!is_empty(this.__info)) {
-      console.log("WARNING: " + this.__info.join("\n"));
+      const msg = `[distinct_id: ${this.distinct_id}]${this.__info.join("\n")}`;
+      warnings_list.push(msg);
+      console.log(`WARNING: ${msg}`);
     }
     if (!is_empty(this.__errors)) {
-      throw new SuprsendError("ERROR: " + this.__errors.join("\n"));
+      const msg = `[distinct_id: ${this.distinct_id}] ${this.__errors.join(
+        "\n"
+      )}`;
+      warnings_list.push(msg);
+      const err_msg = `ERROR: ${msg}`;
+      if (is_part_of_bulk) {
+        console.log(err_msg);
+      } else {
+        throw new SuprsendError(err_msg);
+      }
     }
+    return warnings_list;
   }
 
   async save() {
-    this.__validate_body();
+    const is_part_of_bulk = false;
+    this.validate_body(is_part_of_bulk);
     const headers = this.__get_headers();
     const events = this.events();
     for (let ev of events) {

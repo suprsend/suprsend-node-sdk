@@ -168,6 +168,11 @@ class BulkSubscribers {
       throw new SuprsendError("users list is empty in bulk request");
     }
     for (let sub of this.__subscribers) {
+      const is_part_of_bulk = true;
+      const warnings_list = sub.validate_body(is_part_of_bulk);
+      if (warnings_list) {
+        this.response.warnings = [...this.response.warnings, ...warnings_list];
+      }
       const ev_arr = sub.events();
       for (let ev of ev_arr) {
         const [ev_json, body_size] = sub.validate_event_size(ev);

@@ -5,6 +5,7 @@ export default class BulkResponse {
     this.total = 0;
     this.success = 0;
     this.failure = 0;
+    this.warnings = [];
   }
 
   merge_chunk_response(ch_resp) {
