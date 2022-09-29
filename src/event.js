@@ -27,10 +27,11 @@ const RESERVED_EVENT_NAMES = [
 ];
 
 export default class Event {
-  constructor(distinct_id, event_name, properties) {
+  constructor(distinct_id, event_name, properties, idempotency_key) {
     this.distinct_id = distinct_id;
     this.event_name = event_name;
     this.properties = properties;
+    this.idempotency_key = idempotency_key;
     // --- validate
     this.__validate_distinct_id();
     this.__validate_event_name();
@@ -80,7 +81,7 @@ export default class Event {
 
   add_attachment(file_path) {
     const attachment = get_attachment_json_for_file(file_path);
-    // --- add the attachment to body->data->$attachments
+    // --- add the attachment to properties->$attachments
     if (!this.properties["$attachments"]) {
       this.properties["$attachments"] = [];
     }
@@ -97,6 +98,9 @@ export default class Event {
       distinct_id: this.distinct_id,
       properties: { ...this.properties, ...super_props },
     };
+    if (this.idempotency_key) {
+      event_dict["$idempotency_key"] = this.idempotency_key;
+    }
     event_dict = validate_track_event_schema(event_dict);
     const apparent_size = get_apparent_event_size(event_dict, is_part_of_bulk);
     if (apparent_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {

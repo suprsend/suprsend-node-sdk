@@ -103,8 +103,13 @@ class Suprsend {
     return this._workflow_trigger.trigger(wf_ins);
   }
 
-  track(distinct_id, event_name, properties = {}) {
-    const event = new Event(distinct_id, event_name, properties);
+  track(distinct_id, event_name, properties = {}, idempotency_key) {
+    const event = new Event(
+      distinct_id,
+      event_name,
+      properties,
+      idempotency_key
+    );
     return this._eventcollector.collect(event);
   }
 
