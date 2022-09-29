@@ -542,7 +542,10 @@ export default class _SubscriberInternalHelper {
       return [validated_userid, false];
     }
     validated_userid = validated_userid.toUpperCase();
-    if (validated_userid.startsWith("U") || validated_userid.startsWith("W")) {
+    if (
+      !validated_userid.startsWith("U") &&
+      !validated_userid.startsWith("W")
+    ) {
       this.__errors.push(
         `[${caller}] invalid value ${validated_userid}. Slack user/member_id starts with a U or W`
       );
@@ -562,11 +565,14 @@ export default class _SubscriberInternalHelper {
     let email = value.email;
     if (user_id && user_id.trim()) {
       user_id = user_id.trim();
-      let [user_id, is_valid] = this.__validate_slack_userid(user_id, caller);
+      let [validated_user_id, is_valid] = this.__validate_slack_userid(
+        user_id,
+        caller
+      );
       if (!is_valid) {
         return [value, false];
       } else {
-        return [{ user_id: user_id }, true];
+        return [{ user_id: validated_user_id }, true];
       }
     } else if (email && email.trim()) {
       email = email.trim();
