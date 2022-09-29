@@ -12,11 +12,12 @@ import {
 } from "./constants";
 
 export default class Workflow {
-  constructor(body) {
+  constructor(body, idempotency_key) {
     if (!(body instanceof Object)) {
       throw new SuprsendError("workflow body must be a json/dictionary");
     }
     this.body = body;
+    this.idempotency_key = idempotency_key;
   }
 
   add_attachment(file_path = "") {
@@ -35,6 +36,10 @@ export default class Workflow {
   }
 
   get_final_json(config, is_part_of_bulk = false) {
+    // add idempotency key in body if present
+    if (this.idempotency_key) {
+      this.body["$idempotency_key"] = this.idempotency_key;
+    }
     this.body = validate_workflow_body_schema(this.body);
     const apparent_size = get_apparent_workflow_body_size(
       this.body,
