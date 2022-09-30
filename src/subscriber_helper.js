@@ -7,22 +7,71 @@ import {
   is_string,
 } from "./utils";
 
+// ---------- Identity keys
+const IDENT_KEY_EMAIL = "$email";
+const IDENT_KEY_SMS = "$sms";
+const IDENT_KEY_ANDROIDPUSH = "$androidpush";
+const IDENT_KEY_IOSPUSH = "$iospush";
+const IDENT_KEY_WHATSAPP = "$whatsapp";
+const IDENT_KEY_WEBPUSH = "$webpush";
+const IDENT_KEY_SLACK = "$slack";
+
+const IDENT_KEYS_ALL = [
+  IDENT_KEY_EMAIL,
+  IDENT_KEY_SMS,
+  IDENT_KEY_ANDROIDPUSH,
+  IDENT_KEY_IOSPUSH,
+  IDENT_KEY_WHATSAPP,
+  IDENT_KEY_WEBPUSH,
+  IDENT_KEY_SLACK,
+];
+
+const KEY_PUSHVENDOR = "$pushvendor";
+
+const OTHER_RESERVED_KEYS = [
+  "$messenger",
+  "$inbox",
+  KEY_PUSHVENDOR,
+  "$device_id",
+  "$insert_id",
+  "$time",
+  "$set",
+  "$set_once",
+  "$add",
+  "$append",
+  "$remove",
+  "$unset",
+  "$identify",
+  "$anon_id",
+  "$identified_id",
+  "$notification_delivered",
+  "$notification_dismiss",
+  "$notification_clicked",
+];
+
+const SUPER_PROPERTY_KEYS = [
+  "$app_version_string",
+  "$app_build_number",
+  "$brand",
+  "$carrier",
+  "$manufacturer",
+  "$model",
+  "$os",
+  "$ss_sdk_version",
+  "$insert_id",
+  "$time",
+];
+
+const ALL_RESERVED_KEYS = [
+  ...SUPER_PROPERTY_KEYS,
+  ...OTHER_RESERVED_KEYS,
+  ...IDENT_KEYS_ALL,
+];
+
 const EMAIL_REGEX = /\S+@\S+\.\S+/;
 const MOBILE_REGEX = /^\+[0-9\s]+/;
-const KEY_PUSHVENDOR = "$pushvendor";
-const CHANNEL_MAP = {
-  EMAIL: "$email",
-  SMS: "$sms",
-  WHATSAPP: "$whatsapp",
-  ANDROID_PUSH: "$androidpush",
-  IOS_PUSH: "$iospush",
-  WEB_PUSH: "$webpush",
-};
-const ANDROID_PUSH_VENDORS = ["fcm", "xiaomi", "oppo"];
-const IOS_PUSH_VENDORS = ["apns"];
-const WEB_PUSH_VENDORS = ["vapid"];
 
-export default class _IdentityEventInternalHelper {
+export default class _SubscriberInternalHelper {
   constructor(distinct_id, workspace_key) {
     this.distinct_id = distinct_id;
     this.workspace_key = workspace_key;
@@ -69,7 +118,11 @@ export default class _IdentityEventInternalHelper {
   }
 
   __form_event() {
-    if (!is_empty(this.__dict_append) || !is_empty(this.__dict_remove)) {
+    if (
+      !is_empty(this.__dict_append) ||
+      !is_empty(this.__dict_remove) ||
+      !is_empty(this.__list_unset)
+    ) {
       let event = {
         $insert_id: uuid(),
         $time: epoch_milliseconds(),
@@ -84,9 +137,14 @@ export default class _IdentityEventInternalHelper {
         event["$remove"] = this.__dict_remove;
         this.__remove_count += 1;
       }
+      if (!is_empty(this.__list_unset)) {
+        event["$unset"] = this.__list_unset;
+        this.__unset_count += 1;
+      }
       return event;
+    } else {
+      return;
     }
-    return;
   }
 
   __validate_key_basic(key, caller) {
@@ -105,7 +163,7 @@ export default class _IdentityEventInternalHelper {
   }
 
   __validate_key_prefix(key, caller) {
-    if (!this.__is_identity_key(key)) {
+    if (!ALL_RESERVED_KEYS.includes(key)) {
       if (has_special_char(key)) {
         this.__info.push(
           `[${caller}] skipping key: ${key}. key starting with [$,ss_] are reserved`
@@ -117,67 +175,78 @@ export default class _IdentityEventInternalHelper {
   }
 
   __is_identity_key(key) {
-    return Object.values(CHANNEL_MAP).includes(key);
+    return IDENT_KEYS_ALL.includes(key);
   }
 
   _append_kv(key, value, args = {}, caller = "append") {
-    const [validated_key, is_valid] = this.__validate_key_basic(key, caller);
-    if (!is_valid) {
+    const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
+    if (!is_k_valid) {
       return;
     }
     if (this.__is_identity_key(validated_key)) {
       this.__add_identity(validated_key, value, args, caller);
     } else {
-      const is_valid = this.__validate_key_prefix(validated_key, caller);
-      if (is_valid) {
+      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
+      if (is_k_valid) {
         this.__dict_append[validated_key] = value;
       }
     }
   }
 
   _remove_kv(key, value, args = {}, caller = "remove") {
-    const [validated_key, is_valid] = this.__validate_key_basic(key, caller);
-    if (!is_valid) {
+    const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
+    if (!is_k_valid) {
       return;
     }
     if (this.__is_identity_key(validated_key)) {
       this.__remove_identity(validated_key, value, args, caller);
     } else {
-      const is_valid = this.__validate_key_prefix(validated_key, caller);
-      if (is_valid) {
+      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
+      if (is_k_valid) {
         this.__dict_remove[validated_key] = value;
       }
     }
   }
 
+  _unset_k(key, caller = "unset") {
+    const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
+    if (!is_k_valid) {
+      return;
+    }
+    this.__list_unset.push(validated_key);
+  }
+
   __add_identity(key, value, args, caller) {
     switch (key) {
-      case CHANNEL_MAP.EMAIL:
+      case IDENT_KEY_EMAIL:
         this._add_email(value, caller);
         break;
-      case CHANNEL_MAP.SMS:
+      case IDENT_KEY_SMS:
         this._add_sms(value, caller);
         break;
-      case CHANNEL_MAP.WHATSAPP:
+      case IDENT_KEY_WHATSAPP:
         this._add_whatsapp(value, caller);
         break;
-      case CHANNEL_MAP.ANDROID_PUSH:
+      case IDENT_KEY_ANDROIDPUSH:
         this._add_androidpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_append[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
         }
         break;
-      case CHANNEL_MAP.IOS_PUSH:
+      case IDENT_KEY_IOSPUSH:
         this._add_iospush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_append[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
         }
         break;
-      case CHANNEL_MAP.WEB_PUSH:
+      case IDENT_KEY_WEBPUSH:
         this._add_webpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_append[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
         }
+        break;
+      case IDENT_KEY_SLACK:
+        this._add_slack(value, caller);
         break;
       default:
         break;
@@ -186,32 +255,35 @@ export default class _IdentityEventInternalHelper {
 
   __remove_identity(key, value, args, caller) {
     switch (key) {
-      case CHANNEL_MAP.EMAIL:
+      case IDENT_KEY_EMAIL:
         this._remove_email(value, caller);
         break;
-      case CHANNEL_MAP.SMS:
+      case IDENT_KEY_SMS:
         this._remove_sms(value, caller);
         break;
-      case CHANNEL_MAP.WHATSAPP:
+      case IDENT_KEY_WHATSAPP:
         this._remove_whatsapp(value, caller);
         break;
-      case CHANNEL_MAP.ANDROID_PUSH:
+      case IDENT_KEY_ANDROIDPUSH:
         this._remove_androidpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_remove[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
         }
         break;
-      case CHANNEL_MAP.IOS_PUSH:
+      case IDENT_KEY_IOSPUSH:
         this._remove_iospush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_remove[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
         }
         break;
-      case CHANNEL_MAP.WEB_PUSH:
+      case IDENT_KEY_WEBPUSH:
         this._remove_webpush(value, args[KEY_PUSHVENDOR], caller);
         if (this.__dict_remove[KEY_PUSHVENDOR]) {
           args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
         }
+        break;
+      case IDENT_KEY_SLACK:
+        this._remove_slack(val, caller);
         break;
       default:
         break;
@@ -260,7 +332,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_append[CHANNEL_MAP.EMAIL] = value;
+    this.__dict_append[IDENT_KEY_EMAIL] = value;
   }
 
   _remove_email(email, caller) {
@@ -268,7 +340,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_remove[CHANNEL_MAP.EMAIL] = value;
+    this.__dict_remove[IDENT_KEY_EMAIL] = value;
   }
 
   // mobile methods
@@ -299,7 +371,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_append[CHANNEL_MAP.SMS] = value;
+    this.__dict_append[IDENT_KEY_SMS] = value;
   }
 
   _remove_sms(mobile_no, caller) {
@@ -307,7 +379,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_remove[CHANNEL_MAP.SMS] = value;
+    this.__dict_remove[IDENT_KEY_SMS] = value;
   }
 
   _add_whatsapp(mobile_no, caller) {
@@ -315,7 +387,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_append[CHANNEL_MAP.WHATSAPP] = value;
+    this.__dict_append[IDENT_KEY_WHATSAPP] = value;
   }
 
   _remove_whatsapp(mobile_no, caller) {
@@ -323,7 +395,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_remove[CHANNEL_MAP.WHATSAPP] = value;
+    this.__dict_remove[IDENT_KEY_WHATSAPP] = value;
   }
 
   // android push methods
@@ -335,7 +407,7 @@ export default class _IdentityEventInternalHelper {
     if (!provider) {
       provider = "fcm";
     }
-    if (!ANDROID_PUSH_VENDORS.includes(provider)) {
+    if (!["fcm", "xiaomi", "oppo"].includes(provider)) {
       this.__errors.push(
         `[${caller}] unsupported androidpush provider ${provider}`
       );
@@ -353,7 +425,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_append[CHANNEL_MAP.ANDROID_PUSH] = value;
+    this.__dict_append[IDENT_KEY_ANDROIDPUSH] = value;
     this.__dict_append[KEY_PUSHVENDOR] = vendor;
   }
 
@@ -367,7 +439,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_remove[CHANNEL_MAP.ANDROID_PUSH] = value;
+    this.__dict_remove[IDENT_KEY_ANDROIDPUSH] = value;
     this.__dict_remove[KEY_PUSHVENDOR] = vendor;
   }
 
@@ -380,7 +452,7 @@ export default class _IdentityEventInternalHelper {
     if (!provider) {
       provider = "apns";
     }
-    if (!IOS_PUSH_VENDORS.includes(provider)) {
+    if (!["apns"].includes(provider)) {
       this.__errors.push(
         `[${caller}] unsupported iospush provider ${provider}`
       );
@@ -398,7 +470,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_append[CHANNEL_MAP.IOS_PUSH] = value;
+    this.__dict_append[IDENT_KEY_IOSPUSH] = value;
     this.__dict_append[KEY_PUSHVENDOR] = vendor;
   }
 
@@ -411,7 +483,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_remove[CHANNEL_MAP.IOS_PUSH] = value;
+    this.__dict_remove[IDENT_KEY_IOSPUSH] = value;
     this.__dict_remove[KEY_PUSHVENDOR] = vendor;
   }
 
@@ -426,7 +498,7 @@ export default class _IdentityEventInternalHelper {
     if (!provider) {
       provider = "vapid";
     }
-    if (!WEB_PUSH_VENDORS.includes(provider)) {
+    if (!["vapid"].includes(provider)) {
       this.__errors.push(
         `[${caller}] unsupported webpush provider ${provider}`
       );
@@ -444,7 +516,7 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_append[CHANNEL_MAP.WEB_PUSH] = value;
+    this.__dict_append[IDENT_KEY_WEBPUSH] = value;
     this.__dict_append[KEY_PUSHVENDOR] = vendor;
   }
 
@@ -457,7 +529,78 @@ export default class _IdentityEventInternalHelper {
     if (!is_valid) {
       return;
     }
-    this.__dict_remove[CHANNEL_MAP.WEB_PUSH] = value;
+    this.__dict_remove[IDENT_KEY_WEBPUSH] = value;
     this.__dict_remove[KEY_PUSHVENDOR] = vendor;
+  }
+
+  __validate_slack_userid(userid, caller) {
+    let [validated_userid, is_valid] = this.__check_ident_val_string(
+      userid,
+      caller
+    );
+    if (!is_valid) {
+      return [validated_userid, false];
+    }
+    validated_userid = validated_userid.toUpperCase();
+    if (
+      !validated_userid.startsWith("U") &&
+      !validated_userid.startsWith("W")
+    ) {
+      this.__errors.push(
+        `[${caller}] invalid value ${validated_userid}. Slack user/member_id starts with a U or W`
+      );
+      return [validated_userid, false];
+    }
+    return [validated_userid, true];
+  }
+
+  __check_slack_dict(value, caller) {
+    const msg =
+      "value must be a valid dict/json with one of these keys: [email, user_id]";
+    if (!(value && value instanceof Object)) {
+      this.__errors.push(`[${caller}] ${msg}`);
+      return [value, false];
+    }
+    let user_id = value.user_id;
+    let email = value.email;
+    if (user_id && user_id.trim()) {
+      user_id = user_id.trim();
+      let [validated_user_id, is_valid] = this.__validate_slack_userid(
+        user_id,
+        caller
+      );
+      if (!is_valid) {
+        return [value, false];
+      } else {
+        return [{ user_id: validated_user_id }, true];
+      }
+    } else if (email && email.trim()) {
+      email = email.trim();
+      let [validated_email, is_valid] = this.__validate_email(email, caller);
+      if (!is_valid) {
+        return [value, false];
+      } else {
+        return [{ email: validated_email }, true];
+      }
+    } else {
+      this.__errors.push(`[${caller}] ${msg}`);
+      return [value, false];
+    }
+  }
+
+  _add_slack(value, caller) {
+    const [validated_value, is_valid] = this.__check_slack_dict(value, caller);
+    if (!is_valid) {
+      return;
+    }
+    this.__dict_append[IDENT_KEY_SLACK] = validated_value;
+  }
+
+  _remove_slack(value, caller) {
+    const [validated_value, is_valid] = this.__check_slack_dict(value, caller);
+    if (!is_valid) {
+      return;
+    }
+    this.__dict_remove[IDENT_KEY_SLACK] = validated_value;
   }
 }
