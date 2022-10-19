@@ -12,15 +12,17 @@ import {
 } from "./constants";
 
 export default class Workflow {
-  constructor(body, idempotency_key) {
+  constructor(body, kwargs = {}) {
     if (!(body instanceof Object)) {
       throw new SuprsendError("workflow body must be a json/dictionary");
     }
     this.body = body;
-    this.idempotency_key = idempotency_key;
+    this.idempotency_key = kwargs?.idempotency_key;
   }
 
-  add_attachment(file_path = "", file_name, ignore_if_error = false) {
+  add_attachment(file_path = "", kwargs = {}) {
+    const file_name = kwargs?.file_name;
+    const ignore_if_error = kwargs?.ignore_if_error ?? false;
     if (!this.body.data) {
       this.body.data = {};
     }

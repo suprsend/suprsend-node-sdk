@@ -27,11 +27,11 @@ const RESERVED_EVENT_NAMES = [
 ];
 
 export default class Event {
-  constructor(distinct_id, event_name, properties, idempotency_key) {
+  constructor(distinct_id, event_name, properties, kwargs = {}) {
     this.distinct_id = distinct_id;
     this.event_name = event_name;
     this.properties = properties;
-    this.idempotency_key = idempotency_key;
+    this.idempotency_key = kwargs?.idempotency_key;
     // --- validate
     this.__validate_distinct_id();
     this.__validate_event_name();
@@ -79,7 +79,9 @@ export default class Event {
     this.event_name = event_name;
   }
 
-  add_attachment(file_path, file_name, ignore_if_error = false) {
+  add_attachment(file_path, kwargs = {}) {
+    const file_name = kwargs?.file_name;
+    const ignore_if_error = kwargs?.ignore_if_error ?? false;
     const attachment = get_attachment_json(
       file_path,
       file_name,

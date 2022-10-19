@@ -78,7 +78,9 @@ class Suprsend {
     return base_url;
   }
 
-  add_attachment(body, file_path, file_name, ignore_if_error = false) {
+  add_attachment(body, file_path, kwargs = {}) {
+    const file_name = kwargs?.file_name;
+    const ignore_if_error = kwargs?.ignore_if_error ?? false;
     if (!body.data) {
       body.data = {};
     }
@@ -107,13 +109,8 @@ class Suprsend {
     return this._workflow_trigger.trigger(wf_ins);
   }
 
-  track(distinct_id, event_name, properties = {}, idempotency_key) {
-    const event = new Event(
-      distinct_id,
-      event_name,
-      properties,
-      idempotency_key
-    );
+  track(distinct_id, event_name, properties = {}, kwargs = {}) {
+    const event = new Event(distinct_id, event_name, properties, kwargs);
     return this._eventcollector.collect(event);
   }
 

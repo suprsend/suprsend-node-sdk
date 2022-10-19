@@ -2,14 +2,14 @@ import path from "path";
 import mime from "mime-types";
 import { base64Encode, resolveTilde } from "./utils";
 
-function check_is_web_url(file_path) {
+function check_is_web_url(file_path = "") {
   return file_path.startsWith("http://") || file_path.startsWith("https://");
 }
 
 function get_attachment_json_for_file(file_path, file_name, ignore_if_error) {
   const abs_path = path.resolve(resolveTilde(file_path));
-  const final_file_name = path.basename(abs_path);
-  if (file_name && filename.trim()) {
+  let final_file_name = path.basename(abs_path);
+  if (file_name && file_name.trim()) {
     final_file_name = file_name.trim();
   }
   return {
