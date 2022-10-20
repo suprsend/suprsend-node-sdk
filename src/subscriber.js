@@ -50,6 +50,7 @@ export class Subscriber {
     this.__info = [];
     this._append_count = 0;
     this._remove_count = 0;
+    this._set_count = 0;
     this._unset_count = 0;
     this._events = [];
     this._helper = new _SubscriberInternalHelper(
@@ -90,7 +91,11 @@ export class Subscriber {
       e["properties"] = this.__supr_props;
     }
 
-    if (all_events.length === 0 || this._append_count > 0) {
+    if (
+      all_events.length === 0 ||
+      this._append_count > 0 ||
+      this._set_count > 0
+    ) {
       const user_identify_event = {
         $insert_id: uuid(),
         $time: epoch_milliseconds(),
@@ -196,6 +201,7 @@ export class Subscriber {
     }
     if (!is_empty(resp["event"])) {
       this._events.push(resp["event"]);
+      this._set_count += resp["set"];
       this._append_count += resp["append"];
       this._remove_count += resp["remove"];
       this._unset_count += resp["unset"];
@@ -265,6 +271,12 @@ export class Subscriber {
       }
       this._collect_event();
     }
+  }
+
+  set_preferred_language(lang_code) {
+    const caller = "set_preferred_language";
+    this._helper._set_preferred_language(lang_code, caller);
+    this._collect_event();
   }
 
   add_email(email) {
