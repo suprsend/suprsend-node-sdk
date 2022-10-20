@@ -1,5 +1,5 @@
 import { SuprsendError, SuprsendConfigError } from "./utils";
-import get_attachment_json_for_file from "./attachment";
+import get_attachment_json from "./attachment";
 import Workflow, { _WorkflowTrigger } from "./workflow";
 import { BulkWorkflowsFactory } from "./workflows_bulk";
 import Event, { EventCollector } from "./event";
@@ -78,14 +78,20 @@ class Suprsend {
     return base_url;
   }
 
-  add_attachment(body, file_path) {
+  add_attachment(body, file_path, kwargs = {}) {
+    const file_name = kwargs?.file_name;
+    const ignore_if_error = kwargs?.ignore_if_error ?? false;
     if (!body.data) {
       body.data = {};
     }
     if (!body.data instanceof Object) {
       throw new SuprsendError("data must be an object");
     }
-    const attachment = get_attachment_json_for_file(file_path);
+    const attachment = get_attachment_json(
+      file_path,
+      file_name,
+      ignore_if_error
+    );
     if (!body.data["$attachments"]) {
       body["data"]["$attachments"] = [];
     }
@@ -103,13 +109,8 @@ class Suprsend {
     return this._workflow_trigger.trigger(wf_ins);
   }
 
-  track(distinct_id, event_name, properties = {}, idempotency_key) {
-    const event = new Event(
-      distinct_id,
-      event_name,
-      properties,
-      idempotency_key
-    );
+  track(distinct_id, event_name, properties = {}, kwargs = {}) {
+    const event = new Event(distinct_id, event_name, properties, kwargs);
     return this._eventcollector.collect(event);
   }
 

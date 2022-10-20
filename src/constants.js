@@ -3,6 +3,10 @@ export const DEFAULT_URL = "https://hub.suprsend.com/";
 export const DEFAULT_UAT_URL =
   "https://collector-staging.suprsend.workers.dev/";
 
+//  an Event should not have apparent body size of more than 100KB
+export const SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES = 100 * 1024; // 100 * 1024
+export const SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE = "100KB";
+
 // a API call should not have apparent body size of more than 800KB
 export const BODY_MAX_APPARENT_SIZE_IN_BYTES = 800 * 1024; // 800 * 1024
 export const BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE = "800KB";
@@ -18,7 +22,7 @@ export const MAX_WORKFLOWS_IN_BULK_API = 100;
 // max event-records in one bulk api call
 export const MAX_EVENTS_IN_BULK_API = 100;
 
-export const ALLOW_ATTACHMENTS_IN_BULK_API = false;
+export const ALLOW_ATTACHMENTS_IN_BULK_API = true;
 export const ATTACHMENT_UPLOAD_ENABLED = false;
 
 // -- single Identity event limit

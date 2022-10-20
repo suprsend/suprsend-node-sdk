@@ -1,4 +1,6 @@
 import {
+  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
+  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
   ALLOW_ATTACHMENTS_IN_BULK_API,
   BODY_MAX_APPARENT_SIZE_IN_BYTES,
   BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
@@ -84,9 +86,9 @@ class _BulkEventsChunk {
     if (this.__check_limit_reached()) {
       return false;
     }
-    if (event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (event_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new SuprsendError(
-        `workflow body (discounting attachment if any) too big - ${event_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `Event properties too big - ${event_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     if (this.__running_size + event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {

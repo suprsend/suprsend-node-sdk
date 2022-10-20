@@ -1,4 +1,6 @@
 import {
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
   BODY_MAX_APPARENT_SIZE_IN_BYTES,
   BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
   MAX_IDENTITY_EVENTS_IN_BULK_API,
@@ -82,9 +84,9 @@ class _BulkSubscribersChunk {
     if (this.__check_limit_reached()) {
       return false;
     }
-    if (event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (event_size > IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new SuprsendError(
-        `workflow body (discounting attachment if any) too big - ${event_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `Event too big - ${event_size} Bytes, must not cross ${IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     if (this.__running_size + event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {

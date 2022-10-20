@@ -5,29 +5,35 @@ import {
   validate_workflow_body_schema,
   get_apparent_workflow_body_size,
 } from "./utils";
-import get_attachment_json_for_file from "./attachment";
+import get_attachment_json from "./attachment";
 import {
-  BODY_MAX_APPARENT_SIZE_IN_BYTES,
-  BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
+  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
+  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
 } from "./constants";
 
 export default class Workflow {
-  constructor(body, idempotency_key) {
+  constructor(body, kwargs = {}) {
     if (!(body instanceof Object)) {
       throw new SuprsendError("workflow body must be a json/dictionary");
     }
     this.body = body;
-    this.idempotency_key = idempotency_key;
+    this.idempotency_key = kwargs?.idempotency_key;
   }
 
-  add_attachment(file_path = "") {
+  add_attachment(file_path = "", kwargs = {}) {
+    const file_name = kwargs?.file_name;
+    const ignore_if_error = kwargs?.ignore_if_error ?? false;
     if (!this.body.data) {
       this.body.data = {};
     }
     if (!(this.body instanceof Object)) {
       throw new SuprsendError("data must be a dictionary");
     }
-    const attachment = get_attachment_json_for_file(file_path);
+    const attachment = get_attachment_json(
+      file_path,
+      file_name,
+      ignore_if_error
+    );
 
     if (!this.body.data["$attachments"]) {
       this.body["data"]["$attachments"] = [];
@@ -45,9 +51,9 @@ export default class Workflow {
       this.body,
       is_part_of_bulk
     ); // review
-    if (apparent_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (apparent_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new SuprsendError(
-        `workflow body (discounting attachment if any) too big - ${apparent_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `workflow body too big - ${apparent_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     return [this.body, apparent_size];
