@@ -1,6 +1,6 @@
 {
   "name": "@suprsend/node-sdk",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Suprsend Node SDK to trigger workflow from backend",
   "main": "dist/index.js",
   "scripts": {

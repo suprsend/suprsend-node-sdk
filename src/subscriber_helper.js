@@ -6,6 +6,7 @@ import {
   is_empty,
   is_string,
 } from "./utils";
+import ALL_LANG_CODES from "./language_codes";
 
 // ---------- Identity keys
 const IDENT_KEY_EMAIL = "$email";
@@ -27,6 +28,7 @@ const IDENT_KEYS_ALL = [
 ];
 
 const KEY_PUSHVENDOR = "$pushvendor";
+const KEY_PREFERRED_LANGUAGE = "$preferred_language";
 
 const OTHER_RESERVED_KEYS = [
   "$messenger",
@@ -44,6 +46,7 @@ const OTHER_RESERVED_KEYS = [
   "$identify",
   "$anon_id",
   "$identified_id",
+  KEY_PREFERRED_LANGUAGE,
   "$notification_delivered",
   "$notification_dismiss",
   "$notification_clicked",
@@ -76,6 +79,9 @@ export default class _SubscriberInternalHelper {
     this.distinct_id = distinct_id;
     this.workspace_key = workspace_key;
 
+    this.__dict_set = {};
+    this.__set_count = 0;
+
     this.__dict_append = {};
     this.__append_count = 0;
 
@@ -90,6 +96,9 @@ export default class _SubscriberInternalHelper {
   }
 
   reset() {
+    this.__dict_set = {};
+    this.__set_count = 0;
+
     this.__dict_append = {};
     this.__append_count = 0;
 
@@ -109,6 +118,7 @@ export default class _SubscriberInternalHelper {
       errors: this.__errors,
       info: this.__info,
       event: evt,
+      set: this.__set_count,
       append: this.__append_count,
       remove: this.__remove_count,
       unset: this.__unset_count,
@@ -119,6 +129,7 @@ export default class _SubscriberInternalHelper {
 
   __form_event() {
     if (
+      !is_empty(this.__dict_set) ||
       !is_empty(this.__dict_append) ||
       !is_empty(this.__dict_remove) ||
       !is_empty(this.__list_unset)
@@ -129,6 +140,10 @@ export default class _SubscriberInternalHelper {
         env: this.workspace_key,
         distinct_id: this.distinct_id,
       };
+      if (!is_empty(this.__dict_set)) {
+        event["$set"] = this.__dict_set;
+        this.__set_count += 1;
+      }
       if (!is_empty(this.__dict_append)) {
         event["$append"] = this.__dict_append;
         this.__append_count += 1;
@@ -214,6 +229,14 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__list_unset.push(validated_key);
+  }
+
+  _set_preferred_language(lang_code, caller) {
+    if (!ALL_LANG_CODES.includes(lang_code)) {
+      this.__info.push(`[${caller}] invalid value ${lang_code}`);
+      return;
+    }
+    this.__dict_set[KEY_PREFERRED_LANGUAGE] = lang_code;
   }
 
   __add_identity(key, value, args, caller) {
