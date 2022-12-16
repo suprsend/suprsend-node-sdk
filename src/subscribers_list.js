@@ -1,4 +1,4 @@
-import { SuprsendError } from "./utils";
+import { SuprsendError, SuprsendApiError } from "./utils";
 import get_request_signature from "./signature";
 import axios from "axios";
 
@@ -15,30 +15,42 @@ class SubscribersListApi {
   }
 
   async create(body = {}) {
-    if (body && !body["list_id"]) {
-      throw new SuprsendError("Missing List ID");
+    if (!body) {
+      throw new SuprsendError("Missing body");
     }
+    if (!body["list_id"]) {
+      throw new SuprsendError("Missing list ID");
+    }
+    if (!body["list_name"]) {
+      throw new SuprsendError("Missing list name");
+    }
+
     const valid_body = {
       list_id: body["list_id"],
-      list_name: body["list_name"] || "",
-      list_description: list["list_description"],
+      list_name: body["list_name"],
+      list_description: body["list_description"],
     };
 
-    // add auth key
-    try {
-      const headers = this._get_headers();
-      const resp = await fetch(`${this.config.base_url}v1/list`, {
-        method: "POST",
+    const url = `${this.config.base_url}v1/list`;
+    const headers = this._get_headers();
+    headers["Content-Type"] = "application/json; charset=utf-8";
+    const content_text = JSON.stringify(valid_body);
+    if (this.config.auth_enabled) {
+      const signature = get_request_signature(
+        url,
+        "POST",
+        content_text,
         headers,
-        body: valid_body,
-      });
-      if (resp.ok) {
-        return resp.json();
-      } else {
-        throw new SuprsendError("Error occurred");
-      }
-    } catch (e) {
-      throw new SuprsendError("Error occurred");
+        this.config.workspace_secret
+      );
+      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+    }
+
+    try {
+      const response = await axios.post(url, content_text, { headers });
+      return response.data;
+    } catch (err) {
+      throw new SuprsendApiError(err);
     }
   }
 
@@ -58,24 +70,9 @@ class SubscribersListApi {
 
     try {
       const response = await axios.get(url, { headers });
-      const ok_response = Math.floor(response.status / 100) == 2;
-      if (ok_response) {
-        return response.data;
-      } else {
-        return {
-          success: false,
-          status: "fail",
-          status_code: response.status,
-          message: response.statusText,
-        };
-      }
+      return response.data;
     } catch (err) {
-      return {
-        success: false,
-        status: "fail",
-        status_code: err.status || 500,
-        message: err.message,
-      };
+      throw new SuprsendApiError(err);
     }
   }
 
@@ -98,24 +95,9 @@ class SubscribersListApi {
     }
     try {
       const response = await axios.get(url, { headers });
-      const ok_response = Math.floor(response.status / 100) == 2;
-      if (ok_response) {
-        return response.data;
-      } else {
-        return {
-          success: false,
-          status: "fail",
-          status_code: response.status,
-          message: response.statusText,
-        };
-      }
+      return response.data;
     } catch (err) {
-      return {
-        success: false,
-        status: "fail",
-        status_code: err.status || 500,
-        message: err.message,
-      };
+      throw new SuprsendApiError(err);
     }
   }
 
@@ -146,24 +128,9 @@ class SubscribersListApi {
 
     try {
       const response = await axios.post(url, content_text, { headers });
-      const ok_response = Math.floor(response.status / 100) == 2;
-      if (ok_response) {
-        return response.data;
-      } else {
-        return {
-          success: false,
-          status: "fail",
-          status_code: response.status,
-          message: response.statusText,
-        };
-      }
+      return response.data;
     } catch (err) {
-      return {
-        success: false,
-        status: "fail",
-        status_code: err.status || 500,
-        message: err.message,
-      };
+      throw new SuprsendApiError(err);
     }
   }
 
@@ -194,24 +161,9 @@ class SubscribersListApi {
 
     try {
       const response = await axios.post(url, content_text, { headers });
-      const ok_response = Math.floor(response.status / 100) == 2;
-      if (ok_response) {
-        return response.data;
-      } else {
-        return {
-          success: false,
-          status: "fail",
-          status_code: response.status,
-          message: response.statusText,
-        };
-      }
+      return response.data;
     } catch (err) {
-      return {
-        success: false,
-        status: "fail",
-        status_code: err.status || 500,
-        message: err.message,
-      };
+      throw new SuprsendApiError(err);
     }
   }
 }
