@@ -128,22 +128,42 @@ class SubscribersListApi {
     ) {
       return;
     }
-    // add auth key
-    try {
-      const resp = await fetch(
-        `${this.config.base_url}v1/list/${id}/subscriber/add`,
-        {
-          method: "POST",
-          body: { distinct_ids },
-        }
+
+    const url = `${this.config.base_url}v1/list/${list_id}/subscriber/add`;
+    const headers = this._get_headers();
+    headers["Content-Type"] = "application/json; charset=utf-8";
+    const content_text = JSON.stringify({ distinct_ids: distinct_ids });
+    if (this.config.auth_enabled) {
+      const signature = get_request_signature(
+        url,
+        "POST",
+        content_text,
+        headers,
+        this.config.workspace_secret
       );
-      if (resp.ok) {
-        return resp.json();
+      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+    }
+
+    try {
+      const response = await axios.post(url, content_text, { headers });
+      const ok_response = Math.floor(response.status / 100) == 2;
+      if (ok_response) {
+        return response.data;
       } else {
-        throw new SuprsendError("Error occurred");
+        return {
+          success: false,
+          status: "fail",
+          status_code: response.status,
+          message: response.statusText,
+        };
       }
-    } catch (e) {
-      throw new SuprsendError("Error occurred");
+    } catch (err) {
+      return {
+        success: false,
+        status: "fail",
+        status_code: err.status || 500,
+        message: err.message,
+      };
     }
   }
 
@@ -156,22 +176,42 @@ class SubscribersListApi {
     ) {
       return;
     }
-    // add auth key
-    try {
-      const resp = await fetch(
-        `${this.config.base_url}v1/list/${id}/subscriber/remove`,
-        {
-          method: "POST",
-          body: { distinct_ids },
-        }
+
+    const url = `${this.config.base_url}v1/list/${list_id}/subscriber/remove`;
+    const headers = this._get_headers();
+    headers["Content-Type"] = "application/json; charset=utf-8";
+    const content_text = JSON.stringify({ distinct_ids: distinct_ids });
+    if (this.config.auth_enabled) {
+      const signature = get_request_signature(
+        url,
+        "POST",
+        content_text,
+        headers,
+        this.config.workspace_secret
       );
-      if (resp.ok) {
-        return resp.json();
+      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+    }
+
+    try {
+      const response = await axios.post(url, content_text, { headers });
+      const ok_response = Math.floor(response.status / 100) == 2;
+      if (ok_response) {
+        return response.data;
       } else {
-        throw new SuprsendError("Error occurred");
+        return {
+          success: false,
+          status: "fail",
+          status_code: response.status,
+          message: response.statusText,
+        };
       }
-    } catch (e) {
-      throw new SuprsendError("Error occurred");
+    } catch (err) {
+      return {
+        success: false,
+        status: "fail",
+        status_code: err.status || 500,
+        message: err.message,
+      };
     }
   }
 }
