@@ -31,7 +31,7 @@ class SubscribersListApi {
       list_description: body["list_description"],
     };
 
-    const url = `${this.config.base_url}v1/list`;
+    const url = `${this.config.base_url}v1/subscriber_list`;
     const headers = this._get_headers();
     headers["Content-Type"] = "application/json; charset=utf-8";
     const content_text = JSON.stringify(valid_body);
@@ -55,7 +55,7 @@ class SubscribersListApi {
   }
 
   async get_all() {
-    const url = `${this.config.base_url}v1/list`;
+    const url = `${this.config.base_url}v1/subscriber_list`;
     const headers = this._get_headers();
     if (this.config.auth_enabled) {
       const signature = get_request_signature(
@@ -81,7 +81,7 @@ class SubscribersListApi {
       throw new SuprsendError("Missing List ID");
     }
 
-    const url = `${this.config.base_url}v1/list/${id}`;
+    const url = `${this.config.base_url}v1/subscriber_list/${id}`;
     const headers = this._get_headers();
     if (this.config.auth_enabled) {
       const signature = get_request_signature(
@@ -111,7 +111,7 @@ class SubscribersListApi {
       return;
     }
 
-    const url = `${this.config.base_url}v1/list/${list_id}/subscriber/add`;
+    const url = `${this.config.base_url}v1/subscriber_list/${list_id}/subscriber/add`;
     const headers = this._get_headers();
     headers["Content-Type"] = "application/json; charset=utf-8";
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
@@ -144,7 +144,7 @@ class SubscribersListApi {
       return;
     }
 
-    const url = `${this.config.base_url}v1/list/${list_id}/subscriber/remove`;
+    const url = `${this.config.base_url}v1/subscriber_list/${list_id}/subscriber/remove`;
     const headers = this._get_headers();
     headers["Content-Type"] = "application/json; charset=utf-8";
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
