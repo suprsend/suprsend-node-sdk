@@ -21,9 +21,6 @@ class SubscribersListApi {
     if (!body["list_id"]) {
       throw new SuprsendError("Missing list ID");
     }
-    if (!body["list_name"]) {
-      throw new SuprsendError("Missing list name");
-    }
 
     const valid_body = {
       list_id: body["list_id"],
