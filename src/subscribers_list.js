@@ -42,18 +42,12 @@ class SubscribersListApi {
     return {
       Date: new Date().toUTCString(),
       "User-Agent": this.config.user_agent,
+      "Content-Type": "application/json; charset=utf-8",
     };
   }
 
   _get_url() {
     let url_template = "/list_broadcast/";
-    if (this.config.include_signature_param) {
-      if (this.config.auth_enabled) {
-        url_template = url_template + "?verify=true";
-      } else {
-        url_template = url_template + "?verify=false";
-      }
-    }
     const url_formatted = `${this.config.base_url}${this.config.workspace_key}${url_template}`;
     return url_formatted;
   }
@@ -74,18 +68,16 @@ class SubscribersListApi {
 
     const url = `${this.config.base_url}v1/subscriber_list`;
     const headers = this._get_headers();
-    headers["Content-Type"] = "application/json; charset=utf-8";
     const content_text = JSON.stringify(valid_body);
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+
+    const signature = get_request_signature(
+      url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
       const response = await axios.post(url, content_text, { headers });
@@ -113,16 +105,15 @@ class SubscribersListApi {
     const final_url_string = final_url_obj.href;
 
     const headers = this._get_headers();
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        final_url_string,
-        "GET",
-        "",
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+
+    const signature = get_request_signature(
+      final_url_string,
+      "GET",
+      "",
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
       const response = await axios.get(final_url_string, { headers });
@@ -139,16 +130,16 @@ class SubscribersListApi {
 
     const url = `${this.config.base_url}v1/subscriber_list/${id}`;
     const headers = this._get_headers();
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        url,
-        "GET",
-        "",
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+
+    const signature = get_request_signature(
+      url,
+      "GET",
+      "",
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+
     try {
       const response = await axios.get(url, { headers });
       return response.data;
@@ -169,18 +160,16 @@ class SubscribersListApi {
 
     const url = `${this.config.base_url}v1/subscriber_list/${list_id}/subscriber/add`;
     const headers = this._get_headers();
-    headers["Content-Type"] = "application/json; charset=utf-8";
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+
+    const signature = get_request_signature(
+      url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
       const response = await axios.post(url, content_text, { headers });
@@ -202,18 +191,16 @@ class SubscribersListApi {
 
     const url = `${this.config.base_url}v1/subscriber_list/${list_id}/subscriber/remove`;
     const headers = this._get_headers();
-    headers["Content-Type"] = "application/json; charset=utf-8";
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+
+    const signature = get_request_signature(
+      url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
       const response = await axios.post(url, content_text, { headers });
