@@ -12,17 +12,18 @@ export default function get_request_signature(
   headers,
   secret
 ) {
-  if (http_verb === "GET") {
-    return "";
+  let content_md5 = "";
+  let content_type = headers["Content-Type"] || "";
+  if (content) {
+    content_md5 = crypto.createHash("md5").update(content).digest("hex");
   }
-  const content_md5 = crypto.createHash("md5").update(content).digest("hex");
   const request_uri = get_path(url);
   const sign_string =
     http_verb +
     "\n" +
     content_md5 +
     "\n" +
-    headers["Content-Type"] +
+    content_type +
     "\n" +
     headers["Date"] +
     "\n" +

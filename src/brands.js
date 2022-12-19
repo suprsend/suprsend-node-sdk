@@ -1,5 +1,6 @@
 import get_request_signature from "./signature";
 import { SuprsendApiError } from "./utils";
+import axios from "axios";
 
 class BrandsApi {
   constructor(config) {
@@ -33,7 +34,9 @@ class BrandsApi {
     };
   }
 
-  async list({ limit = 20, offset = 0 }) {
+  async list(kwargs = {}) {
+    const limit = kwargs?.limit;
+    const offset = kwargs?.offset;
     const [cleaned_limit, cleaner_offset] = this.cleaned_limit_offset(
       limit,
       offset
