@@ -32,6 +32,7 @@ export default class Event {
     this.event_name = event_name;
     this.properties = properties;
     this.idempotency_key = kwargs?.idempotency_key;
+    this.brand_id = kwargs?.brand_id;
     // --- validate
     this.__validate_distinct_id();
     this.__validate_event_name();
@@ -106,6 +107,9 @@ export default class Event {
     };
     if (this.idempotency_key) {
       event_dict["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.brand_id) {
+      event_dict["brand_id"] = this.brand_id;
     }
     event_dict = validate_track_event_schema(event_dict);
     const apparent_size = get_apparent_event_size(event_dict, is_part_of_bulk);

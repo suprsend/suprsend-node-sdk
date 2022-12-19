@@ -10,6 +10,7 @@ import {
   SubscribersListApi,
   SubscribersListBroadcast,
 } from "./subscribers_list";
+import BrandsApi from "./brands";
 import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
@@ -36,6 +37,9 @@ class Suprsend {
 
     this._user = new SubscriberFactory(this);
     this._subscribers_list = new SubscribersListApi(this);
+
+    this.brands = new BrandsApi(this);
+
     this._validate();
   }
 

@@ -18,6 +18,7 @@ export default class Workflow {
     }
     this.body = body;
     this.idempotency_key = kwargs?.idempotency_key;
+    this.brand_id = kwargs?.brand_id;
   }
 
   add_attachment(file_path = "", kwargs = {}) {
@@ -45,6 +46,9 @@ export default class Workflow {
     // add idempotency key in body if present
     if (this.idempotency_key) {
       this.body["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.brand_id) {
+      this.body["brand_id"] = this.brand_id;
     }
     this.body = validate_workflow_body_schema(this.body);
     const apparent_size = get_apparent_workflow_body_size(
