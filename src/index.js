@@ -6,6 +6,7 @@ import Event, { EventCollector } from "./event";
 import { BulkEventsFactory } from "./events_bulk";
 import SubscriberFactory from "./subscriber";
 import BulkSubscribersFactory from "./subscribers_bulk";
+import BrandsApi from "./brands";
 import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
@@ -31,6 +32,9 @@ class Suprsend {
     this._bulk_users = new BulkSubscribersFactory(this);
 
     this._user = new SubscriberFactory(this);
+
+    this.brands = new BrandsApi(this);
+
     this._validate();
   }
 
