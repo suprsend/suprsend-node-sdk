@@ -12,6 +12,7 @@ import { cloneDeep } from "lodash";
 
 const workflow_schema = require("./request_json/workflow.json");
 const event_schema = require("./request_json/event.json");
+const list_broadcast_schema = require("./request_json/list_broadcast.json");
 
 export function base64Encode(file) {
   var body = fs.readFileSync(file);
@@ -122,6 +123,25 @@ export function validate_track_event_schema(body) {
   }
 }
 
+export function validate_list_broadcast_body_schema(body) {
+  if (!body?.data) {
+    body.data = {};
+  }
+  if (!(body.data instanceof Object)) {
+    throw new SuprsendError("data must be a object");
+  }
+  const schema = list_broadcast_schema;
+  var v = new Validator();
+  const validated_data = v.validate(body, schema);
+  if (validated_data.valid) {
+    return body;
+  } else {
+    const error_obj = validated_data.errors[0];
+    const error_msg = `${error_obj.property} ${error_obj.message}`;
+    throw new SuprsendError(error_msg);
+  }
+}
+
 export function get_apparent_workflow_body_size(body, is_part_of_bulk) {
   let extra_bytes = WORKFLOW_RUNTIME_KEYS_POTENTIAL_SIZE_IN_BYTES;
   let apparent_body = body;
@@ -199,6 +219,14 @@ export function get_apparent_event_size(event, is_part_of_bulk) {
 }
 
 export function get_apparent_identity_event_size(event) {
-  const body_size = JSON.stringify(event);
+  const body_size = JSON.stringify(event).length;
   return body_size;
+}
+
+export function get_apparent_list_broadcast_body_size(body) {
+  let extra_bytes = WORKFLOW_RUNTIME_KEYS_POTENTIAL_SIZE_IN_BYTES;
+  let apparent_body = body;
+  const body_size = JSON.stringify(apparent_body).length;
+  const apparent_body_size = body_size + extra_bytes;
+  return apparent_body_size;
 }

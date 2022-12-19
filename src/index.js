@@ -6,7 +6,10 @@ import Event, { EventCollector } from "./event";
 import { BulkEventsFactory } from "./events_bulk";
 import SubscriberFactory from "./subscriber";
 import BulkSubscribersFactory from "./subscribers_bulk";
-import SubscribersListApi from "./subscribers_list";
+import {
+  SubscribersListApi,
+  SubscribersListBroadcast,
+} from "./subscribers_list";
 import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
@@ -128,4 +131,4 @@ class Suprsend {
   }
 }
 
-export { Suprsend, Event, Workflow };
+export { Suprsend, Event, Workflow, SubscribersListBroadcast };
