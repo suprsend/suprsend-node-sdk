@@ -94,7 +94,9 @@ class SubscribersListApi {
     return [cleaned_limit, cleaned_offset];
   }
 
-  async get_all({ limit, offset }) {
+  async get_all(kwargs = {}) {
+    let limit = kwargs?.limit;
+    let offset = kwargs?.offset;
     const [cleaned_limit, cleaner_offset] = this.cleaned_limit_offset(
       limit,
       offset
