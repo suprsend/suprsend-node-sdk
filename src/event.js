@@ -109,7 +109,7 @@ export default class Event {
       event_dict["$idempotency_key"] = this.idempotency_key;
     }
     if (this.brand_id) {
-      event_dict["$brand_id"] = this.brand_id;
+      event_dict["brand_id"] = this.brand_id;
     }
     event_dict = validate_track_event_schema(event_dict);
     const apparent_size = get_apparent_event_size(event_dict, is_part_of_bulk);

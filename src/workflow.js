@@ -47,8 +47,8 @@ export default class Workflow {
     if (this.idempotency_key) {
       this.body["$idempotency_key"] = this.idempotency_key;
     }
-    if (this.idempotency_key) {
-      this.body["$brand_id"] = this.brand_id;
+    if (this.brand_id) {
+      this.body["brand_id"] = this.brand_id;
     }
     this.body = validate_workflow_body_schema(this.body);
     const apparent_size = get_apparent_workflow_body_size(
