@@ -44,6 +44,19 @@ export class SuprsendConfigError extends Error {
   }
 }
 
+export class SuprsendApiError extends Error {
+  constructor(error) {
+    let message;
+    if (error.response) {
+      message = `${error.response.status}: ${error.response.data.message}`;
+    } else {
+      message = error.message;
+    }
+    super(message);
+    this.name = "SuprsendApiError";
+  }
+}
+
 export function is_string(value) {
   return typeof value === "string";
 }
