@@ -3,6 +3,7 @@ import {
   SuprsendApiError,
   validate_list_broadcast_body_schema,
   get_apparent_list_broadcast_body_size,
+  uuid,
 } from "./utils";
 import get_request_signature from "./signature";
 import axios from "axios";
@@ -14,18 +15,23 @@ class SubscribersListBroadcast {
     }
     this.body = body;
     this.idempotency_key = kwargs?.idempotency_key;
+    this.brand_id = kwargs?.brand_id;
   }
 
   get_final_json() {
-    // add idempotency key in body if present
+    this.body["$insert_id"] = uuid();
+    this.body["$time"] = epoch_milliseconds();
     if (this.idempotency_key) {
       this.body["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.brand_id) {
+      this.body["brand_id"] = this.brand_id;
     }
     this.body = validate_list_broadcast_body_schema(this.body);
     const apparent_size = get_apparent_list_broadcast_body_size(this.body);
     if (apparent_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new SuprsendError(
-        `workflow body too big - ${apparent_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `SubscriberListBroadcast body too big - ${apparent_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     return [this.body, apparent_size];
@@ -35,43 +41,52 @@ class SubscribersListBroadcast {
 class SubscribersListApi {
   constructor(config) {
     this.config = config;
-    this.url = this._get_url();
+    this.subscriber_list_url = `${this.config.base_url}v1/subscriber_list/`;
+    this.broadcast_url = `${this.config.base_url}${this.config.workspace_key}/list_broadcast/`;
+    this.__headers = this.__common_headers();
+    this.non_error_default_response = { success: true };
   }
 
-  _get_headers() {
+  __common_headers() {
+    return {
+      "Content-Type": "application/json; charset=utf-8",
+      "User-Agent": this.config.user_agent,
+    };
+  }
+
+  __dynamic_headers() {
     return {
       Date: new Date().toUTCString(),
-      "User-Agent": this.config.user_agent,
-      "Content-Type": "application/json; charset=utf-8",
     };
   }
 
-  _get_url() {
-    let url_template = "/list_broadcast/";
-    const url_formatted = `${this.config.base_url}${this.config.workspace_key}${url_template}`;
-    return url_formatted;
+  _validate_list_id(list_id) {
+    if (typeof list_id != "string") {
+      throw new SuprsendError("list_id must be a string");
+    }
+    let cleaned_list_id = list_id.trim();
+    if (!cleaned_list_id) {
+      throw new SuprsendError("missing list_id");
+    }
+    return list_id;
   }
 
-  async create(body = {}) {
-    if (!body) {
-      throw new SuprsendError("Missing body");
+  async create(payload) {
+    if (!payload) {
+      throw new SuprsendError("missing payload");
     }
-    if (!body["list_id"]) {
-      throw new SuprsendError("Missing list ID");
+    let list_id = payload["list_id"];
+    if (!list_id) {
+      throw new SuprsendError("missing list_id in payload");
     }
+    list_id = this._validate_list_id(list_id);
+    payload["list_id"] = list_id;
 
-    const valid_body = {
-      list_id: body["list_id"],
-      list_name: body["list_name"],
-      list_description: body["list_description"],
-    };
-
-    const url = `${this.config.base_url}v1/subscriber_list`;
-    const headers = this._get_headers();
-    const content_text = JSON.stringify(valid_body);
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const content_text = JSON.stringify(payload);
 
     const signature = get_request_signature(
-      url,
+      this.subscriber_list_url,
       "POST",
       content_text,
       headers,
@@ -80,7 +95,11 @@ class SubscribersListApi {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.post(url, content_text, { headers });
+      const response = await axios.post(
+        this.subscriber_list_url,
+        content_text,
+        { headers }
+      );
       return response.data;
     } catch (err) {
       throw new SuprsendApiError(err);
@@ -104,34 +123,9 @@ class SubscribersListApi {
     const final_url_obj = new URL(`${this.config.base_url}v1/subscriber_list`);
     final_url_obj.searchParams.append("limit", cleaned_limit);
     final_url_obj.searchParams.append("offset", cleaner_offset);
-    const final_url_string = final_url_obj.href;
+    const url = final_url_obj.href;
 
-    const headers = this._get_headers();
-
-    const signature = get_request_signature(
-      final_url_string,
-      "GET",
-      "",
-      headers,
-      this.config.workspace_secret
-    );
-    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-
-    try {
-      const response = await axios.get(final_url_string, { headers });
-      return response.data;
-    } catch (err) {
-      throw new SuprsendApiError(err);
-    }
-  }
-
-  async get(id) {
-    if (!id) {
-      throw new SuprsendError("Missing List ID");
-    }
-
-    const url = `${this.config.base_url}v1/subscriber_list/${id}`;
-    const headers = this._get_headers();
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
 
     const signature = get_request_signature(
       url,
@@ -150,18 +144,47 @@ class SubscribersListApi {
     }
   }
 
-  async add(list_id, distinct_ids = []) {
-    if (!list_id) {
-      throw new SuprsendError("Missing List ID");
-    } else if (
-      !distinct_ids ||
-      (distinct_ids && Array.isArray(distinct_ids) && distinct_ids.length === 0)
-    ) {
-      return;
+  __subscriber_list_detail_url(list_id) {
+    return `${this.config.base_url}v1/subscriber_list/${list_id}/`;
+  }
+
+  async get(list_id) {
+    const cleaned_list_id = this._validate_list_id(list_id);
+
+    const url = this.__subscriber_list_detail_url(cleaned_list_id);
+
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+
+    const signature = get_request_signature(
+      url,
+      "GET",
+      "",
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+
+    try {
+      const response = await axios.get(url, { headers });
+      return response.data;
+    } catch (err) {
+      throw new SuprsendApiError(err);
+    }
+  }
+
+  async add(list_id, distinct_ids) {
+    const cleaned_list_id = this._validate_list_id(list_id);
+    if (!Array.isArray(distinct_ids)) {
+      throw new SuprsendError("distinct_ids must be list of strings");
+    }
+    if (distinct_ids.length === 0) {
+      return this.non_error_default_response;
     }
 
-    const url = `${this.config.base_url}v1/subscriber_list/${list_id}/subscriber/add`;
-    const headers = this._get_headers();
+    const url = `${this.__subscriber_list_detail_url(
+      cleaned_list_id
+    )}subscriber/add`;
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
     const signature = get_request_signature(
@@ -182,17 +205,18 @@ class SubscribersListApi {
   }
 
   async remove(list_id, distinct_ids = []) {
-    if (!list_id) {
-      throw new SuprsendError("Missing List ID");
-    } else if (
-      !distinct_ids ||
-      (distinct_ids && Array.isArray(distinct_ids) && distinct_ids.length === 0)
-    ) {
-      return;
+    const cleaned_list_id = this._validate_list_id(list_id);
+    if (!Array.isArray(distinct_ids)) {
+      throw new SuprsendError("distinct_ids must be list of strings");
+    }
+    if (distinct_ids.length === 0) {
+      return this.non_error_default_response;
     }
 
-    const url = `${this.config.base_url}v1/subscriber_list/${list_id}/subscriber/remove`;
-    const headers = this._get_headers();
+    const url = `${this.__subscriber_list_detail_url(
+      cleaned_list_id
+    )}subscriber/remove`;
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
     const signature = get_request_signature(
@@ -212,31 +236,31 @@ class SubscribersListApi {
     }
   }
 
-  async broadcast(subscriber_list) {
-    if (!(data instanceof SubscribersListBroadcast)) {
+  async broadcast(broadcast_instance) {
+    if (!(broadcast_instance instanceof SubscribersListBroadcast)) {
       throw new SuprsendError(
-        "broadcast needs SubscribersListBroadcast instance as paramenter"
+        "argument must be an instance of suprsend.SubscriberListBroadcast"
       );
     }
-    const [subscriber_list_body, body_size] = subscriber_list.get_final_json(
+    const [broadcast_body, body_size] = broadcast_instance.get_final_json(
       this.config
     );
-    const headers = this._get_headers();
-    headers["Content-Type"] = "application/json; charset=utf-8";
-    const content_text = JSON.stringify(subscriber_list_body);
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        this.url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const content_text = JSON.stringify(broadcast_body);
+
+    const signature = get_request_signature(
+      this.broadcast_url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.post(this.url, content_text, { headers });
+      const response = await axios.post(this.broadcast_url, content_text, {
+        headers,
+      });
       const ok_response = Math.floor(response.status / 100) == 2;
       if (ok_response) {
         return {

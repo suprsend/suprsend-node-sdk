@@ -36,9 +36,9 @@ class Suprsend {
     this._bulk_users = new BulkSubscribersFactory(this);
 
     this._user = new SubscriberFactory(this);
-    this._subscribers_list = new SubscribersListApi(this);
 
     this.brands = new BrandsApi(this);
+    this.subscribers_list = new SubscribersListApi(this);
 
     this._validate();
   }
@@ -57,10 +57,6 @@ class Suprsend {
 
   get user() {
     return this._user;
-  }
-
-  get subscribers_list() {
-    return this._subscribers_list;
   }
 
   _validate() {
