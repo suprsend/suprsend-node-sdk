@@ -224,9 +224,6 @@ export function get_apparent_identity_event_size(event) {
 }
 
 export function get_apparent_list_broadcast_body_size(body) {
-  let extra_bytes = WORKFLOW_RUNTIME_KEYS_POTENTIAL_SIZE_IN_BYTES;
-  let apparent_body = body;
-  const body_size = JSON.stringify(apparent_body).length;
-  const apparent_body_size = body_size + extra_bytes;
-  return apparent_body_size;
+  const body_size = JSON.stringify(body).length;
+  return body_size;
 }
