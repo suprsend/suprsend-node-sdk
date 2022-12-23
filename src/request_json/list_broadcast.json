@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://github.com/suprsend/suprsend-py-sdk/request_json/list_broadcast.json",
+  "$id": "http://github.com/suprsend/suprsend-node-sdk/request_json/list_broadcast.json",
   "title": "list_broadcast_request",
   "description": "Json schema for list_broadcast request",
   "$comment": "Json schema for list_broadcast request",
