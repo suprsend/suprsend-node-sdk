@@ -44,31 +44,16 @@ export class Subscriber {
     this.config = config;
     this.distinct_id = distinct_id;
     this.__url = this.__get_url();
-    this.__supr_props = this.__super_properties();
+    this.__super_props = this.__super_properties();
 
     this.__errors = [];
     this.__info = [];
-    this._append_count = 0;
-    this._remove_count = 0;
-    this._set_count = 0;
-    this._unset_count = 0;
-    this._events = [];
-    this._helper = new _SubscriberInternalHelper(
-      distinct_id,
-      config.workspace_key
-    );
+    this.user_operations = [];
+    this._helper = new _SubscriberInternalHelper();
   }
 
   __get_url() {
-    let url_template = "event/";
-    if (this.config.include_signature_param) {
-      if (this.config.auth_enabled) {
-        url_template = url_template + "?verify=true";
-      } else {
-        url_template = url_template + "?verify=false";
-      }
-    }
-    return `${this.config.base_url}${url_template}`;
+    return `${this.config.base_url}event/`;
   }
 
   __get_headers() {
@@ -85,30 +70,16 @@ export class Subscriber {
     };
   }
 
-  events() {
-    let all_events = [...this._events];
-    for (let e of all_events) {
-      e["properties"] = this.__supr_props;
-    }
-
-    if (
-      all_events.length === 0 ||
-      this._append_count > 0 ||
-      this._set_count > 0
-    ) {
-      const user_identify_event = {
-        $insert_id: uuid(),
-        $time: epoch_milliseconds(),
-        env: this.config.workspace_key,
-        event: "$identify",
-        properties: {
-          $identified_id: this.distinct_id,
-          ...this.__supr_props,
-        },
-      };
-      all_events = [user_identify_event, ...all_events];
-    }
-    return all_events;
+  get_events() {
+    return {
+      $schema: "2",
+      $insert_id: uuid(),
+      $time: epoch_milliseconds(),
+      env: this.config.workspace_key,
+      distinct_id: this.distinct_id,
+      $user_operations: this.user_operations,
+      properties: this.__super_props,
+    };
   }
 
   validate_event_size(event_dict) {
@@ -147,22 +118,19 @@ export class Subscriber {
     const is_part_of_bulk = false;
     this.validate_body(is_part_of_bulk);
     const headers = this.__get_headers();
-    const events = this.events();
-    for (let ev of events) {
-      const [validated_ev, size] = this.validate_event_size(ev);
-    }
+    const event = this.get_events();
+    const [validated_ev, size] = this.validate_event_size(event);
+    const content_text = JSON.stringify(validated_ev);
 
-    const content_text = JSON.stringify(events);
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        this.__url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+    const signature = get_request_signature(
+      this.__url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+
     try {
       const response = await axios.post(this.__url, content_text, { headers });
       const ok_response = Math.floor(response.status / 100) == 2;
