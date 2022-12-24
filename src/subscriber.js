@@ -168,11 +168,7 @@ export class Subscriber {
       this.__info = [...this.__info, ...resp["info"]];
     }
     if (!is_empty(resp["event"])) {
-      this._events.push(resp["event"]);
-      this._set_count += resp["set"];
-      this._append_count += resp["append"];
-      this._remove_count += resp["remove"];
-      this._unset_count += resp["unset"];
+      this.user_operations.push(resp["event"]);
     }
   }
 

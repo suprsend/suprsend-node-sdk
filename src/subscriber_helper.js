@@ -80,16 +80,12 @@ export default class _SubscriberInternalHelper {
     this.workspace_key = workspace_key;
 
     this.__dict_set = {};
-    this.__set_count = 0;
 
     this.__dict_append = {};
-    this.__append_count = 0;
 
     this.__dict_remove = {};
-    this.__remove_count = 0;
 
     this.__list_unset = [];
-    this.__unset_count = 0;
 
     this.__errors = [];
     this.__info = [];
@@ -97,17 +93,9 @@ export default class _SubscriberInternalHelper {
 
   reset() {
     this.__dict_set = {};
-    this.__set_count = 0;
-
     this.__dict_append = {};
-    this.__append_count = 0;
-
     this.__dict_remove = {};
-    this.__remove_count = 0;
-
     this.__list_unset = [];
-    this.__unset_count = 0;
-
     this.__errors = [];
     this.__info = [];
   }
@@ -118,48 +106,26 @@ export default class _SubscriberInternalHelper {
       errors: this.__errors,
       info: this.__info,
       event: evt,
-      set: this.__set_count,
-      append: this.__append_count,
-      remove: this.__remove_count,
-      unset: this.__unset_count,
     };
     this.reset();
     return ret_val;
   }
 
   __form_event() {
-    if (
-      !is_empty(this.__dict_set) ||
-      !is_empty(this.__dict_append) ||
-      !is_empty(this.__dict_remove) ||
-      !is_empty(this.__list_unset)
-    ) {
-      let event = {
-        $insert_id: uuid(),
-        $time: epoch_milliseconds(),
-        env: this.workspace_key,
-        distinct_id: this.distinct_id,
-      };
-      if (!is_empty(this.__dict_set)) {
-        event["$set"] = this.__dict_set;
-        this.__set_count += 1;
-      }
-      if (!is_empty(this.__dict_append)) {
-        event["$append"] = this.__dict_append;
-        this.__append_count += 1;
-      }
-      if (!is_empty(this.__dict_remove)) {
-        event["$remove"] = this.__dict_remove;
-        this.__remove_count += 1;
-      }
-      if (!is_empty(this.__list_unset)) {
-        event["$unset"] = this.__list_unset;
-        this.__unset_count += 1;
-      }
-      return event;
-    } else {
-      return;
+    const event = {};
+    if (!is_empty(this.__dict_set)) {
+      event["$set"] = this.__dict_set;
     }
+    if (!is_empty(this.__dict_append)) {
+      event["$append"] = this.__dict_append;
+    }
+    if (!is_empty(this.__dict_remove)) {
+      event["$remove"] = this.__dict_remove;
+    }
+    if (!is_empty(this.__list_unset)) {
+      event["$unset"] = this.__list_unset;
+    }
+    return event;
   }
 
   __validate_key_basic(key, caller) {
@@ -240,33 +206,25 @@ export default class _SubscriberInternalHelper {
   }
 
   __add_identity(key, value, args, caller) {
+    const new_caller = `${caller}:${key}`;
     switch (key) {
       case IDENT_KEY_EMAIL:
-        this._add_email(value, caller);
+        this._add_email(value, new_caller);
         break;
       case IDENT_KEY_SMS:
-        this._add_sms(value, caller);
+        this._add_sms(value, new_caller);
         break;
       case IDENT_KEY_WHATSAPP:
-        this._add_whatsapp(value, caller);
+        this._add_whatsapp(value, new_caller);
         break;
       case IDENT_KEY_ANDROIDPUSH:
-        this._add_androidpush(value, args[KEY_PUSHVENDOR], caller);
-        if (this.__dict_append[KEY_PUSHVENDOR]) {
-          args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
-        }
+        this._add_androidpush(value, args[KEY_PUSHVENDOR], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._add_iospush(value, args[KEY_PUSHVENDOR], caller);
-        if (this.__dict_append[KEY_PUSHVENDOR]) {
-          args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
-        }
+        this._add_iospush(value, args[KEY_PUSHVENDOR], new_caller);
         break;
       case IDENT_KEY_WEBPUSH:
-        this._add_webpush(value, args[KEY_PUSHVENDOR], caller);
-        if (this.__dict_append[KEY_PUSHVENDOR]) {
-          args[KEY_PUSHVENDOR] = this.__dict_append[KEY_PUSHVENDOR];
-        }
+        this._add_webpush(value, args[KEY_PUSHVENDOR], new_caller);
         break;
       case IDENT_KEY_SLACK:
         this._add_slack(value, caller);
@@ -277,33 +235,25 @@ export default class _SubscriberInternalHelper {
   }
 
   __remove_identity(key, value, args, caller) {
+    const new_caller = `${caller}:${key}`;
     switch (key) {
       case IDENT_KEY_EMAIL:
-        this._remove_email(value, caller);
+        this._remove_email(value, new_caller);
         break;
       case IDENT_KEY_SMS:
-        this._remove_sms(value, caller);
+        this._remove_sms(value, new_caller);
         break;
       case IDENT_KEY_WHATSAPP:
-        this._remove_whatsapp(value, caller);
+        this._remove_whatsapp(value, new_caller);
         break;
       case IDENT_KEY_ANDROIDPUSH:
-        this._remove_androidpush(value, args[KEY_PUSHVENDOR], caller);
-        if (this.__dict_remove[KEY_PUSHVENDOR]) {
-          args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
-        }
+        this._remove_androidpush(value, args[KEY_PUSHVENDOR], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._remove_iospush(value, args[KEY_PUSHVENDOR], caller);
-        if (this.__dict_remove[KEY_PUSHVENDOR]) {
-          args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
-        }
+        this._remove_iospush(value, args[KEY_PUSHVENDOR], new_caller);
         break;
       case IDENT_KEY_WEBPUSH:
-        this._remove_webpush(value, args[KEY_PUSHVENDOR], caller);
-        if (this.__dict_remove[KEY_PUSHVENDOR]) {
-          args[KEY_PUSHVENDOR] = this.__dict_remove[KEY_PUSHVENDOR];
-        }
+        this._remove_webpush(value, args[KEY_PUSHVENDOR], new_caller);
         break;
       case IDENT_KEY_SLACK:
         this._remove_slack(val, caller);
@@ -430,6 +380,9 @@ export default class _SubscriberInternalHelper {
     if (!provider) {
       provider = "fcm";
     }
+    if (typeof provider === "string") {
+      provider = provider.toLocaleLowerCase();
+    }
     if (!["fcm", "xiaomi", "oppo"].includes(provider)) {
       this.__errors.push(
         `[${caller}] unsupported androidpush provider ${provider}`
@@ -474,6 +427,9 @@ export default class _SubscriberInternalHelper {
     }
     if (!provider) {
       provider = "apns";
+    }
+    if (typeof provider === "string") {
+      provider = provider.toLocaleLowerCase();
     }
     if (!["apns"].includes(provider)) {
       this.__errors.push(
@@ -520,6 +476,9 @@ export default class _SubscriberInternalHelper {
     }
     if (!provider) {
       provider = "vapid";
+    }
+    if (typeof provider === "string") {
+      provider = provider.toLocaleLowerCase();
     }
     if (!["vapid"].includes(provider)) {
       this.__errors.push(
