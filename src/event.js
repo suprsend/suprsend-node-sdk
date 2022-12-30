@@ -1,5 +1,4 @@
 import {
-  is_object,
   is_string,
   SuprsendError,
   has_special_char,
@@ -130,15 +129,7 @@ export class EventCollector {
   }
 
   __get_url() {
-    let url_template = "event/";
-    if (this.config.include_signature_param) {
-      if (this.config.auth_enabled) {
-        url_template = url_template + "?verify=true";
-      } else {
-        url_template = url_template + "?verify=false";
-      }
-    }
-    return `${this.config.base_url}${url_template}`;
+    return `${this.config.base_url}event/`;
   }
 
   __common_headers() {
@@ -161,16 +152,15 @@ export class EventCollector {
   async send(event) {
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
     const content_text = JSON.stringify(event);
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        this.__url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+    const signature = get_request_signature(
+      this.__url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+
     try {
       const response = await axios.post(this.__url, content_text, { headers });
       const ok_response = Math.floor(response.status / 100) == 2;
