@@ -13,7 +13,7 @@ import {
   SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
 } from "./constants";
 
-class SubscribersListBroadcast {
+class SubscriberListBroadcast {
   constructor(body, kwargs = {}) {
     if (!(body instanceof Object)) {
       throw new SuprsendError("broadcast body must be a json/dictionary");
@@ -43,7 +43,7 @@ class SubscribersListBroadcast {
   }
 }
 
-class SubscribersListApi {
+class SubscriberListsApi {
   constructor(config) {
     this.config = config;
     this.subscriber_list_url = `${this.config.base_url}v1/subscriber_list/`;
@@ -241,56 +241,56 @@ class SubscribersListApi {
     }
   }
 
-  // async broadcast(broadcast_instance) {
-  //   if (!(broadcast_instance instanceof SubscribersListBroadcast)) {
-  //     throw new SuprsendError(
-  //       "argument must be an instance of suprsend.SubscriberListBroadcast"
-  //     );
-  //   }
-  //   const [broadcast_body, body_size] = broadcast_instance.get_final_json(
-  //     this.config
-  //   );
-  //   const headers = { ...this.__headers, ...this.__dynamic_headers() };
-  //   const content_text = JSON.stringify(broadcast_body);
+  async broadcast(broadcast_instance) {
+    if (!(broadcast_instance instanceof SubscriberListBroadcast)) {
+      throw new SuprsendError(
+        "argument must be an instance of suprsend.SubscriberListBroadcast"
+      );
+    }
+    const [broadcast_body, body_size] = broadcast_instance.get_final_json(
+      this.config
+    );
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const content_text = JSON.stringify(broadcast_body);
 
-  //   const signature = get_request_signature(
-  //     this.broadcast_url,
-  //     "POST",
-  //     content_text,
-  //     headers,
-  //     this.config.workspace_secret
-  //   );
-  //   headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+    const signature = get_request_signature(
+      this.broadcast_url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
-  //   try {
-  //     const response = await axios.post(this.broadcast_url, content_text, {
-  //       headers,
-  //     });
-  //     const ok_response = Math.floor(response.status / 100) == 2;
-  //     if (ok_response) {
-  //       return {
-  //         success: true,
-  //         status: "success",
-  //         status_code: response.status,
-  //         message: response.statusText,
-  //       };
-  //     } else {
-  //       return {
-  //         success: false,
-  //         status: "fail",
-  //         status_code: response.status,
-  //         message: response.statusText,
-  //       };
-  //     }
-  //   } catch (err) {
-  //     return {
-  //       success: false,
-  //       status: "fail",
-  //       status_code: err.status || 500,
-  //       message: err.message,
-  //     };
-  //   }
-  // }
+    try {
+      const response = await axios.post(this.broadcast_url, content_text, {
+        headers,
+      });
+      const ok_response = Math.floor(response.status / 100) == 2;
+      if (ok_response) {
+        return {
+          success: true,
+          status: "success",
+          status_code: response.status,
+          message: response.statusText,
+        };
+      } else {
+        return {
+          success: false,
+          status: "fail",
+          status_code: response.status,
+          message: response.statusText,
+        };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        status: "fail",
+        status_code: err.status || 500,
+        message: err.message,
+      };
+    }
+  }
 }
 
-export { SubscribersListApi, SubscribersListBroadcast };
+export { SubscriberListsApi, SubscriberListBroadcast };
