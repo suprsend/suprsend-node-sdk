@@ -36,16 +36,7 @@ class _BulkWorkflowsChunk {
   }
 
   __get_url() {
-    let url_template = "/trigger/";
-    if (this.config.include_signature_param) {
-      if (this.config.auth_enabled) {
-        url_template = url_template + "?verify=true";
-      } else {
-        url_template = url_template + "?verify=false";
-      }
-    }
-    const url_formatted = `${this.config.base_url}${this.config.workspace_key}${url_template}`;
-    return url_formatted;
+    return `${this.config.base_url}${this.config.workspace_key}/trigger/`;
   }
 
   __common_headers() {
@@ -105,17 +96,16 @@ class _BulkWorkflowsChunk {
   async trigger() {
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
     const content_text = JSON.stringify(this.__chunk);
-    // Based on whether signature is required or not, add Authorization header
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        this.__url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+
+    const signature = get_request_signature(
+      this.__url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+
     try {
       const response = await axios.post(this.__url, content_text, { headers });
       const ok_response = Math.floor(response.status / 100) == 2;

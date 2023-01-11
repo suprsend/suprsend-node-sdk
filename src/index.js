@@ -19,8 +19,6 @@ class Suprsend {
     this.config = config;
 
     this.base_url = this._get_url(config.base_url);
-    this.auth_enabled = config.auth_enabled !== false;
-    this.include_signature_param = config.include_signature_param !== false;
     this.user_agent = `suprsend/${
       package_json.version
     };node/${process.version.slice(1)}`;

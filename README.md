@@ -19,4 +19,4 @@ const supr_client = new Suprsend("workspace_key", "workspace_secret");
 ```
 
 ### License
-MIT © [https://github.com/suprsend](https://github.com/https://github.com/suprsend)
+MIT © [https://github.com/suprsend](https://github.com/suprsend)

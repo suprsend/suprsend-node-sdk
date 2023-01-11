@@ -71,16 +71,7 @@ export class _WorkflowTrigger {
   }
 
   _get_url() {
-    let url_template = "/trigger/";
-    if (this.config.include_signature_param) {
-      if (this.config.auth_enabled) {
-        url_template = url_template + "?verify=true";
-      } else {
-        url_template = url_template + "?verify=false";
-      }
-    }
-    const url_formatted = `${this.config.base_url}${this.config.workspace_key}${url_template}`;
-    return url_formatted;
+    return `${this.config.base_url}${this.config.workspace_key}/trigger/`;
   }
 
   _get_headers() {
@@ -103,16 +94,15 @@ export class _WorkflowTrigger {
   async send(workflow_body) {
     const headers = this._get_headers();
     const content_text = JSON.stringify(workflow_body);
-    if (this.config.auth_enabled) {
-      const signature = get_request_signature(
-        this.url,
-        "POST",
-        content_text,
-        headers,
-        this.config.workspace_secret
-      );
-      headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-    }
+
+    const signature = get_request_signature(
+      this.url,
+      "POST",
+      content_text,
+      headers,
+      this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
       const response = await axios.post(this.url, content_text, { headers });
