@@ -6,10 +6,7 @@ import Event, { EventCollector } from "./event";
 import { BulkEventsFactory } from "./events_bulk";
 import SubscriberFactory from "./subscriber";
 import BulkSubscribersFactory from "./subscribers_bulk";
-import {
-  SubscribersListApi,
-  SubscribersListBroadcast,
-} from "./subscribers_list";
+import { SubscriberListsApi, SubscriberListBroadcast } from "./subscriber_list";
 import BrandsApi from "./brands";
 import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
@@ -36,7 +33,7 @@ class Suprsend {
     this._user = new SubscriberFactory(this);
 
     this.brands = new BrandsApi(this);
-    this.subscribers_list = new SubscribersListApi(this);
+    this.subscriber_lists = new SubscriberListsApi(this);
 
     this._validate();
   }
@@ -129,4 +126,4 @@ class Suprsend {
   }
 }
 
-export { Suprsend, Event, Workflow, SubscribersListBroadcast };
+export { Suprsend, Event, Workflow, SubscriberListBroadcast };
