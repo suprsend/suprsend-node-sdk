@@ -22,6 +22,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "types": "types/index.d.ts",
   "dependencies": {
     "@babel/runtime": "^7.16.3",
     "axios": "^0.27.2",
