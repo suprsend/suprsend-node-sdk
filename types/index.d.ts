@@ -71,44 +71,34 @@ declare namespace suprsend {
     save(): Promise<SResponse>;
 
     append(key: string | Dictionary, value?: any): void;
-
     remove(key: string | Dictionary, value?: any): void;
-
     unset(keys: string | string[]): void;
 
     set_preferred_language(lang_code: string): void;
 
     add_email(email: string): void;
-
     remove_email(email: string): void;
 
     add_sms(mobile_no: string): void;
-
     remove_sms(mobile_no: string): void;
 
     add_whatsapp(mobile_no: string): void;
-
     remove_whatsapp(mobile_no: string): void;
 
     add_androidpush(push_token: string, provider?: string): void;
-
     remove_androidpush(push_token: string, provider?: string): void;
 
     add_iospush(push_token: string, provider?: string): void;
-
     remove_iospush(push_token: string, provider?: string): void;
 
     add_webpush(push_token: Dictionary, provider?: string): void;
-
     remove_webpush(push_token: Dictionary, provider?: string): void;
 
     add_slack_email(email: string): void;
-
     remove_slack_email(email: string): void;
 
     add_slack_userid(user_id: any): void;
-
-    add_slack_userid(user_id: any): void;
+    remove_slack_userid(user_id: any): void;
   }
 
   interface SubscriberFactory {
@@ -129,6 +119,37 @@ declare namespace suprsend {
     save(): Promise<SBulkResponse>;
   }
 
+  // brands
+  interface BrandsApi {
+    list(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
+
+    get(brand_id: any): Promise<Dictionary>;
+
+    upsert(brand_id: any, brand_payload?: Dictionary): Promise<Dictionary>;
+  }
+
+  // lists
+  interface SubscriberListBroadcast {
+    new (
+      body: Dictionary,
+      kwargs?: { idempotency_key?: string; brand_id?: string }
+    ): SubscriberListBroadcast;
+  }
+
+  interface SubscriberListsApi {
+    create(payload: Dictionary): Promise<Dictionary>;
+
+    get_all(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
+
+    get(list_id: string): Promise<Dictionary>;
+
+    add(list_id: string, distinct_ids: string[]): Promise<Dictionary>;
+
+    remove(list_id: string, distinct_ids: string[]): Promise<Dictionary>;
+
+    broadcast(broadcast_instance: SubscriberListBroadcast): Promise<SResponse>;
+  }
+
   interface Suprsend {
     new (
       workspace_env: string,
@@ -143,6 +164,10 @@ declare namespace suprsend {
     get user(): SubscriberFactory;
 
     get bulk_users(): BulkSubscribersFactory;
+
+    brands: BrandsApi;
+
+    subscriber_lists: SubscriberListsApi;
 
     add_attachment(
       body: Dictionary,
@@ -166,3 +191,4 @@ declare namespace suprsend {
 export const Suprsend: suprsend.Suprsend;
 export const Event: suprsend.Event;
 export const Workflow: suprsend.Workflow;
+export const SubscriberListBroadcast: suprsend.SubscriberListBroadcast;
