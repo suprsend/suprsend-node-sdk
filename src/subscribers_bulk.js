@@ -204,7 +204,7 @@ class BulkSubscribers {
   }
 
   trigger() {
-    this.save();
+    return this.save();
   }
 
   async save() {

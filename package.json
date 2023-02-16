@@ -1,6 +1,6 @@
 {
   "name": "@suprsend/node-sdk",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Suprsend Node SDK to trigger workflow from backend",
   "main": "dist/index.js",
   "scripts": {
@@ -22,6 +22,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "types": "types/index.d.ts",
   "dependencies": {
     "@babel/runtime": "^7.16.3",
     "axios": "^0.27.2",
