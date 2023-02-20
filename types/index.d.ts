@@ -151,11 +151,7 @@ declare namespace suprsend {
   }
 
   interface Suprsend {
-    new (
-      workspace_env: string,
-      workspace_secret: string,
-      config: { is_staging: boolean }
-    ): Suprsend;
+    new (workspace_env: string, workspace_secret: string): Suprsend;
 
     get bulk_workflows(): BulkWorkflowsFactory;
 
