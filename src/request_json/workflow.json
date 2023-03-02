@@ -84,6 +84,20 @@
     "slack_setting": {
       "type": "object",
       "properties": {
+        "access_token": {
+          "type": "string",
+          "pattern": "^xox",
+          "description": "Bot User OAuth Access Token with prefix xoxb-"
+        },
+        "channel_id": {
+          "type": "string",
+          "pattern": "^[cC][a-zA-Z0-9]+$",
+          "description": "slack channel id. the bot must be part of it",
+          "message": {
+            "required": "",
+            "pattern": "Slack Channel id format: CXXXXXXXXX"
+          }
+        },
         "user_id": {
           "type": "string",
           "pattern": "^[uUwW][a-zA-Z0-9]+$",
@@ -93,7 +107,20 @@
             "pattern": "Slack Member id format: [U|W]XXXXXXXXX"
           }
         },
-        "email": { "$ref": "#/definitions/email_pattern" }
+        "email": {
+          "$ref": "#/definitions/email_pattern"
+        },
+        "incoming_webhook": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://hooks.slack.com/",
+              "description": "incoming webhook url. e.g https://hooks.slack.com/TXXXXX/BXXXXX/XXXXXXXXXX"
+            }
+          }
+        }
       },
       "additionalProperties": false
     },
@@ -136,10 +163,13 @@
     "user_setting": {
       "type": "object",
       "properties": {
+        "is_transient": {
+          "type": ["boolean", "null"],
+          "description": "indicates whether this is a transient user. Profiles are not created for such users."
+        },
         "distinct_id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "distinct_id: Id which uniquely identify a user in your app"
+          "type": ["string", "null"],
+          "description": "distinct_id: Id which uniquely identifies a user in your app"
         },
         "$channels": {
           "type": "array",
@@ -285,7 +315,7 @@
           ]
         }
       },
-      "required": ["distinct_id"],
+      "required": [],
       "additionalProperties": false
     },
     "delivery_setting": {
@@ -299,7 +329,7 @@
         "success": {
           "type": "string",
           "default": "seen",
-          "description": "possible values: seen/interaction/<user_defined_event>."
+          "description": "possible values: delivered/seen/interaction/<user_defined_event>."
         },
         "time_to_live": {
           "type": "string",
@@ -323,7 +353,7 @@
             ]
           },
           "minItems": 0,
-          "description": "e.g ['email', 'sms']. Used if smart=true, notification on these channels must be sent, independent of success metric outcome"
+          "description": "e.g ['email', 'sms']. Used if smart=true, notification on these channels must be sent, irrespective of success metric outcome"
         }
       },
       "required": [],

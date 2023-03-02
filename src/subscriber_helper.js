@@ -515,58 +515,13 @@ export default class _SubscriberInternalHelper {
     this.__dict_remove[KEY_PUSHVENDOR] = vendor;
   }
 
-  __validate_slack_userid(userid, caller) {
-    let [validated_userid, is_valid] = this.__check_ident_val_string(
-      userid,
-      caller
-    );
-    if (!is_valid) {
-      return [validated_userid, false];
-    }
-    validated_userid = validated_userid.toUpperCase();
-    if (
-      !validated_userid.startsWith("U") &&
-      !validated_userid.startsWith("W")
-    ) {
-      this.__errors.push(
-        `[${caller}] invalid value ${validated_userid}. Slack user/member_id starts with a U or W`
-      );
-      return [validated_userid, false];
-    }
-    return [validated_userid, true];
-  }
-
   __check_slack_dict(value, caller) {
-    const msg =
-      "value must be a valid dict/json with one of these keys: [email, user_id]";
+    const msg = "value must be a valid dict/json with proper keys";
     if (!(value && value instanceof Object)) {
       this.__errors.push(`[${caller}] ${msg}`);
       return [value, false];
-    }
-    let user_id = value.user_id;
-    let email = value.email;
-    if (user_id && user_id.trim()) {
-      user_id = user_id.trim();
-      let [validated_user_id, is_valid] = this.__validate_slack_userid(
-        user_id,
-        caller
-      );
-      if (!is_valid) {
-        return [value, false];
-      } else {
-        return [{ user_id: validated_user_id }, true];
-      }
-    } else if (email && email.trim()) {
-      email = email.trim();
-      let [validated_email, is_valid] = this.__validate_email(email, caller);
-      if (!is_valid) {
-        return [value, false];
-      } else {
-        return [{ email: validated_email }, true];
-      }
     } else {
-      this.__errors.push(`[${caller}] ${msg}`);
-      return [value, false];
+      return [value, true];
     }
   }
 

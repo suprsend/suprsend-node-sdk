@@ -94,6 +94,9 @@ declare namespace suprsend {
     add_webpush(push_token: Dictionary, provider?: string): void;
     remove_webpush(push_token: Dictionary, provider?: string): void;
 
+    add_slack(value: Dictionary): void;
+    remove_slack(value: Dictionary): void;
+
     add_slack_email(email: string): void;
     remove_slack_email(email: string): void;
 

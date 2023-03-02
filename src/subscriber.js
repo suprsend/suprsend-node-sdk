@@ -315,25 +315,49 @@ export class Subscriber {
     this._collect_event();
   }
 
+  add_slack(value) {
+    const caller = "add_slack";
+    this._helper._add_slack(value, caller);
+    this._collect_event();
+  }
+
+  remove_slack(value) {
+    const caller = "remove_slack";
+    this._helper._remove_slack(value, caller);
+    this._collect_event();
+  }
+
   add_slack_email(value) {
+    console.warn(
+      "add_slack_email() method has been deprecated. use add_slack() instead"
+    );
     const caller = "add_slack_email";
     this._helper._add_slack({ email: value }, caller);
     this._collect_event();
   }
 
   remove_slack_email(value) {
+    console.warn(
+      "remove_slack_email() method has been deprecated. use remove_slack() instead"
+    );
     const caller = "remove_slack_email";
     this._helper._remove_slack({ email: value }, caller);
     this._collect_event();
   }
 
   add_slack_userid(value) {
+    console.warn(
+      "add_slack_userid() method has been deprecated. use add_slack() instead"
+    );
     const caller = "add_slack_userid";
     this._helper._add_slack({ user_id: value }, caller);
     this._collect_event();
   }
 
   remove_slack_userid(value) {
+    console.warn(
+      "remove_slack_userid() method has been deprecated. use remove_slack() instead"
+    );
     const caller = "remove_slack_userid";
     this._helper._remove_slack({ user_id: value }, caller);
     this._collect_event();
