@@ -135,7 +135,7 @@ class _BulkEventsChunk {
       }
     } catch (err) {
       const error_status = err.status || 500;
-      return {
+      this.response = {
         status: "fail",
         status_code: error_status,
         message: err.message,
