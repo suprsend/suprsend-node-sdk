@@ -5,6 +5,7 @@ import {
   get_apparent_list_broadcast_body_size,
   uuid,
   epoch_milliseconds,
+  InputValueError,
 } from "./utils";
 import get_request_signature from "./signature";
 import axios from "axios";
@@ -12,15 +13,46 @@ import {
   SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
   SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
 } from "./constants";
+import { get_attachment_json } from "./attachment";
 
 class SubscriberListBroadcast {
   constructor(body, kwargs = {}) {
     if (!(body instanceof Object)) {
-      throw new SuprsendError("broadcast body must be a json/dictionary");
+      throw new InputValueError("broadcast body must be a json/dictionary");
     }
     this.body = body;
     this.idempotency_key = kwargs?.idempotency_key;
     this.brand_id = kwargs?.brand_id;
+  }
+
+  add_attachment(file_path, file_name, ignore_if_error = false) {
+    if (!this.body?.["data"]) {
+      this.body["data"] = {};
+    }
+    // if body["data"] is not a dict, not raising error while adding attachment.
+    if (!(this.body["data"] instanceof Object)) {
+      console.log(
+        "WARNING: attachment cannot be added. please make sure body['data'] is a dictionary. " +
+          "SubscriberListBroadcast" +
+          JSON.stringify(this.as_json())
+      );
+      return;
+    }
+    const attachment = get_attachment_json(
+      file_path,
+      file_name,
+      ignore_if_error
+    );
+    if (!attachment) {
+      return;
+    }
+
+    //  --- add the attachment to body->data->$attachments
+    if (!this.body["data"]?.["$attachments"]) {
+      this.body["data"]["$attachments"] = [];
+    }
+    // -----
+    this.body["data"]["$attachments"].push(attachment);
   }
 
   get_final_json() {
@@ -35,11 +67,23 @@ class SubscriberListBroadcast {
     this.body = validate_list_broadcast_body_schema(this.body);
     const apparent_size = get_apparent_list_broadcast_body_size(this.body);
     if (apparent_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
-      throw new SuprsendError(
+      throw new InputValueError(
         `SubscriberListBroadcast body too big - ${apparent_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     return [this.body, apparent_size];
+  }
+
+  as_json() {
+    const body_dict = { ...this.body };
+    if (this.idempotency_key) {
+      body_dict["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.brand_id) {
+      body_dict["brand_id"] = this.brand_id;
+    }
+    // -----
+    return body_dict;
   }
 }
 
@@ -243,7 +287,7 @@ class SubscriberListsApi {
 
   async broadcast(broadcast_instance) {
     if (!(broadcast_instance instanceof SubscriberListBroadcast)) {
-      throw new SuprsendError(
+      throw new InputValueError(
         "argument must be an instance of suprsend.SubscriberListBroadcast"
       );
     }

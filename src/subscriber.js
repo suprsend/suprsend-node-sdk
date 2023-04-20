@@ -6,6 +6,7 @@ import {
   is_empty,
   is_string,
   get_apparent_identity_event_size,
+  InputValueError,
 } from "./utils";
 import get_request_signature from "./signature";
 import axios from "axios";
@@ -27,13 +28,13 @@ export default class SubscriberFactory {
 
   get_instance(distinct_id) {
     if (!is_string(distinct_id)) {
-      throw new SuprsendError(
+      throw new InputValueError(
         "distinct_id must be a string. an Id which uniquely identify a user in your app"
       );
     }
     distinct_id = distinct_id.trim();
     if (!distinct_id) {
-      throw new SuprsendError("distinct_id must be passed");
+      throw new InputValueError("distinct_id must be passed");
     }
     return new Subscriber(this.config, distinct_id);
   }
@@ -50,6 +51,7 @@ export class Subscriber {
     this.__info = [];
     this.user_operations = [];
     this._helper = new _SubscriberInternalHelper();
+    this.__warnings_list = [];
   }
 
   __get_url() {
@@ -82,10 +84,20 @@ export class Subscriber {
     };
   }
 
+  as_json() {
+    const event_dict = {
+      distinct_id: this.distinct_id,
+      $user_operations: this.user_operations,
+      warnings: this.__warnings_list,
+    };
+
+    return event_dict;
+  }
+
   validate_event_size(event_dict) {
     const apparent_size = get_apparent_identity_event_size(event_dict);
     if (apparent_size > IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
-      throw new SuprsendError(
+      throw new InputValueError(
         `User Event size too big - ${apparent_size} Bytes, must not cross ${IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
@@ -93,25 +105,25 @@ export class Subscriber {
   }
 
   validate_body(is_part_of_bulk = false) {
-    const warnings_list = [];
+    this.__warnings_list = [];
     if (!is_empty(this.__info)) {
       const msg = `[distinct_id: ${this.distinct_id}]${this.__info.join("\n")}`;
-      warnings_list.push(msg);
+      this.__warnings_list.push(msg);
       console.log(`WARNING: ${msg}`);
     }
     if (!is_empty(this.__errors)) {
       const msg = `[distinct_id: ${this.distinct_id}] ${this.__errors.join(
         "\n"
       )}`;
-      warnings_list.push(msg);
+      this.__warnings_list.push(msg);
       const err_msg = `ERROR: ${msg}`;
       if (is_part_of_bulk) {
         console.log(err_msg);
       } else {
-        throw new SuprsendError(err_msg);
+        throw new InputValueError(err_msg);
       }
     }
-    return warnings_list;
+    return this.__warnings_list;
   }
 
   async save() {

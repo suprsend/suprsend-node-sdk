@@ -58,6 +58,13 @@ export class SuprsendApiError extends Error {
   }
 }
 
+export class InputValueError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "InputValueError";
+  }
+}
+
 export function is_string(value) {
   return typeof value === "string";
 }
@@ -93,7 +100,7 @@ export function validate_workflow_body_schema(body) {
     body.data = {};
   }
   if (!(body.data instanceof Object)) {
-    throw new SuprsendError("data must be a object");
+    throw new InputValueError("data must be a object");
   }
   const schema = workflow_schema;
   var v = new Validator();
@@ -128,7 +135,7 @@ export function validate_list_broadcast_body_schema(body) {
     body.data = {};
   }
   if (!(body.data instanceof Object)) {
-    throw new SuprsendError("data must be a object");
+    throw new InputValueError("data must be a object");
   }
   const schema = list_broadcast_schema;
   var v = new Validator();
@@ -226,4 +233,16 @@ export function get_apparent_identity_event_size(event) {
 export function get_apparent_list_broadcast_body_size(body) {
   const body_size = JSON.stringify(body).length;
   return body_size;
+}
+
+export function invalid_record_json(failed_record, err) {
+  let err_str;
+  if (err instanceof InputValueError) {
+    err_str = err.message;
+  } else {
+    // includes SuprsendValidationError,
+    // OR any other error
+    err_str = err.message;
+  }
+  return { record: failed_record, error: err_str, code: 500 };
 }

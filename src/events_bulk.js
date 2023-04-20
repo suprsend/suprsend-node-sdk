@@ -9,7 +9,7 @@ import {
 import get_request_signature from "./signature";
 import BulkResponse from "./bulk_response";
 import Event from "./event";
-import { SuprsendError } from "./utils";
+import { InputValueError, SuprsendError, invalid_record_json } from "./utils";
 import { cloneDeep } from "lodash";
 import axios from "axios";
 
@@ -79,7 +79,7 @@ class _BulkEventsChunk {
       return false;
     }
     if (event_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
-      throw new SuprsendError(
+      throw new InputValueError(
         `Event properties too big - ${event_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
@@ -159,19 +159,23 @@ class BulkEvents {
     this.__pending_records = [];
     this.chunks = [];
     this.response = new BulkResponse();
+    // invalid_record json: {"record": event-json, "error": error_str, "code": 500}
+    this.__invalid_records = [];
   }
 
   __validate_events() {
-    if (!this.__events) {
-      throw new SuprsendError("events list is empty in bulk request");
-    }
     for (let ev of this.__events) {
-      const is_part_of_bulk = true;
-      const [ev_json, body_size] = ev.get_final_json(
-        this.config,
-        is_part_of_bulk
-      );
-      this.__pending_records.push([ev_json, body_size]);
+      try {
+        const is_part_of_bulk = true;
+        const [ev_json, body_size] = ev.get_final_json(
+          this.config,
+          is_part_of_bulk
+        );
+        this.__pending_records.push([ev_json, body_size]);
+      } catch (ex) {
+        const inv_rec = invalid_record_json(ev.as_json(), ex);
+        this.__invalid_records.push(inv_rec);
+      }
     }
   }
 
@@ -192,35 +196,44 @@ class BulkEvents {
 
   append(...events) {
     if (!events) {
-      throw new SuprsendError(
-        "events list empty. must pass one or more events"
-      );
+      return;
     }
     for (let ev of events) {
-      if (!ev) {
-        throw new SuprsendError("null/empty element found in bulk instance");
+      if (ev && ev instanceof Event) {
+        const ev_copy = cloneDeep(ev);
+        this.__events.push(ev_copy);
       }
-      if (!(ev instanceof Event)) {
-        throw new SuprsendError(
-          "element must be an instance of suprsend.Event"
-        );
-      }
-      const ev_copy = cloneDeep(ev);
-      this.__events.push(ev_copy);
     }
   }
 
   async trigger() {
     this.__validate_events();
-    this.__chunkify();
-    for (const [c_idx, ch] of this.chunks.entries()) {
-      if (this.config.req_log_level > 0) {
-        console.log(`DEBUG: triggering api call for chunk: ${c_idx}`);
+    if (this.__invalid_records.length > 0) {
+      const ch_response = BulkResponse.invalid_records_chunk_response(
+        this.__invalid_records
+      );
+      this.response.merge_chunk_response(ch_response);
+    }
+
+    if (this.__pending_records.length) {
+      this.__chunkify();
+      for (const [c_idx, ch] of this.chunks.entries()) {
+        if (this.config.req_log_level > 0) {
+          console.log(`DEBUG: triggering api call for chunk: ${c_idx}`);
+        }
+        // do api call
+        await ch.trigger();
+        // merge response
+        this.response.merge_chunk_response(ch.response);
       }
-      // do api call
-      await ch.trigger();
-      // merge response
-      this.response.merge_chunk_response(ch.response);
+    } else {
+      // if no records. i.e. len(invalid_records) and len(pending_records) both are 0
+      // then add empty success response
+      if (this.__invalid_records.length === 0) {
+        this.response.merge_chunk_response(
+          BulkResponse.empty_chunk_success_response()
+        );
+      }
     }
     return this.response;
   }
