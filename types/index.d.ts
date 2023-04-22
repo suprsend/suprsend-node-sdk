@@ -137,6 +137,11 @@ declare namespace suprsend {
       body: Dictionary,
       kwargs?: { idempotency_key?: string; brand_id?: string }
     ): SubscriberListBroadcast;
+
+    add_attachment(
+      file_path: string,
+      kwargs?: { file_name?: string; ignore_if_error?: boolean }
+    ): void;
   }
 
   interface SubscriberListsApi {

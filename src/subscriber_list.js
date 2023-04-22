@@ -13,7 +13,7 @@ import {
   SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
   SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
 } from "./constants";
-import { get_attachment_json } from "./attachment";
+import get_attachment_json from "./attachment";
 
 class SubscriberListBroadcast {
   constructor(body, kwargs = {}) {
@@ -25,7 +25,10 @@ class SubscriberListBroadcast {
     this.brand_id = kwargs?.brand_id;
   }
 
-  add_attachment(file_path, file_name, ignore_if_error = false) {
+  add_attachment(file_path, kwargs = {}) {
+    const file_name = kwargs?.file_name;
+    const ignore_if_error = kwargs?.ignore_if_error ?? false;
+
     if (!this.body?.["data"]) {
       this.body["data"] = {};
     }
