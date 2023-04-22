@@ -242,7 +242,7 @@ export function invalid_record_json(failed_record, err) {
   } else {
     // includes SuprsendValidationError,
     // OR any other error
-    err_str = err.message;
+    err_str = `${err.message}\n${err.stack}`;
   }
   return { record: failed_record, error: err_str, code: 500 };
 }
