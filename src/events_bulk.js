@@ -227,7 +227,7 @@ class BulkEvents {
         this.response.merge_chunk_response(ch.response);
       }
     } else {
-      // if no records. i.e. len(invalid_records) and len(pending_records) both are 0
+      // if no records. i.e. invalid_records.length and pending_records.length both are 0
       // then add empty success response
       if (this.__invalid_records.length === 0) {
         this.response.merge_chunk_response(
