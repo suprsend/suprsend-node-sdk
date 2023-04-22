@@ -32,4 +32,26 @@ export default class BulkResponse {
     const failed_recs = ch_resp.failed_records || [];
     this.failed_records = [...this.failed_records, ...failed_recs];
   }
+
+  static empty_chunk_success_response() {
+    return {
+      status: "success",
+      status_code: 200,
+      total: 0,
+      success: 0,
+      failure: 0,
+      failed_records: [],
+    };
+  }
+
+  static invalid_records_chunk_response(invalid_records) {
+    return {
+      status: "fail",
+      status_code: 500,
+      total: invalid_records.length,
+      success: 0,
+      failure: invalid_records.length,
+      failed_records: invalid_records,
+    };
+  }
 }

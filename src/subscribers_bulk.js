@@ -9,6 +9,7 @@ import BulkResponse from "./bulk_response";
 import { Subscriber } from "./subscriber";
 import { cloneDeep } from "lodash";
 import axios from "axios";
+import { invalid_record_json, InputValueError } from "./utils";
 
 export default class BulkSubscribersFactory {
   constructor(config) {
@@ -75,7 +76,7 @@ class _BulkSubscribersChunk {
       return false;
     }
     if (event_size > IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
-      throw new SuprsendError(
+      throw new InputValueError(
         `Event too big - ${event_size} Bytes, must not cross ${IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
@@ -152,21 +153,29 @@ class BulkSubscribers {
     this.__pending_records = [];
     this.chunks = [];
     this.response = new BulkResponse();
+
+    // invalid_record json: {"record": event-json, "error": error_str, "code": 500}
+    this.__invalid_records = [];
   }
 
   __validate_subscriber_events() {
-    if (!this.__subscribers) {
-      throw new SuprsendError("users list is empty in bulk request");
-    }
     for (let sub of this.__subscribers) {
-      const is_part_of_bulk = true;
-      const warnings_list = sub.validate_body(is_part_of_bulk);
-      if (warnings_list) {
-        this.response.warnings = [...this.response.warnings, ...warnings_list];
+      try {
+        const is_part_of_bulk = true;
+        const warnings_list = sub.validate_body(is_part_of_bulk);
+        if (warnings_list) {
+          this.response.warnings = [
+            ...this.response.warnings,
+            ...warnings_list,
+          ];
+        }
+        const ev = sub.get_events();
+        const [ev_json, body_size] = sub.validate_event_size(ev);
+        this.__pending_records.push([ev_json, body_size]);
+      } catch (ex) {
+        const inv_rec = invalid_record_json(sub.as_json(), ex);
+        this.__invalid_records.push(inv_rec);
       }
-      const ev = sub.get_events();
-      const [ev_json, body_size] = sub.validate_event_size(ev);
-      this.__pending_records.push([ev_json, body_size]);
     }
   }
 
@@ -187,19 +196,13 @@ class BulkSubscribers {
 
   append(...subscribers) {
     if (!subscribers) {
-      throw SuprsendError("users list empty. must pass one or more users");
+      return;
     }
     for (let sub of subscribers) {
-      if (!sub) {
-        continue;
+      if (sub && sub instanceof Subscriber) {
+        const sub_copy = cloneDeep(sub);
+        this.__subscribers.push(sub_copy);
       }
-      if (!(sub instanceof Subscriber)) {
-        throw new SuprsendError(
-          "element must be an instance of suprsend.Subscriber"
-        );
-      }
-      const sub_copy = cloneDeep(sub);
-      this.__subscribers.push(sub_copy);
     }
   }
 
@@ -209,16 +212,33 @@ class BulkSubscribers {
 
   async save() {
     this.__validate_subscriber_events();
-    this.__chunkify();
-    for (const [c_idx, ch] of this.chunks.entries()) {
-      if (this.config.req_log_level > 0) {
-        console.log(`DEBUG: triggering api call for chunk: ${c_idx}`);
-      }
-      // do api call
-      await ch.trigger();
-      // merge response
-      this.response.merge_chunk_response(ch.response);
+    if (this.__invalid_records.length > 0) {
+      const ch_response = BulkResponse.invalid_records_chunk_response(
+        this.__invalid_records
+      );
+      this.response.merge_chunk_response(ch_response);
     }
+    if (this.__pending_records.length) {
+      this.__chunkify();
+      for (const [c_idx, ch] of this.chunks.entries()) {
+        if (this.config.req_log_level > 0) {
+          console.log(`DEBUG: triggering api call for chunk: ${c_idx}`);
+        }
+        // do api call
+        await ch.trigger();
+        // merge response
+        this.response.merge_chunk_response(ch.response);
+      }
+    } else {
+      // if no records. i.e. invalid_records.length and pending_records.length both are 0
+      // then add empty success response
+      if (this.__invalid_records.length === 0) {
+        this.response.merge_chunk_response(
+          BulkResponse.empty_chunk_success_response()
+        );
+      }
+    }
+
     return this.response;
   }
 }

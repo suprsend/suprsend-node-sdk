@@ -1,4 +1,4 @@
-import { SuprsendError, SuprsendConfigError } from "./utils";
+import { SuprsendConfigError, InputValueError } from "./utils";
 import get_attachment_json from "./attachment";
 import Workflow, { _WorkflowTrigger } from "./workflow";
 import { BulkWorkflowsFactory } from "./workflows_bulk";
@@ -85,11 +85,11 @@ class Suprsend {
   add_attachment(body, file_path, kwargs = {}) {
     const file_name = kwargs?.file_name;
     const ignore_if_error = kwargs?.ignore_if_error ?? false;
-    if (!body.data) {
+    if (!body?.data) {
       body.data = {};
     }
-    if (!body.data instanceof Object) {
-      throw new SuprsendError("data must be an object");
+    if (!(body.data instanceof Object)) {
+      throw new InputValueError("data must be an object");
     }
     const attachment = get_attachment_json(
       file_path,
@@ -120,7 +120,9 @@ class Suprsend {
 
   track_event(event) {
     if (!(event instanceof Event)) {
-      throw new SuprsendError("argument must be an instance of suprsend.Event");
+      throw new InputValueError(
+        "argument must be an instance of suprsend.Event"
+      );
     }
     return this._eventcollector.collect(event);
   }

@@ -6,7 +6,7 @@ import {
   MAX_WORKFLOWS_IN_BULK_API,
   ALLOW_ATTACHMENTS_IN_BULK_API,
 } from "./constants";
-import { SuprsendError } from "./utils";
+import { SuprsendError, invalid_record_json, InputValueError } from "./utils";
 import Workflow from "./workflow";
 import { cloneDeep } from "lodash";
 import axios from "axios";
@@ -78,7 +78,7 @@ class _BulkWorkflowsChunk {
       return false;
     }
     if (body_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
-      throw new SuprsendError(
+      throw new InputValueError(
         `workflow body too big - ${body_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
@@ -158,19 +158,23 @@ class BulkWorkflows {
     this.__pending_records = [];
     this.chunks = [];
     this.response = new BulkResponse();
+    // invalid_record json: {"record": workflow-json, "error": error_str, "code": 500}
+    this.__invalid_records = [];
   }
 
   __validate_workflows() {
-    if (!this.__workflows) {
-      throw new SuprsendError("workflow list is empty in bulk request");
-    }
     for (let wf of this.__workflows) {
-      const is_part_of_bulk = true;
-      const [wf_body, body_size] = wf.get_final_json(
-        this.config,
-        is_part_of_bulk
-      );
-      this.__pending_records.push([wf_body, body_size]);
+      try {
+        const is_part_of_bulk = true;
+        const [wf_body, body_size] = wf.get_final_json(
+          this.config,
+          is_part_of_bulk
+        );
+        this.__pending_records.push([wf_body, body_size]);
+      } catch (ex) {
+        const inv_rec = invalid_record_json(wf.as_json(), ex);
+        this.__invalid_records.push(inv_rec);
+      }
     }
   }
 
@@ -190,37 +194,41 @@ class BulkWorkflows {
   }
 
   append(...workflows) {
-    if (!workflows) {
-      throw new SuprsendError(
-        "workflow list empty. must pass one or more valid workflow instances"
-      );
-    }
     for (let wf of workflows) {
-      if (!wf) {
-        throw new SuprsendError("null/empty element found in bulk instance");
+      if (wf && wf instanceof Workflow) {
+        const wf_copy = cloneDeep(wf);
+        this.__workflows.push(wf_copy);
       }
-      if (!(wf instanceof Workflow)) {
-        throw new SuprsendError(
-          "element must be an instance of suprsend.Workflow"
-        );
-      }
-      const wf_copy = cloneDeep(wf);
-      this.__workflows.push(wf_copy);
     }
   }
 
   async trigger() {
     this.__validate_workflows();
-    this.__chunkify();
-    for (const [c_idx, ch] of this.chunks.entries()) {
-      if (this.config.req_log_level > 0) {
-        console.log(`DEBUG: triggering api call for chunk: ${c_idx}`);
-      }
-      // do api call
-      await ch.trigger();
-      // merge response
-      this.response.merge_chunk_response(ch.response);
+    if (this.__invalid_records.length > 0) {
+      const ch_response = BulkResponse.invalid_records_chunk_response(
+        this.__invalid_records
+      );
+      this.response.merge_chunk_response(ch_response);
     }
+    if (this.__pending_records.length) {
+      this.__chunkify();
+      for (const [c_idx, ch] of this.chunks.entries()) {
+        if (this.config.req_log_level > 0) {
+          console.log(`DEBUG: triggering api call for chunk: ${c_idx}`);
+        }
+        // do api call
+        await ch.trigger();
+        // merge response
+        this.response.merge_chunk_response(ch.response);
+      }
+    } else {
+      if (this.__invalid_records.length === 0) {
+        this.response.merge_chunk_response(
+          BulkResponse.empty_chunk_success_response()
+        );
+      }
+    }
+
     return this.response;
   }
 }

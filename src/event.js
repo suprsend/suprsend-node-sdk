@@ -6,6 +6,7 @@ import {
   epoch_milliseconds,
   validate_track_event_schema,
   get_apparent_event_size,
+  InputValueError,
 } from "./utils";
 import get_request_signature from "./signature";
 import axios from "axios";
@@ -32,38 +33,36 @@ export default class Event {
     this.properties = properties;
     this.idempotency_key = kwargs?.idempotency_key;
     this.brand_id = kwargs?.brand_id;
-    // --- validate
-    this.__validate_distinct_id();
-    this.__validate_event_name();
-    this.__validate_properties();
+
+    // default values
+    if (!this.properties) {
+      this.properties = {};
+    }
   }
 
   __validate_distinct_id() {
-    if (this.distinct_id instanceof String) {
-      throw new SuprsendError(
+    if (typeof this.distinct_id !== "string") {
+      throw new InputValueError(
         "distinct_id must be a string. an Id which uniquely identify a user in your app"
       );
     }
     const distinct_id = this.distinct_id.trim();
     if (!distinct_id) {
-      throw new SuprsendError("distinct_id missing");
+      throw new InputValueError("distinct_id missing");
     }
     this.distinct_id = distinct_id;
   }
 
   __validate_properties() {
-    if (!this.properties) {
-      this.properties = {};
-    }
     if (!(this.properties instanceof Object)) {
-      throw new SuprsendError("properties must be a dictionary");
+      throw new InputValueError("properties must be a dictionary");
     }
   }
 
   __check_event_prefix(event_name) {
     if (!RESERVED_EVENT_NAMES.includes(event_name)) {
       if (has_special_char(event_name)) {
-        throw new SuprsendError(
+        throw new InputValueError(
           "event_names starting with [$,ss_] are reserved by SuprSend"
         );
       }
@@ -72,9 +71,12 @@ export default class Event {
 
   __validate_event_name() {
     if (!is_string(this.event_name)) {
-      throw new SuprsendError("event_name must be a string");
+      throw new InputValueError("event_name must be a string");
     }
     const event_name = this.event_name.trim();
+    if (!event_name) {
+      throw new InputValueError("event_name missing");
+    }
     this.__check_event_prefix(event_name);
     this.event_name = event_name;
   }
@@ -82,11 +84,25 @@ export default class Event {
   add_attachment(file_path, kwargs = {}) {
     const file_name = kwargs?.file_name;
     const ignore_if_error = kwargs?.ignore_if_error ?? false;
+
+    // if properties is not a dict, not raising error while adding attachment.
+    if (!(this.properties instanceof Object)) {
+      console.log(
+        "WARNING: attachment cannot be added. please make sure properties is a dictionary. Event" +
+          JSON.stringify(this.as_json())
+      );
+      return;
+    }
+
     const attachment = get_attachment_json(
       file_path,
       file_name,
       ignore_if_error
     );
+
+    if (!attachment) {
+      return;
+    }
     // --- add the attachment to properties->$attachments
     if (!this.properties["$attachments"]) {
       this.properties["$attachments"] = [];
@@ -95,6 +111,11 @@ export default class Event {
   }
 
   get_final_json(config, is_part_of_bulk = false) {
+    // --- validate
+    this.__validate_distinct_id();
+    this.__validate_event_name();
+    this.__validate_properties();
+
     const super_props = { $ss_sdk_version: config.user_agent };
     let event_dict = {
       $insert_id: uuid(),
@@ -113,11 +134,26 @@ export default class Event {
     event_dict = validate_track_event_schema(event_dict);
     const apparent_size = get_apparent_event_size(event_dict, is_part_of_bulk);
     if (apparent_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
-      throw new SuprsendError(
+      throw new InputValueError(
         `Event size too big - ${apparent_size} Bytes,must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     return [event_dict, apparent_size];
+  }
+
+  as_json() {
+    const event_dict = {
+      event: this.event_name,
+      distinct_id: this.distinct_id,
+      properties: this.properties,
+    };
+    if (this.idempotency_key) {
+      event_dict["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.brand_id) {
+      event_dict["brand_id"] = this.brand_id;
+    }
+    return event_dict;
   }
 }
 

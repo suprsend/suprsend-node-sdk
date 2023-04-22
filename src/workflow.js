@@ -4,6 +4,7 @@ import {
   SuprsendError,
   validate_workflow_body_schema,
   get_apparent_workflow_body_size,
+  InputValueError,
 } from "./utils";
 import get_attachment_json from "./attachment";
 import {
@@ -14,7 +15,7 @@ import {
 export default class Workflow {
   constructor(body, kwargs = {}) {
     if (!(body instanceof Object)) {
-      throw new SuprsendError("workflow body must be a json/dictionary");
+      throw new InputValueError("workflow body must be a json/dictionary");
     }
     this.body = body;
     this.idempotency_key = kwargs?.idempotency_key;
@@ -24,18 +25,26 @@ export default class Workflow {
   add_attachment(file_path = "", kwargs = {}) {
     const file_name = kwargs?.file_name;
     const ignore_if_error = kwargs?.ignore_if_error ?? false;
-    if (!this.body.data) {
+    if (!this.body?.data) {
       this.body.data = {};
     }
-    if (!(this.body instanceof Object)) {
-      throw new SuprsendError("data must be a dictionary");
+    // if body["data"] is not a dict, not raising error while adding attachment.
+    if (!(this.body["data"] instanceof Object)) {
+      console.log(
+        `WARNING: attachment cannot be added. please make sure body['data'] is a dictionary. Workflow ${JSON.stringify(
+          this.as_json()
+        )}`
+      );
+      return;
     }
     const attachment = get_attachment_json(
       file_path,
       file_name,
       ignore_if_error
     );
-
+    if (!attachment) {
+      return;
+    }
     if (!this.body.data["$attachments"]) {
       this.body["data"]["$attachments"] = [];
     }
@@ -56,11 +65,22 @@ export default class Workflow {
       is_part_of_bulk
     ); // review
     if (apparent_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
-      throw new SuprsendError(
+      throw new InputValueError(
         `workflow body too big - ${apparent_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     return [this.body, apparent_size];
+  }
+
+  as_json() {
+    const body_dict = { ...this.body };
+    if (this.idempotency_key) {
+      body_dict["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.brand_id) {
+      body_dict["brand_id"] = this.brand_id;
+    }
+    return body_dict;
   }
 }
 
