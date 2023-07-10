@@ -448,13 +448,13 @@ class SubscriberListsApi {
     }
   }
 
-  async stop_sync(list_id, version_id) {
+  async finish_sync(list_id, version_id) {
     const cleaned_list_id = this._validate_list_id(list_id);
     const cleaned_version_id = this._validate_version_id(version_id);
 
     const url = `${this.__subscriber_list_url_with_version(
         cleaned_list_id, cleaned_version_id
-    )}stop_sync/`;
+    )}finish_sync/`;
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
