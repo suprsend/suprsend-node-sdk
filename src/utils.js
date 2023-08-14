@@ -205,13 +205,13 @@ export function get_apparent_event_size(event, is_part_of_bulk) {
           // pass
         }
       } else {
-        apparent_body = cloneDeep(body);
+        apparent_body = cloneDeep(event);
         delete apparent_body["properties"]["$attachments"];
       }
     } else {
       if (ATTACHMENT_UPLOAD_ENABLED) {
         extra_bytes += num_attachments * ATTACHMENT_URL_POTENTIAL_SIZE_IN_BYTES;
-        apparent_body = cloneDeep(body);
+        apparent_body = cloneDeep(event);
         for (let attach_data of apparent_body["properties"]["$attachments"]) {
           delete attach_data["data"];
         }

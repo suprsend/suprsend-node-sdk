@@ -23,7 +23,7 @@ export const MAX_WORKFLOWS_IN_BULK_API = 100;
 export const MAX_EVENTS_IN_BULK_API = 100;
 
 export const ALLOW_ATTACHMENTS_IN_BULK_API = true;
-export const ATTACHMENT_UPLOAD_ENABLED = false;
+export const ATTACHMENT_UPLOAD_ENABLED = true;
 
 // -- single Identity event limit
 export const IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES = 10 * 1024;
