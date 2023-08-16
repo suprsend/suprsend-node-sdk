@@ -125,7 +125,11 @@ export class _WorkflowTrigger {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.post(this.url, content_text, { headers });
+      const response = await axios.post(this.url, content_text, {
+        headers,
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      });
       const ok_response = Math.floor(response.status / 100) == 2;
       if (ok_response) {
         return {

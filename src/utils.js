@@ -149,7 +149,7 @@ export function validate_list_broadcast_body_schema(body) {
   }
 }
 
-export function get_apparent_workflow_body_size(body, is_part_of_bulk) {
+export function get_apparent_workflow_body_size(body, is_part_of_bulk = false) {
   let extra_bytes = WORKFLOW_RUNTIME_KEYS_POTENTIAL_SIZE_IN_BYTES;
   let apparent_body = body;
   if (body?.data["$attachments"]) {
@@ -230,8 +230,40 @@ export function get_apparent_identity_event_size(event) {
   return body_size;
 }
 
-export function get_apparent_list_broadcast_body_size(body) {
-  const body_size = JSON.stringify(body).length;
+export function get_apparent_list_broadcast_body_size(body, is_part_of_bulk) {
+  let extra_bytes = WORKFLOW_RUNTIME_KEYS_POTENTIAL_SIZE_IN_BYTES;
+  let apparent_body = body;
+  if (body?.data["$attachments"]) {
+    const num_attachments = body.data["$attachments"].length;
+    if (is_part_of_bulk) {
+      if (ALLOW_ATTACHMENTS_IN_BULK_API) {
+        if (ATTACHMENT_UPLOAD_ENABLED) {
+          extra_bytes +=
+            num_attachments * ATTACHMENT_URL_POTENTIAL_SIZE_IN_BYTES;
+          apparent_body = cloneDeep(body);
+          for (let attach_data of apparent_body["data"]["$attachments"]) {
+            delete attach_data["data"];
+          }
+        } else {
+          // pass
+        }
+      } else {
+        apparent_body = cloneDeep(body);
+        delete apparent_body["data"]["$attachments"];
+      }
+    } else {
+      if (ATTACHMENT_UPLOAD_ENABLED) {
+        extra_bytes += num_attachments * ATTACHMENT_URL_POTENTIAL_SIZE_IN_BYTES;
+        apparent_body = cloneDeep(body);
+        for (let attach_data of apparent_body["data"]["$attachments"]) {
+          delete attach_data["data"];
+        }
+      } else {
+        // pass
+      }
+    }
+  }
+  const body_size = JSON.stringify(apparent_body).length;
   return body_size;
 }
 
