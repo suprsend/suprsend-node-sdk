@@ -208,6 +208,78 @@ export class Subscriber {
     }
   }
 
+  set(key, value) {
+    const caller = "set";
+    if (!is_string(key) && !is_object(key)) {
+      this.__errors.push(`[${caller}] arg1 must be either string or a dict`);
+      return;
+    }
+    if (is_string(key)) {
+      if (!value) {
+        this.__errors.push(
+            `[${caller}] if arg1 is a string, then arg2 must be passed`
+        );
+        return;
+      } else {
+        this._helper._set_kv(key, value, {}, caller);
+        this._collect_event();
+      }
+    } else {
+      for (let item in key) {
+        this._helper._set_kv(item, key[item], key, caller);
+      }
+      this._collect_event();
+    }
+  }
+
+  set_once(key, value) {
+    const caller = "set_once";
+    if (!is_string(key) && !is_object(key)) {
+      this.__errors.push(`[${caller}] arg1 must be either string or a dict`);
+      return;
+    }
+    if (is_string(key)) {
+      if (!value) {
+        this.__errors.push(
+            `[${caller}] if arg1 is a string, then arg2 must be passed`
+        );
+        return;
+      } else {
+        this._helper._set_once_kv(key, value, {}, caller);
+        this._collect_event();
+      }
+    } else {
+      for (let item in key) {
+        this._helper._set_once_kv(item, key[item], key, caller);
+      }
+      this._collect_event();
+    }
+  }
+
+  increment(key, value) {
+    const caller = "increment";
+    if (!is_string(key) && !is_object(key)) {
+      this.__errors.push(`[${caller}] arg1 must be either string or a dict`);
+      return;
+    }
+    if (is_string(key)) {
+      if (!value) {
+        this.__errors.push(
+            `[${caller}] if arg1 is a string, then arg2 must be passed`
+        );
+        return;
+      } else {
+        this._helper._increment_kv(key, value, {}, caller);
+        this._collect_event();
+      }
+    } else {
+      for (let item in key) {
+        this._helper._increment_kv(item, key[item], key, caller);
+      }
+      this._collect_event();
+    }
+  }
+
   remove(key, value) {
     const caller = "remove";
     if (!is_string(key) && !is_object(key)) {
