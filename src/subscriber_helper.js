@@ -123,10 +123,10 @@ export default class _SubscriberInternalHelper {
       event["$set"] = this.__dict_set;
     }
     if (!is_empty(this.__dict_set_once)) {
-      event["$set_once"] = this.__dict_set;
+      event["$set_once"] = this.__dict_set_once;
     }
     if (!is_empty(this.__dict_increment)) {
-      event["$add"] = this.__dict_append;
+      event["$add"] = this.__dict_increment;
     }
     if (!is_empty(this.__dict_remove)) {
       event["$remove"] = this.__dict_remove;
@@ -187,9 +187,6 @@ export default class _SubscriberInternalHelper {
     const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
     if (!is_k_valid) {
       return;
-    }
-    if (this.__is_identity_key(validated_key)) {
-      this.__add_identity(validated_key, value, args, caller);
     } else {
       const is_k_valid = this.__validate_key_prefix(validated_key, caller);
       if (is_k_valid) {
@@ -202,9 +199,6 @@ export default class _SubscriberInternalHelper {
     const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
     if (!is_k_valid) {
       return;
-    }
-    if (this.__is_identity_key(validated_key)) {
-      this.__add_identity(validated_key, value, args, caller);
     } else {
       const is_k_valid = this.__validate_key_prefix(validated_key, caller);
       if (is_k_valid) {
@@ -217,9 +211,6 @@ export default class _SubscriberInternalHelper {
     const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
     if (!is_k_valid) {
       return;
-    }
-    if (this.__is_identity_key(validated_key)) {
-      this.__add_identity(validated_key, value, args, caller);
     } else {
       const is_k_valid = this.__validate_key_prefix(validated_key, caller);
       if (is_k_valid) {
