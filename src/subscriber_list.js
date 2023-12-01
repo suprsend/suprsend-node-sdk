@@ -212,7 +212,7 @@ class SubscriberListsApi {
   }
 
   __subscriber_list_url_with_version(list_id, version_id) {
-    return `${this.config.base_url}v1/subscriber_list/${list_id}/${version_id}/`;
+    return `${this.config.base_url}v1/subscriber_list/${list_id}/version/${version_id}/`;
   }
 
   async get(list_id) {
@@ -239,7 +239,7 @@ class SubscriberListsApi {
     }
   }
 
-  async get_draft(list_id, version_id) {
+  async get_version(list_id, version_id) {
     const cleaned_list_id = this._validate_list_id(list_id);
     const cleaned_version_id = this._validate_version_id(version_id);
 
@@ -275,7 +275,7 @@ class SubscriberListsApi {
 
     const url = `${this.__subscriber_list_detail_url(
       cleaned_list_id
-    )}subscriber/add`;
+    )}subscriber/add/`;
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
@@ -307,7 +307,7 @@ class SubscriberListsApi {
 
     const url = `${this.__subscriber_list_detail_url(
       cleaned_list_id
-    )}subscriber/remove`;
+    )}subscriber/remove/`;
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
@@ -328,7 +328,34 @@ class SubscriberListsApi {
     }
   }
 
-  async add_to_draft(list_id, version_id, distinct_ids) {
+  async delete(list_id) {
+    const cleaned_list_id = this._validate_list_id(list_id);
+    const content_text = JSON.stringify({});
+
+    const url = `${this.__subscriber_list_detail_url(
+        cleaned_list_id
+    )}delete/`;
+
+    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+
+    const signature = get_request_signature(
+        url,
+        "PATCH",
+        content_text,
+        headers,
+        this.config.workspace_secret
+    );
+    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+
+    try {
+      const response = await axios.patch(url,  content_text, { headers });
+      return response.data;
+    } catch (err) {
+      throw new SuprsendApiError(err);
+    }
+  }
+
+  async add_to_version(list_id, version_id, distinct_ids) {
     const cleaned_list_id = this._validate_list_id(list_id);
     const cleaned_version_id = this._validate_version_id(version_id)
 
@@ -362,7 +389,7 @@ class SubscriberListsApi {
     }
   }
 
-  async remove_from_draft(list_id, version_id, distinct_ids = []) {
+  async remove_from_version(list_id, version_id, distinct_ids = []) {
     const cleaned_list_id = this._validate_list_id(list_id);
     const cleaned_version_id = this._validate_version_id(version_id);
     if (!Array.isArray(distinct_ids)) {
@@ -402,7 +429,7 @@ class SubscriberListsApi {
         cleaned_list_id
     )}start_sync/`;
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
-    const content_text = JSON.stringify({ distinct_ids: distinct_ids });
+    const content_text = JSON.stringify({});
 
     const signature = get_request_signature(
         url,
@@ -421,7 +448,7 @@ class SubscriberListsApi {
     }
   }
 
-  async delete_draft(list_id, version_id) {
+  async delete_version(list_id, version_id) {
     const cleaned_list_id = this._validate_list_id(list_id);
     const cleaned_version_id = this._validate_version_id(version_id);
 
@@ -429,7 +456,7 @@ class SubscriberListsApi {
         cleaned_list_id, cleaned_version_id
     )}delete/`;
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
-    const content_text = JSON.stringify({ distinct_ids: distinct_ids });
+    const content_text = JSON.stringify({});
 
     const signature = get_request_signature(
         url,
@@ -441,7 +468,7 @@ class SubscriberListsApi {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.post(url, content_text, { headers });
+      const response = await axios.patch(url, content_text, { headers });
       return response.data;
     } catch (err) {
       throw new SuprsendApiError(err);
@@ -456,7 +483,7 @@ class SubscriberListsApi {
         cleaned_list_id, cleaned_version_id
     )}finish_sync/`;
     const headers = { ...this.__headers, ...this.__dynamic_headers() };
-    const content_text = JSON.stringify({ distinct_ids: distinct_ids });
+    const content_text = JSON.stringify({});
 
     const signature = get_request_signature(
         url,
@@ -468,7 +495,7 @@ class SubscriberListsApi {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.post(url, content_text, { headers });
+      const response = await axios.patch(url, content_text, { headers });
       return response.data;
     } catch (err) {
       throw new SuprsendApiError(err);
