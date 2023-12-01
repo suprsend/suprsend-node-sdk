@@ -44,7 +44,8 @@
           "whatsapp",
           "slack",
           "inbox",
-          "messenger"
+          "messenger",
+          "ms_teams"
         ]
       },
       "minItems": 0,

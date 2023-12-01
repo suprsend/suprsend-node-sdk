@@ -16,6 +16,7 @@ const IDENT_KEY_IOSPUSH = "$iospush";
 const IDENT_KEY_WHATSAPP = "$whatsapp";
 const IDENT_KEY_WEBPUSH = "$webpush";
 const IDENT_KEY_SLACK = "$slack";
+const IDENT_KEY_MS_TEAMS = "$ms_teams";
 
 const IDENT_KEYS_ALL = [
   IDENT_KEY_EMAIL,
@@ -25,6 +26,7 @@ const IDENT_KEYS_ALL = [
   IDENT_KEY_WHATSAPP,
   IDENT_KEY_WEBPUSH,
   IDENT_KEY_SLACK,
+  IDENT_KEY_MS_TEAMS,
 ];
 
 const KEY_PUSHVENDOR = "$pushvendor";
@@ -257,6 +259,9 @@ export default class _SubscriberInternalHelper {
         break;
       case IDENT_KEY_SLACK:
         this._remove_slack(val, caller);
+        break;
+      case IDENT_KEY_MS_TEAMS:
+        this._remove_ms_teams(val, caller);
         break;
       default:
         break;
@@ -539,5 +544,31 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_remove[IDENT_KEY_SLACK] = validated_value;
+  }
+
+  __check_ms_teams_dict(value, caller) {
+    const msg = "value must be a valid dict/json with proper keys"
+    if (!(value && value instanceof Object)) {
+      this.__errors.push(`[${caller}] ${msg}`);
+      return [value, false];
+    } else {
+      return [value, true];
+    }
+  }
+
+  _add_ms_teams(value, caller) {
+    const [validated_value, is_valid] = self.__check_ms_teams_dict(value, caller)
+    if (!(is_valid)) {
+      return
+    }
+    self.__dict_append[IDENT_KEY_MS_TEAMS] = validated_value
+  }
+
+  _remove_ms_teams(value, caller) {
+    const [validated_value, is_valid] = self.__check_ms_teams_dict(value, caller)
+    if (!(is_valid)) {
+      return
+    }
+    self.__dict_remove[IDENT_KEY_MS_TEAMS] = validated_value
   }
 }

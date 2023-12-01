@@ -339,6 +339,18 @@ export class Subscriber {
     this._collect_event();
   }
 
+  add_ms_teams(value) {
+    const caller = "add_ms_teams";
+    this._helper._add_ms_teams({ user_id: value }, caller);
+    this._collect_event();
+  }
+
+  remove_ms_teams(value) {
+    const caller = "remove_ms_teams";
+    this._helper._remove_ms_teams({ user_id: value }, caller);
+    this._collect_event();
+  }
+
   add_slack_email(value) {
     console.warn(
       "add_slack_email() method has been deprecated. use add_slack() instead"
