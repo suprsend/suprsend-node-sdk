@@ -231,6 +231,9 @@ export default class _SubscriberInternalHelper {
       case IDENT_KEY_SLACK:
         this._add_slack(value, caller);
         break;
+      case IDENT_KEY_MS_TEAMS:
+        this._add_ms_teams(value, caller);
+        break;
       default:
         break;
     }
