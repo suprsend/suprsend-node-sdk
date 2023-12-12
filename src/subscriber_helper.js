@@ -560,18 +560,18 @@ export default class _SubscriberInternalHelper {
   }
 
   _add_ms_teams(value, caller) {
-    const [validated_value, is_valid] = self.__check_ms_teams_dict(value, caller)
+    const [validated_value, is_valid] = this.__check_ms_teams_dict(value, caller)
     if (!(is_valid)) {
       return
     }
-    self.__dict_append[IDENT_KEY_MS_TEAMS] = validated_value
+    this.__dict_append[IDENT_KEY_MS_TEAMS] = validated_value
   }
 
   _remove_ms_teams(value, caller) {
-    const [validated_value, is_valid] = self.__check_ms_teams_dict(value, caller)
+    const [validated_value, is_valid] = this.__check_ms_teams_dict(value, caller)
     if (!(is_valid)) {
       return
     }
-    self.__dict_remove[IDENT_KEY_MS_TEAMS] = validated_value
+    this.__dict_remove[IDENT_KEY_MS_TEAMS] = validated_value
   }
 }
