@@ -83,6 +83,10 @@ export default class _SubscriberInternalHelper {
 
     this.__dict_set = {};
 
+    this.__dict_set_once = {};
+
+    this.__dict_increment = {};
+
     this.__dict_append = {};
 
     this.__dict_remove = {};
@@ -95,6 +99,8 @@ export default class _SubscriberInternalHelper {
 
   reset() {
     this.__dict_set = {};
+    this.__dict_set_once = {};
+    this.__dict_increment = {};
     this.__dict_append = {};
     this.__dict_remove = {};
     this.__list_unset = [];
@@ -118,8 +124,11 @@ export default class _SubscriberInternalHelper {
     if (!is_empty(this.__dict_set)) {
       event["$set"] = this.__dict_set;
     }
-    if (!is_empty(this.__dict_append)) {
-      event["$append"] = this.__dict_append;
+    if (!is_empty(this.__dict_set_once)) {
+      event["$set_once"] = this.__dict_set_once;
+    }
+    if (!is_empty(this.__dict_increment)) {
+      event["$add"] = this.__dict_increment;
     }
     if (!is_empty(this.__dict_remove)) {
       event["$remove"] = this.__dict_remove;
@@ -172,6 +181,42 @@ export default class _SubscriberInternalHelper {
       const is_k_valid = this.__validate_key_prefix(validated_key, caller);
       if (is_k_valid) {
         this.__dict_append[validated_key] = value;
+      }
+    }
+  }
+
+  _set_kv(key, value, args = {}, caller = "set") {
+    const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
+    if (!is_k_valid) {
+      return;
+    } else {
+      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
+      if (is_k_valid) {
+        this.__dict_set[validated_key] = value;
+      }
+    }
+  }
+
+  _set_once_kv(key, value, args = {}, caller = "set_once") {
+    const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
+    if (!is_k_valid) {
+      return;
+    } else {
+      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
+      if (is_k_valid) {
+        this.__dict_set_once[validated_key] = value;
+      }
+    }
+  }
+
+  _increment_kv(key, value, args = {}, caller = "increment") {
+    const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
+    if (!is_k_valid) {
+      return;
+    } else {
+      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
+      if (is_k_valid) {
+        this.__dict_increment[validated_key] = value;
       }
     }
   }
