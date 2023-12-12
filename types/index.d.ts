@@ -154,9 +154,23 @@ declare namespace suprsend {
 
     get(list_id: string): Promise<Dictionary>;
 
+    get_version(list_id: string, version_id: string): Promise<Dictionary>;
+
+    start_sync(list_id: string): Promise<Dictionary>;
+
     add(list_id: string, distinct_ids: string[]): Promise<Dictionary>;
 
     remove(list_id: string, distinct_ids: string[]): Promise<Dictionary>;
+
+    add_to_version(list_id: string, version_id:string, distinct_ids: string[]): Promise<Dictionary>;
+
+    remove_from_version(list_id: string, version_id:string, distinct_ids: string[]): Promise<Dictionary>;
+
+    finish_sync(list_id: string, version_id:string): Promise<Dictionary>;
+
+    delete(list_id: string): Promise<Dictionary>;
+
+    delete_version(list_id: string, version_id: string): Promise<Dictionary>;
 
     broadcast(broadcast_instance: SubscriberListBroadcast): Promise<SResponse>;
   }
