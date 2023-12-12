@@ -341,13 +341,13 @@ export class Subscriber {
 
   add_ms_teams(value) {
     const caller = "add_ms_teams";
-    this._helper._add_ms_teams({ user_id: value }, caller);
+    this._helper._add_ms_teams(value, caller);
     this._collect_event();
   }
 
   remove_ms_teams(value) {
     const caller = "remove_ms_teams";
-    this._helper._remove_ms_teams({ user_id: value }, caller);
+    this._helper._remove_ms_teams(value, caller);
     this._collect_event();
   }
 
