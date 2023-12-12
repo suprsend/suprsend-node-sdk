@@ -71,6 +71,9 @@ declare namespace suprsend {
     save(): Promise<SResponse>;
 
     append(key: string | Dictionary, value?: any): void;
+    set(key: string | Dictionary, value?: any): void;
+    set_once(key: string | Dictionary, value?: any): void;
+    increment(key: string | Dictionary, value?: any): void;
     remove(key: string | Dictionary, value?: any): void;
     unset(keys: string | string[]): void;
 
