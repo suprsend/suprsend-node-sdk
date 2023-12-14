@@ -215,7 +215,7 @@ export class Subscriber {
       return;
     }
     if (is_string(key)) {
-      if (!value) {
+      if (value === null || value === undefined) {
         this.__errors.push(
             `[${caller}] if arg1 is a string, then arg2 must be passed`
         );
@@ -239,7 +239,7 @@ export class Subscriber {
       return;
     }
     if (is_string(key)) {
-      if (!value) {
+      if (value === null || value === undefined) {
         this.__errors.push(
             `[${caller}] if arg1 is a string, then arg2 must be passed`
         );
@@ -263,7 +263,7 @@ export class Subscriber {
       return;
     }
     if (is_string(key)) {
-      if (!value) {
+      if (value === null || value === undefined) {
         this.__errors.push(
             `[${caller}] if arg1 is a string, then arg2 must be passed`
         );

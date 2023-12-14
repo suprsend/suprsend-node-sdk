@@ -16,7 +16,7 @@
       "maxLength": 64,
       "description": "brand id for workflow to be run in context of a brand"
     },
-    "name": {
+    "name":     {
       "$ref": "#/definitions/non_empty_string",
       "description": "name of workflow"
     },
@@ -44,7 +44,7 @@
     },
     "users": {
       "type": "array",
-      "items": { "$ref": "#/definitions/user_setting" },
+      "items": { "$ref": "#/definitions/user_setting"},
       "minItems": 1,
       "maxItems": 100,
       "description": "user object to run workflow for. At least 1 user is required"
@@ -61,8 +61,7 @@
       "minLength": 2
     },
     "mobile_number_pattern": {
-      "type": "string",
-      "minLength": 8,
+      "type": "string", "minLength": 8,
       "pattern": "^\\+[0-9\\s]+",
       "message": {
         "required": "Either a mobile-number or an array of mobile-numbers. e.g [\"+41446681800\"]",
@@ -161,17 +160,12 @@
     "androidpush_settings": {
       "type": "object",
       "properties": {
-        "token": {
-          "type": "string",
-          "minLength": 1,
-          "description": "androidpush token"
-        },
-        "provider": {
-          "type": "string",
-          "enum": ["fcm", "xiaomi", "oppo"],
+        "token":      {"type": "string", "minLength": 1, "description": "androidpush token"},
+        "provider":   {
+          "type": "string", "enum": ["fcm", "xiaomi", "oppo"],
           "description": "androidpush token provider(fcm/xiaomi)"
         },
-        "device_id": { "type": ["string", "null"] }
+        "device_id":  {"type": ["string", "null"]}
       },
       "required": ["token", "provider"],
       "additionalProperties": false
@@ -179,17 +173,12 @@
     "iospush_settings": {
       "type": "object",
       "properties": {
-        "token": {
-          "type": "string",
-          "minLength": 1,
-          "description": "iospush token"
-        },
-        "provider": {
-          "type": "string",
-          "enum": ["apns"],
+        "token":      {"type": "string", "minLength": 1, "description": "iospush token"},
+        "provider":   {
+          "type": "string", "enum": ["apns"],
           "description": "iospush token provider(apns)"
         },
-        "device_id": { "type": ["string", "null"] }
+        "device_id":  {"type": ["string", "null"]}
       },
       "required": ["token", "provider"],
       "additionalProperties": false
@@ -209,25 +198,14 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "androidpush",
-              "iospush",
-              "webpush",
-              "email",
-              "sms",
-              "whatsapp",
-              "slack",
-              "inbox",
-              "messenger",
-              "ms_teams"
-            ]
+            "enum": ["androidpush", "iospush", "webpush", "email", "sms", "whatsapp", "slack", "inbox", "messenger", "ms_teams"]
           },
           "minItems": 0,
           "description": "user preferred channels. notification will be tried only on specified channels e.g ['email', 'sms']"
         },
         "$email": {
           "oneOf": [
-            { "$ref": "#/definitions/email_pattern" },
+            {"$ref": "#/definitions/email_pattern"},
             {
               "type": "array",
               "uniqueItems": false,
@@ -239,7 +217,7 @@
         },
         "$sms": {
           "oneOf": [
-            { "$ref": "#/definitions/mobile_number_pattern" },
+            {"$ref": "#/definitions/mobile_number_pattern"},
             {
               "type": "array",
               "uniqueItems": false,
@@ -251,7 +229,7 @@
         },
         "$androidpush": {
           "oneOf": [
-            { "$ref": "#/definitions/androidpush_settings" },
+            {"$ref": "#/definitions/androidpush_settings"},
             {
               "type": "array",
               "uniqueItems": false,
@@ -259,7 +237,7 @@
               "minItems": 1,
               "items": { "$ref": "#/definitions/androidpush_settings" }
             },
-            { "$ref": "#/definitions/non_empty_string" },
+            {"$ref": "#/definitions/non_empty_string"},
             {
               "type": "array",
               "uniqueItems": false,
@@ -271,7 +249,7 @@
         },
         "$iospush": {
           "oneOf": [
-            { "$ref": "#/definitions/iospush_settings" },
+            {"$ref": "#/definitions/iospush_settings"},
             {
               "type": "array",
               "uniqueItems": false,
@@ -279,7 +257,7 @@
               "minItems": 1,
               "items": { "$ref": "#/definitions/iospush_settings" }
             },
-            { "$ref": "#/definitions/non_empty_string" },
+            {"$ref": "#/definitions/non_empty_string"},
             {
               "type": "array",
               "uniqueItems": false,
@@ -291,7 +269,7 @@
         },
         "$whatsapp": {
           "oneOf": [
-            { "$ref": "#/definitions/mobile_number_pattern" },
+            {"$ref": "#/definitions/mobile_number_pattern"},
             {
               "type": "array",
               "uniqueItems": false,
@@ -303,13 +281,13 @@
         },
         "$webpush": {
           "oneOf": [
-            { "type": "object", "minProperties": 1 },
+            {"type": "object", "minProperties": 1},
             {
               "type": "array",
               "uniqueItems": false,
               "maxItems": 10,
               "minItems": 1,
-              "items": { "type": "object", "minProperties": 1 }
+              "items": {"type": "object", "minProperties": 1}
             }
           ]
         },
@@ -322,6 +300,18 @@
               "maxItems": 10,
               "minItems": 1,
               "items": { "$ref": "#/definitions/slack_setting" }
+            }
+          ]
+        },
+        "$ms_teams": {
+          "oneOf": [
+            { "$ref": "#/definitions/ms_teams_setting" },
+            {
+              "type": "array",
+              "uniqueItems": false,
+              "maxItems": 10,
+              "minItems": 1,
+              "items": { "$ref": "#/definitions/ms_teams_setting" }
             }
           ]
         },
@@ -339,25 +329,13 @@
         },
         "$messenger": {
           "oneOf": [
-            { "$ref": "#/definitions/non_empty_string" },
+            {"$ref": "#/definitions/non_empty_string"},
             {
               "type": "array",
               "uniqueItems": false,
               "maxItems": 10,
               "minItems": 1,
               "items": { "$ref": "#/definitions/non_empty_string" }
-            }
-          ]
-        },
-        "$ms_teams": {
-          "oneOf": [
-            { "$ref": "#/definitions/ms_teams_setting" },
-            {
-              "type": "array",
-              "uniqueItems": false,
-              "maxItems": 10,
-              "minItems": 1,
-              "items": { "$ref": "#/definitions/ms_teams_setting" }
             }
           ]
         }
@@ -387,18 +365,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "androidpush",
-              "iospush",
-              "webpush",
-              "email",
-              "sms",
-              "whatsapp",
-              "slack",
-              "inbox",
-              "messenger",
-              "ms_teams"
-            ]
+            "enum": ["androidpush", "iospush", "webpush", "email", "sms", "whatsapp", "slack", "inbox", "messenger", "ms_teams"]
           },
           "minItems": 0,
           "description": "e.g ['email', 'sms']. Used if smart=true, notification on these channels must be sent, irrespective of success metric outcome"

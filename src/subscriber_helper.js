@@ -130,6 +130,9 @@ export default class _SubscriberInternalHelper {
     if (!is_empty(this.__dict_increment)) {
       event["$add"] = this.__dict_increment;
     }
+    if (!is_empty(this.__dict_append)) {
+      event["$append"] = this.__dict_append;
+    }
     if (!is_empty(this.__dict_remove)) {
       event["$remove"] = this.__dict_remove;
     }
