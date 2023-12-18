@@ -32,6 +32,7 @@ export default class Event {
     this.event_name = event_name;
     this.properties = properties;
     this.idempotency_key = kwargs?.idempotency_key;
+    this.tenant_id = kwargs?.tenant_id;
     this.brand_id = kwargs?.brand_id;
 
     // default values
@@ -128,6 +129,9 @@ export default class Event {
     if (this.idempotency_key) {
       event_dict["$idempotency_key"] = this.idempotency_key;
     }
+    if (this.tenant_id) {
+      event_dict["tenant_id"] = this.tenant_id;
+    }
     if (this.brand_id) {
       event_dict["brand_id"] = this.brand_id;
     }
@@ -149,6 +153,9 @@ export default class Event {
     };
     if (this.idempotency_key) {
       event_dict["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.tenant_id) {
+      event_dict["tenant_id"] = this.tenant_id;
     }
     if (this.brand_id) {
       event_dict["brand_id"] = this.brand_id;

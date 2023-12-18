@@ -57,6 +57,7 @@ const OTHER_RESERVED_KEYS = [
 const SUPER_PROPERTY_KEYS = [
   "$app_version_string",
   "$app_build_number",
+  "$tenant",
   "$brand",
   "$carrier",
   "$manufacturer",

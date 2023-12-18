@@ -22,7 +22,7 @@ declare namespace suprsend {
   interface Workflow {
     new (
       body: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
     ): Workflow;
 
     add_attachment(
@@ -47,7 +47,7 @@ declare namespace suprsend {
       distinct_id: any,
       event_name: string,
       properties?: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
     ): Event;
 
     add_attachment(
@@ -125,6 +125,15 @@ declare namespace suprsend {
     save(): Promise<SBulkResponse>;
   }
 
+  // tenants
+  interface TenantsApi {
+    list(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
+
+    get(tenant_id: any): Promise<Dictionary>;
+
+    upsert(tenant_id: any, brand_payload?: Dictionary): Promise<Dictionary>;
+  }
+
   // brands
   interface BrandsApi {
     list(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
@@ -138,7 +147,7 @@ declare namespace suprsend {
   interface SubscriberListBroadcast {
     new (
       body: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
     ): SubscriberListBroadcast;
 
     add_attachment(
@@ -190,6 +199,8 @@ declare namespace suprsend {
 
     get bulk_users(): BulkSubscribersFactory;
 
+    tenants: TenantsApi;
+
     brands: BrandsApi;
 
     subscriber_lists: SubscriberListsApi;
@@ -206,7 +217,7 @@ declare namespace suprsend {
       distinct_id: any,
       event_name: string,
       properties?: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
     ): Promise<SResponse>;
 
     track_event(event: Event): Promise<SResponse>;

@@ -19,6 +19,7 @@ export default class Workflow {
     }
     this.body = body;
     this.idempotency_key = kwargs?.idempotency_key;
+    this.tenant_id = kwargs?.tenant_id;
     this.brand_id = kwargs?.brand_id;
   }
 
@@ -56,6 +57,9 @@ export default class Workflow {
     if (this.idempotency_key) {
       this.body["$idempotency_key"] = this.idempotency_key;
     }
+    if (this.tenant_id) {
+      this.body["tenant_id"] = this.tenant_id;
+    }
     if (this.brand_id) {
       this.body["brand_id"] = this.brand_id;
     }
@@ -76,6 +80,9 @@ export default class Workflow {
     const body_dict = { ...this.body };
     if (this.idempotency_key) {
       body_dict["$idempotency_key"] = this.idempotency_key;
+    }
+    if (this.tenant_id) {
+      body_dict["tenant_id"] = this.tenant_id;
     }
     if (this.brand_id) {
       body_dict["brand_id"] = this.brand_id;
