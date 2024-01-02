@@ -14,7 +14,7 @@
     "tenant_id": {
       "type": ["string", "null"],
       "maxLength": 64,
-      "description": "brand id for workflow to be run in context of a brand"
+      "description": "tenant id for workflow to be run in context of a tenant"
     },
     "brand_id": {
       "type": ["string", "null"],
