@@ -22,7 +22,11 @@ declare namespace suprsend {
   interface Workflow {
     new (
       body: Dictionary,
-      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): Workflow;
 
     add_attachment(
@@ -47,7 +51,11 @@ declare namespace suprsend {
       distinct_id: any,
       event_name: string,
       properties?: Dictionary,
-      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): Event;
 
     add_attachment(
@@ -147,7 +155,11 @@ declare namespace suprsend {
   interface SubscriberListBroadcast {
     new (
       body: Dictionary,
-      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): SubscriberListBroadcast;
 
     add_attachment(
@@ -175,11 +187,19 @@ declare namespace suprsend {
 
     get_version(list_id: string, version_id: string): Promise<Dictionary>;
 
-    add_to_version(list_id: string, version_id:string, distinct_ids: string[]): Promise<Dictionary>;
+    add_to_version(
+      list_id: string,
+      version_id: string,
+      distinct_ids: string[]
+    ): Promise<Dictionary>;
 
-    remove_from_version(list_id: string, version_id:string, distinct_ids: string[]): Promise<Dictionary>;
+    remove_from_version(
+      list_id: string,
+      version_id: string,
+      distinct_ids: string[]
+    ): Promise<Dictionary>;
 
-    finish_sync(list_id: string, version_id:string): Promise<Dictionary>;
+    finish_sync(list_id: string, version_id: string): Promise<Dictionary>;
 
     delete_version(list_id: string, version_id: string): Promise<Dictionary>;
   }
@@ -217,7 +237,11 @@ declare namespace suprsend {
       distinct_id: any,
       event_name: string,
       properties?: Dictionary,
-      kwargs?: { idempotency_key?: string; tenant_id?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): Promise<SResponse>;
 
     track_event(event: Event): Promise<SResponse>;
