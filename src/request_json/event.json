@@ -51,5 +51,12 @@
       "description": "Properties related to event"
     }
   },
-  "required": ["$insert_id", "$time", "event", "env", "distinct_id", "properties"]
+  "required": [
+    "$insert_id",
+    "$time",
+    "event",
+    "env",
+    "distinct_id",
+    "properties"
+  ]
 }

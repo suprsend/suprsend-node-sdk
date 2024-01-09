@@ -598,7 +598,7 @@ export default class _SubscriberInternalHelper {
   }
 
   __check_ms_teams_dict(value, caller) {
-    const msg = "value must be a valid dict/json with proper keys"
+    const msg = "value must be a valid dict/json with proper keys";
     if (!(value && value instanceof Object)) {
       this.__errors.push(`[${caller}] ${msg}`);
       return [value, false];
@@ -608,18 +608,24 @@ export default class _SubscriberInternalHelper {
   }
 
   _add_ms_teams(value, caller) {
-    const [validated_value, is_valid] = this.__check_ms_teams_dict(value, caller)
-    if (!(is_valid)) {
-      return
+    const [validated_value, is_valid] = this.__check_ms_teams_dict(
+      value,
+      caller
+    );
+    if (!is_valid) {
+      return;
     }
-    this.__dict_append[IDENT_KEY_MS_TEAMS] = validated_value
+    this.__dict_append[IDENT_KEY_MS_TEAMS] = validated_value;
   }
 
   _remove_ms_teams(value, caller) {
-    const [validated_value, is_valid] = this.__check_ms_teams_dict(value, caller)
-    if (!(is_valid)) {
-      return
+    const [validated_value, is_valid] = this.__check_ms_teams_dict(
+      value,
+      caller
+    );
+    if (!is_valid) {
+      return;
     }
-    this.__dict_remove[IDENT_KEY_MS_TEAMS] = validated_value
+    this.__dict_remove[IDENT_KEY_MS_TEAMS] = validated_value;
   }
 }

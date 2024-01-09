@@ -40,7 +40,18 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["androidpush", "iospush", "webpush", "email", "sms", "whatsapp", "slack", "inbox", "messenger", "ms_teams"]
+        "enum": [
+          "androidpush",
+          "iospush",
+          "webpush",
+          "email",
+          "sms",
+          "whatsapp",
+          "slack",
+          "inbox",
+          "messenger",
+          "ms_teams"
+        ]
       },
       "minItems": 0,
       "description": "channels on which notification to be broadcast. e.g ['androidpush', 'iospush']"
@@ -67,7 +78,14 @@
       "description": "variables to be used in workflow. e.g replacing templates variables."
     }
   },
-  "required": ["$insert_id", "$time", "list_id", "template", "notification_category", "data"],
+  "required": [
+    "$insert_id",
+    "$time",
+    "list_id",
+    "template",
+    "notification_category",
+    "data"
+  ],
   "definitions": {
     "non_empty_string": {
       "type": "string",
