@@ -8,6 +8,7 @@ import SubscriberFactory from "./subscriber";
 import BulkSubscribersFactory from "./subscribers_bulk";
 import { SubscriberListsApi, SubscriberListBroadcast } from "./subscriber_list";
 import BrandsApi from "./brands";
+import TenantsApi from "./tenant";
 import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
@@ -33,6 +34,8 @@ class Suprsend {
     this._user = new SubscriberFactory(this);
 
     this.brands = new BrandsApi(this);
+    this.tenants = new TenantsApi(this);
+
     this.subscriber_lists = new SubscriberListsApi(this);
 
     this._validate();

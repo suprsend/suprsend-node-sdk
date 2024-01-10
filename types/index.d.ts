@@ -22,7 +22,11 @@ declare namespace suprsend {
   interface Workflow {
     new (
       body: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): Workflow;
 
     add_attachment(
@@ -47,7 +51,11 @@ declare namespace suprsend {
       distinct_id: any,
       event_name: string,
       properties?: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): Event;
 
     add_attachment(
@@ -73,7 +81,7 @@ declare namespace suprsend {
     append(key: string | Dictionary, value?: any): void;
     set(key: string | Dictionary, value?: any): void;
     set_once(key: string | Dictionary, value?: any): void;
-    increment(key: string | Dictionary, value?: any): void;
+    increment(key: string | Dictionary, value?: number): void;
     remove(key: string | Dictionary, value?: any): void;
     unset(keys: string | string[]): void;
 
@@ -100,6 +108,9 @@ declare namespace suprsend {
     add_slack(value: Dictionary): void;
     remove_slack(value: Dictionary): void;
 
+    add_ms_teams(value: Dictionary): void;
+    remove_ms_teams(value: Dictionary): void;
+
     add_slack_email(email: string): void;
     remove_slack_email(email: string): void;
 
@@ -125,6 +136,15 @@ declare namespace suprsend {
     save(): Promise<SBulkResponse>;
   }
 
+  // tenants
+  interface TenantsApi {
+    list(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
+
+    get(tenant_id: any): Promise<Dictionary>;
+
+    upsert(tenant_id: any, brand_payload?: Dictionary): Promise<Dictionary>;
+  }
+
   // brands
   interface BrandsApi {
     list(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
@@ -138,7 +158,11 @@ declare namespace suprsend {
   interface SubscriberListBroadcast {
     new (
       body: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): SubscriberListBroadcast;
 
     add_attachment(
@@ -154,25 +178,33 @@ declare namespace suprsend {
 
     get(list_id: string): Promise<Dictionary>;
 
-    get_version(list_id: string, version_id: string): Promise<Dictionary>;
-
-    start_sync(list_id: string): Promise<Dictionary>;
-
     add(list_id: string, distinct_ids: string[]): Promise<Dictionary>;
 
     remove(list_id: string, distinct_ids: string[]): Promise<Dictionary>;
 
-    add_to_version(list_id: string, version_id:string, distinct_ids: string[]): Promise<Dictionary>;
-
-    remove_from_version(list_id: string, version_id:string, distinct_ids: string[]): Promise<Dictionary>;
-
-    finish_sync(list_id: string, version_id:string): Promise<Dictionary>;
-
     delete(list_id: string): Promise<Dictionary>;
 
-    delete_version(list_id: string, version_id: string): Promise<Dictionary>;
-
     broadcast(broadcast_instance: SubscriberListBroadcast): Promise<SResponse>;
+
+    start_sync(list_id: string): Promise<Dictionary>;
+
+    get_version(list_id: string, version_id: string): Promise<Dictionary>;
+
+    add_to_version(
+      list_id: string,
+      version_id: string,
+      distinct_ids: string[]
+    ): Promise<Dictionary>;
+
+    remove_from_version(
+      list_id: string,
+      version_id: string,
+      distinct_ids: string[]
+    ): Promise<Dictionary>;
+
+    finish_sync(list_id: string, version_id: string): Promise<Dictionary>;
+
+    delete_version(list_id: string, version_id: string): Promise<Dictionary>;
   }
 
   interface Suprsend {
@@ -190,6 +222,8 @@ declare namespace suprsend {
 
     get bulk_users(): BulkSubscribersFactory;
 
+    tenants: TenantsApi;
+
     brands: BrandsApi;
 
     subscriber_lists: SubscriberListsApi;
@@ -206,7 +240,11 @@ declare namespace suprsend {
       distinct_id: any,
       event_name: string,
       properties?: Dictionary,
-      kwargs?: { idempotency_key?: string; brand_id?: string }
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        brand_id?: string;
+      }
     ): Promise<SResponse>;
 
     track_event(event: Event): Promise<SResponse>;
