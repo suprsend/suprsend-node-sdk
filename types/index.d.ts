@@ -81,7 +81,7 @@ declare namespace suprsend {
     append(key: string | Dictionary, value?: any): void;
     set(key: string | Dictionary, value?: any): void;
     set_once(key: string | Dictionary, value?: any): void;
-    increment(key: string | Dictionary, value?: any): void;
+    increment(key: string | Dictionary, value?: number): void;
     remove(key: string | Dictionary, value?: any): void;
     unset(keys: string | string[]): void;
 
@@ -107,6 +107,9 @@ declare namespace suprsend {
 
     add_slack(value: Dictionary): void;
     remove_slack(value: Dictionary): void;
+
+    add_ms_teams(value: Dictionary): void;
+    remove_ms_teams(value: Dictionary): void;
 
     add_slack_email(email: string): void;
     remove_slack_email(email: string): void;
