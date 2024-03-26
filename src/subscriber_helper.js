@@ -31,6 +31,7 @@ const IDENT_KEYS_ALL = [
 
 const KEY_PUSHVENDOR = "$pushvendor";
 const KEY_PREFERRED_LANGUAGE = "$preferred_language";
+const KEY_TIMEZONE = "$timezone";
 
 const OTHER_RESERVED_KEYS = [
   "$messenger",
@@ -49,6 +50,7 @@ const OTHER_RESERVED_KEYS = [
   "$anon_id",
   "$identified_id",
   KEY_PREFERRED_LANGUAGE,
+  KEY_TIMEZONE,
   "$notification_delivered",
   "$notification_dismiss",
   "$notification_clicked",
@@ -253,6 +255,10 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_set[KEY_PREFERRED_LANGUAGE] = lang_code;
+  }
+
+  _set_timezone(timezone, caller) {
+    this.__dict_set[KEY_TIMEZONE] = timezone;
   }
 
   __add_identity(key, value, args, caller) {

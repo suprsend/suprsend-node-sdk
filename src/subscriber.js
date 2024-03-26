@@ -327,6 +327,12 @@ export class Subscriber {
     this._collect_event();
   }
 
+  set_timezone(timezone) {
+    const caller = "set_timezone";
+    this._helper._set_timezone(timezone, caller);
+    this._collect_event();
+  }
+
   add_email(email) {
     const caller = "add_email";
     this._helper._add_email(email, caller);
