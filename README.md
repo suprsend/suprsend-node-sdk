@@ -1,7 +1,7 @@
 # suprsend-node-sdk
 This package can be included in a node project to easily integrate with `Suprsend` platform.
 
-Refer full documentation [here](https://docs.suprsend.com/docs/node)
+Refer full documentation [here](https://docs.suprsend.com/docs/nodejs-sdk)
 
 ### Installation
 `suprsend-node-sdk` is available as npm package. You can install using npm or yarn.
