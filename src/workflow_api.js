@@ -35,7 +35,10 @@ export default class WorkflowsApi {
         this.config.workspace_secret
       );
       headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
-      const resp = await axios.post(url, content_text, { headers });
+      const resp = await axios.post(url, content_text, {
+        headers,
+        transformResponse: [(data) => data], // dont assume type of response
+      });
       const ok_response = Math.floor(resp.status / 100) === 2;
       return {
         success: ok_response,
