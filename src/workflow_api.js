@@ -47,12 +47,21 @@ export default class WorkflowsApi {
         message: resp.data,
       };
     } catch (err) {
-      return {
-        success: false,
-        status: "fail",
-        status_code: 500,
-        message: err.message,
-      };
+      if (err?.response) {
+        return {
+          success: false,
+          status: "fail",
+          status_code: err?.response?.status || 500,
+          message: err?.response?.data,
+        };
+      } else {
+        return {
+          success: false,
+          status: "fail",
+          status_code: 500,
+          message: err.message,
+        };
+      }
     }
   }
 

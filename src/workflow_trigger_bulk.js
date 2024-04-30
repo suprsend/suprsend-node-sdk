@@ -91,44 +91,47 @@ export class _BulkWorkflowTriggerChunk {
     );
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
     try {
-      const resp = await axios.post(this.__url, content_text, { headers });
-      const ok_response = Math.floor(resp.status / 100) === 2;
-      if (ok_response) {
-        this.response = {
-          status: "success",
-          status_code: resp.status,
-          total: this.__chunk.length,
-          success: this.__chunk.length,
-          failure: 0,
-          failed_records: [],
-        };
-      } else {
+      const resp = await axios.post(this.__url, content_text, {
+        headers,
+        transformResponse: [(data) => data], // dont assume type of response
+      });
+      this.response = {
+        status: "success",
+        status_code: resp.status,
+        total: this.__chunk.length,
+        success: this.__chunk.length,
+        failure: 0,
+        failed_records: [],
+      };
+    } catch (err) {
+      if (err?.response) {
+        const resp_data = err.response;
         this.response = {
           status: "fail",
-          status_code: resp.status,
+          status_code: resp_data.status,
           total: this.__chunk.length,
           success: 0,
           failure: this.__chunk.length,
           failed_records: this.__chunk.map((record) => ({
             record: record,
-            error: resp.data,
-            code: resp.status,
+            error: resp_data.data,
+            code: resp_data.status,
+          })),
+        };
+      } else {
+        this.response = {
+          status: "fail",
+          status_code: 500,
+          total: this.__chunk.length,
+          success: 0,
+          failure: this.__chunk.length,
+          failed_records: this.__chunk.map((record) => ({
+            record: record,
+            error: err.message,
+            code: 500,
           })),
         };
       }
-    } catch (err) {
-      this.response = {
-        status: "fail",
-        status_code: 500,
-        total: this.__chunk.length,
-        success: 0,
-        failure: this.__chunk.length,
-        failed_records: this.__chunk.map((record) => ({
-          record: record,
-          error: err.message,
-          code: 500,
-        })),
-      };
     }
   }
 }
