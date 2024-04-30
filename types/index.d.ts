@@ -86,6 +86,7 @@ declare namespace suprsend {
     unset(keys: string | string[]): void;
 
     set_preferred_language(lang_code: string): void;
+    set_timezone(timezone: string): void;
 
     add_email(email: string): void;
     remove_email(email: string): void;
