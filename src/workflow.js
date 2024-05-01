@@ -33,7 +33,7 @@ export default class Workflow {
     if (!(this.body["data"] instanceof Object)) {
       console.log(
         `WARNING: attachment cannot be added. please make sure body['data'] is a dictionary. Workflow ${JSON.stringify(
-          this.as_json()
+          JSON.stringify(this.as_json())
         )}`
       );
       return;

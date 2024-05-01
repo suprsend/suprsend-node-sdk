@@ -11,6 +11,7 @@ import {
 import { cloneDeep } from "lodash";
 
 const workflow_schema = require("./request_json/workflow.json");
+const workflow_trigger_schema = require("./request_json/workflow_trigger.json");
 const event_schema = require("./request_json/event.json");
 const list_broadcast_schema = require("./request_json/list_broadcast.json");
 
@@ -103,6 +104,25 @@ export function validate_workflow_body_schema(body) {
     throw new InputValueError("data must be a object");
   }
   const schema = workflow_schema;
+  var v = new Validator();
+  const validated_data = v.validate(body, schema);
+  if (validated_data.valid) {
+    return body;
+  } else {
+    const error_obj = validated_data.errors[0];
+    const error_msg = `${error_obj.property} ${error_obj.message}`;
+    throw new SuprsendError(error_msg);
+  }
+}
+
+export function validate_workflow_trigger_body_schema(body) {
+  if (!body?.data) {
+    body.data = {};
+  }
+  if (!(body.data instanceof Object)) {
+    throw new InputValueError("data must be a object");
+  }
+  const schema = workflow_trigger_schema;
   var v = new Validator();
   const validated_data = v.validate(body, schema);
   if (validated_data.valid) {

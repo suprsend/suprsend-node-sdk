@@ -208,11 +208,39 @@ declare namespace suprsend {
     delete_version(list_id: string, version_id: string): Promise<Dictionary>;
   }
 
+  interface WorkflowTriggerRequest {
+    new (
+      body: Dictionary,
+      kwargs?: {
+        idempotency_key?: string;
+        tenant_id?: string;
+        cancellation_id?: string;
+      }
+    ): WorkflowTriggerRequest;
+
+    add_attachment(
+      file_path: string,
+      kwargs?: { file_name?: string; ignore_if_error?: boolean }
+    ): void;
+  }
+
+  interface WorkflowsApi {
+    trigger(workflow: WorkflowTriggerRequest): Promise<SBulkResponse>;
+
+    bulk_trigger_instance(): BulkWorkflowTrigger;
+  }
+
+  interface BulkWorkflowTrigger {
+    append(...workflows: WorkflowTriggerRequest[]): void;
+
+    trigger(): Promise<SBulkResponse>;
+  }
+
   interface Suprsend {
     new (
       workspace_env: string,
       workspace_secret: string,
-      config?: { is_staging?: boolean }
+      config?: { base_url?: string }
     ): Suprsend;
 
     get bulk_workflows(): BulkWorkflowsFactory;
@@ -228,6 +256,8 @@ declare namespace suprsend {
     brands: BrandsApi;
 
     subscriber_lists: SubscriberListsApi;
+
+    workflows: WorkflowsApi;
 
     add_attachment(
       body: Dictionary,
@@ -256,3 +286,4 @@ export const Suprsend: suprsend.Suprsend;
 export const Event: suprsend.Event;
 export const Workflow: suprsend.Workflow;
 export const SubscriberListBroadcast: suprsend.SubscriberListBroadcast;
+export const WorkflowTriggerRequest: suprsend.WorkflowTriggerRequest;

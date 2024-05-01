@@ -2,6 +2,8 @@ import { SuprsendConfigError, InputValueError } from "./utils";
 import get_attachment_json from "./attachment";
 import Workflow, { _WorkflowTrigger } from "./workflow";
 import { BulkWorkflowsFactory } from "./workflows_bulk";
+import WorkflowTriggerRequest from "./workflow_request";
+import WorkflowsApi from "./workflow_api";
 import Event, { EventCollector } from "./event";
 import { BulkEventsFactory } from "./events_bulk";
 import SubscriberFactory from "./subscriber";
@@ -9,7 +11,7 @@ import BulkSubscribersFactory from "./subscribers_bulk";
 import { SubscriberListsApi, SubscriberListBroadcast } from "./subscriber_list";
 import BrandsApi from "./brands";
 import TenantsApi from "./tenant";
-import { DEFAULT_UAT_URL, DEFAULT_URL } from "./constants";
+import { DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
 
@@ -35,6 +37,7 @@ class Suprsend {
 
     this.brands = new BrandsApi(this);
     this.tenants = new TenantsApi(this);
+    this.workflows = new WorkflowsApi(this);
 
     this.subscriber_lists = new SubscriberListsApi(this);
 
@@ -72,11 +75,7 @@ class Suprsend {
       base_url = base_url.trim();
     }
     if (!base_url) {
-      if (this.config.is_staging) {
-        base_url = DEFAULT_UAT_URL;
-      } else {
-        base_url = DEFAULT_URL;
-      }
+      base_url = DEFAULT_URL;
     }
     base_url = base_url.trim();
     if (!base_url.endsWith("/")) {
@@ -86,6 +85,9 @@ class Suprsend {
   }
 
   add_attachment(body, file_path, kwargs = {}) {
+    console.warn(
+      'This method is deprecated. Use "WorkflowTriggerRequest.add_attachment()" instead'
+    );
     const file_name = kwargs?.file_name;
     const ignore_if_error = kwargs?.ignore_if_error ?? false;
     if (!body?.data) {
@@ -117,6 +119,7 @@ class Suprsend {
   }
 
   track(distinct_id, event_name, properties = {}, kwargs = {}) {
+    console.warn('This method is deprecated. Use "track_event(Event)" instead');
     const event = new Event(distinct_id, event_name, properties, kwargs);
     return this._eventcollector.collect(event);
   }
@@ -131,4 +134,10 @@ class Suprsend {
   }
 }
 
-export { Suprsend, Event, Workflow, SubscriberListBroadcast };
+export {
+  Suprsend,
+  Event,
+  Workflow,
+  SubscriberListBroadcast,
+  WorkflowTriggerRequest,
+};
