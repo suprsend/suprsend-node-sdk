@@ -72,13 +72,13 @@ response.then((res) => console.log("response", res));
   "success": boolean,
   "status": "success/fail",
   "status_code": status_code
-  "message": "message _string"
+  "message": "message_string"
 }
 ```
 
 ### Sending notification to anonymous user
 
-You can send notifications to anonymous users by passing ` "is_transient": true` in your recipient object. This approach is recommended for scenarios where you need to send notifications to unregistered users without creating them in the SuprSend platform. The same way, you can pass ` "is_transient": true` in your actor object to use actor properties in template without creating user profile.
+You can send notifications to anonymous users by passing `"is_transient": true` in your recipient object. This approach is recommended for scenarios where you need to send notifications to unregistered users without creating them in the SuprSend platform. The same way, you can pass `"is_transient": true` in your actor object to use actor properties in template without creating user profile.
 
 ```javascript
 // workflow payload
@@ -129,7 +129,7 @@ response.then(res => console.log("response", res));
 
 #### Bulk API Response
 
-```json
+```javascript
 {
   status: "success/fail/partial",
   total: 10,
@@ -142,7 +142,7 @@ response.then(res => console.log("response", res));
 
 ### Add file attachments (in email)
 
-To add one or more attachments to a notification (viz. Email), call `wf_instance.add_attachment()` for each file with local-path. Ensure that file_path is proper, otherwise it will raise FileNotFoundError.
+To add one or more attachments to a notification (viz. Email), call `wf_instance.add_attachment()` for each file with local-path or attachment url. Ensure that file_path is proper, otherwise it will raise error.
 
 ```javascript
 const {Suprsend, WorkflowTriggerRequest} = require("@suprsend/node-sdk");
@@ -151,7 +151,7 @@ const body = {...};
 const wf_instance = new WorkflowTriggerRequest(body);
 
 wf_instance.add_attachment("/home/user/billing.pdf");
-wf_instance.add_attachment("/home/user/terms.pdf");
+wf_instance.add_attachment("https://www.adobe.com/sample_file.pdf");
 ```
 
 > 🚧
@@ -175,7 +175,7 @@ response.then((res) => console.log("response", res));
   "success": boolean,
   "status": "success/fail",
   "status_code": status_code
-  "message": "message _string"
+  "message": "message_string"
 }
 ```
 
@@ -387,7 +387,7 @@ response.then((res) => console.log("response", res));
 
 #### Bulk API Response
 
-```json
+```javascript
 {
   status: "success/fail/partial",
   total: 10,
@@ -397,3 +397,94 @@ response.then((res) => console.log("response", res));
   warnings: []
 }
 ```
+
+## [Trigger Events](https://docs.suprsend.com/docs/node-send-event-data)
+
+You can send event to Suprsend platform by using the `supr_client.track_event` method. If there is any workflow attached to that event, suprsend will trigger that workflow internally with data provided in the event. You can configure event to workflow from SuprSend Dashboard -> Workflows.
+
+```javascript
+const { Suprsend, Event } = require("@suprsend/node-sdk");
+
+const supr_client = new Suprsend("_workspace_key_", "_workspace_secret_");
+
+// dictionary containing variables or info about event, If none use {}
+const properties = {
+  "key1":"value1",
+  "key2":"value2"
+}
+
+const event = new Event(distinct_id, event_name, properties, {brand_id : "your_brand_id", idempotency_key="__uniq_request_id__"})
+
+const response  = supr_client.track_event(event)
+response.then((res) => console.log("response", res));
+```
+
+| Parameter                  | Description                                                                                                                                         |
+| :------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| distinct_id                | unique id of subscriber performing the event                                                                                                        |
+| event_name                 | string identifier for the event like `product_purchased`                                                                                            |
+| properties                 | information about event like `first_name`. Event properties will be used to pass template variables. Properties keys cannot start with `ss_` or `$` |
+| brand_id (optional)        | brand id of the tenant                                                                                                                              |
+| idempotency_key (optional) | unique key in the request call for [idempotent requests](https://docs.suprsend.com/docs/node-send-event-data#idempotent-requests)                   |
+
+### Response structure
+
+```javascript
+{
+  "success": boolean,
+  "status": "success/fail",
+  "status_code": status_code
+  "message": "message_string"
+}
+```
+
+### Trigger multiple events in bulk
+
+```javascript
+const { Suprsend, Event } = require("@suprsend/node-sdk");
+
+const supr_client = new Suprsend("_workspace_key_", "_workspace_secret_");
+
+const bulk_ins = supr_client.bulk_events.new_instance(); // create bulk instance
+
+const e1 = new Event("distinct_id1", "event_name1", { k1: "v1" }); // create event 1
+const e2 = new Event("distinct_id2", "event_name2", { k2: "v2" }); // create event 2
+
+// add event instance to bulk instance
+bulk_ins.append(e1);
+bulk_ins.append(e2);
+// OR
+bulk_ins.append(e1, e2);
+
+const response = bulk_ins.trigger(); // trigger request
+response.then((res) => console.log("response", res));
+```
+
+#### Bulk API Response
+
+```javascript
+{
+  status: "success/fail/partial",
+  total: 10,
+  success: 10,
+  failure: 0,
+  failed_records: [{"record": {...}, "error": "error_str", "code": "<status_code>"}],
+  warnings: []
+}
+```
+
+### Add file attachments (in email)
+
+To add one or more attachments to a notification (viz. Email), call `event.add_attachment()` for each file with local path or remote url. Ensure that file_path is proper and public (if remote url), otherwise error will be raised.
+
+```javascript
+const { Suprsend, WorkflowTriggerRequest } = require("@suprsend/node-sdk");
+
+const event = new Event(distinct_id, event_name, properties);
+
+event.add_attachment("/home/user/billing.pdf");
+event.add_attachment("https://www.adobe.com/sample_file.pdf");
+```
+
+> 🚧
+> A single event api size (including attachment) must not exceed 100KB (100 x 1024 bytes).
