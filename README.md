@@ -616,7 +616,7 @@ To add one or more attachments to a notification (viz. Email), call `broadcast_i
 const {Suprsend, SubscriberListBroadcast} = require("@suprsend/node-sdk");
 
 const body = {...};
-const wf_instance = new SubscriberListBroadcast(body);
+const broadcast_instance = new SubscriberListBroadcast(body);
 
 broadcast_instance.add_attachment("/home/user/billing.pdf");
 broadcast_instance.add_attachment("https://www.adobe.com/sample_file.pdf");
