@@ -413,7 +413,7 @@ const properties = {
   "key2":"value2"
 }
 
-const event = new Event(distinct_id, event_name, properties, {brand_id : "your_brand_id", idempotency_key="__uniq_request_id__"})
+const event = new Event(distinct_id, event_name, properties, {tenant_id : "your_tenant_id", idempotency_key="__uniq_request_id__"})
 
 const response  = supr_client.track_event(event)
 response.then((res) => console.log("response", res));
@@ -424,7 +424,7 @@ response.then((res) => console.log("response", res));
 | distinct_id                | unique id of subscriber performing the event                                                                                                        |
 | event_name                 | string identifier for the event like `product_purchased`                                                                                            |
 | properties                 | information about event like `first_name`. Event properties will be used to pass template variables. Properties keys cannot start with `ss_` or `$` |
-| brand_id (optional)        | brand id of the tenant                                                                                                                              |
+| tenant_id (optional)       | tenant id of the tenant                                                                                                                             |
 | idempotency_key (optional) | unique key in the request call for [idempotent requests](https://docs.suprsend.com/docs/node-send-event-data#idempotent-requests)                   |
 
 ### Response structure
@@ -488,3 +488,58 @@ event.add_attachment("https://www.adobe.com/sample_file.pdf");
 
 > 🚧
 > A single event api size (including attachment) must not exceed 100KB (100 x 1024 bytes).
+
+## Tenants/Brands
+
+By default, SuprSend creates a tenant with tenant_id="default" (representing your organization) in each of your workspaces. You can create more tenants using one of our backend SDKs. After creating tenants you can use the `tenant_id` field in `Event` and `WorkflowTriggerRequest` to trigger notifications to specific tenant.
+
+### Tenant Data Structure
+
+```json
+{
+  "tenant_id": "br-01",
+  "tenant_name": "Awesome Brand",
+  "logo": "https://ik.imagekit.io/l0quatz6utm/suprsend/staging/media/suprsend-only-logo_c8aa27faef118418e8c5bd7b31a1cafc74e09200.png",
+  "primary_color": "#ff0000",
+  "secondary_color": "#00ff00",
+  "tertiary_color": "#0000ff",
+  "social_links": {
+    "website": "https://suprsend.com",
+    "facebook": "",
+    "linkedin": "",
+    "twitter": "",
+    "instagram": "",
+    "medium": "",
+    "discord": "",
+    "telegram": "",
+    "youtube": ""
+  },
+  "embedded_preference_url": "",
+  "hosted_preference_domain": "",
+  "properties": {
+    "prop1": "value1",
+    "prop2": "value2"
+  }
+}
+```
+
+### Tenant methods
+
+```javascript
+const { Suprsend } = require("@suprsend/node-sdk");
+
+const supr_client = new Suprsend("workspace_key", "workspace_secret")
+
+const tenant_payload = {...}
+
+// create or update tenant
+const response = supr_client.tenants.upsert(tenant_id, tenant_payload);
+
+// get specific tenant details
+const response = supr_client.tenants.get(tenant_id)
+
+// get tenants list
+const response= supr_client.tenants.list({limit:20, offset:0});
+
+response.then((res) => console.log("response", res));
+```
