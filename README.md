@@ -140,9 +140,9 @@ response.then(res => console.log("response", res));
 }
 ```
 
-### Add file attachments (in email)
+### Add file attachments (for email)
 
-To add one or more attachments to a notification (viz. Email), call `wf_instance.add_attachment()` for each file with local-path or attachment url. Ensure that file_path is proper, otherwise it will raise error.
+To add one or more attachments to a notification (viz. Email), call `wf_instance.add_attachment()` for each file with local-path or attachment url. Ensure that file_path is proper and public (if remote url), otherwise error will be raised..
 
 ```javascript
 const {Suprsend, WorkflowTriggerRequest} = require("@suprsend/node-sdk");
@@ -473,7 +473,7 @@ response.then((res) => console.log("response", res));
 }
 ```
 
-### Add file attachments (in email)
+### Add file attachments (for email)
 
 To add one or more attachments to a notification (viz. Email), call `event.add_attachment()` for each file with local path or remote url. Ensure that file_path is proper and public (if remote url), otherwise error will be raised.
 
@@ -523,7 +523,7 @@ By default, SuprSend creates a tenant with tenant_id="default" (representing you
 }
 ```
 
-### Tenant methods
+### [Tenant methods](https://docs.suprsend.com/docs/node-brands)
 
 ```javascript
 const { Suprsend } = require("@suprsend/node-sdk");
@@ -539,7 +539,85 @@ const response = supr_client.tenants.upsert(tenant_id, tenant_payload);
 const response = supr_client.tenants.get(tenant_id)
 
 // get tenants list
-const response= supr_client.tenants.list({limit:20, offset:0});
+const response = supr_client.tenants.list({limit:20, offset:0});
 
 response.then((res) => console.log("response", res));
+```
+
+## [Lists](https://docs.suprsend.com/docs/node-lists)
+
+Lists lets you create a list of subscribers. You can then send bulk messages to all the subscribers in the list with a single API call.
+
+```javascript
+const { Suprsend } = require("@suprsend/node-sdk");
+
+const supr_client = new Suprsend("workspace_key", "workspace_secret");
+
+// create list
+const response = supr_client.subscriber_lists.create({
+  list_id: "_list_id_",
+  list_name: "_list_name_",
+  list_description: "_some sample descritpion for list_",
+});
+
+// get list details
+const response = supr_client.subscriber_lists.get("_list_id_");
+
+// get list of lists
+const response = supr_client.subscriber_lists.get_all({ limit: 20, offset: 0 });
+
+// add subscriber to the list
+const response = supr_client.subscriber_lists.add("_list_id_", [
+  "_distinct_id1_",
+  "_distinct_id2_",
+]);
+
+// remove subscribers from list
+const response = supr_client.subscriber_lists.remove("_list_id_", [
+  "_distinct_id1_",
+  "_distinct_id2_",
+]);
+
+response.then((res) => console.log("response", res));
+```
+
+### [Trigger broadcast notifications to list](https://docs.suprsend.com/docs/node-broadcast)
+
+```javascript
+const { Suprsend, SubscriberListBroadcast } = require("@suprsend/node-sdk");
+
+const supr_client = new Suprsend("workspace_key", "workspace_secret");
+
+// prepare payload
+const broadcast_body = {
+  list_id: "_list_id_",
+  template: "_template_slug_",
+  notification_category: "_",
+  channels: [],
+  delay: "_time_delay_",
+  trigger_at: "_ISO_timestamp_",
+  data: {
+    key1: "value1",
+    key2: "value2",
+  },
+};
+
+const broadcast_instance = new SubscriberListBroadcast(broadcast_body); // create broadcast instance
+
+const response = supr_client.subscriber_lists.broadcast(inst); // trigger broadcast
+response.then((res) => console.log("response", res));
+```
+
+#### Add file attachments in broadcast (for email)
+
+To add one or more attachments to a notification (viz. Email), call `broadcast_instance.add_attachment()` for each file with local-path or attachment url. Ensure that file_path is proper and public (if remote url), otherwise error will be raised.
+
+```javascript
+const {Suprsend, SubscriberListBroadcast} = require("@suprsend/node-sdk");
+
+const body = {...};
+const wf_instance = new SubscriberListBroadcast(body);
+
+broadcast_instance.add_attachment("/home/user/billing.pdf");
+broadcast_instance.add_attachment("https://www.adobe.com/sample_file.pdf");
 ```
