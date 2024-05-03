@@ -260,9 +260,9 @@ user.remove_whatsapp("+15555555555"); // remove Whatsapp
 user.remove_androidpush("__android_push_fcm_token__"); // remove fcm push token
 
 // set the optional provider value [fcm/xiaomi/oppo] if its not a fcm-token
-user.remove_androidpush("__android_push_xiaomi_token__", (provider = "xiaomi"));
+user.remove_androidpush("__android_push_xiaomi_token__", provider);
 
-user.remove_iospush("__iospush_token__");
+user.remove_iospush("__iospush_token__"); // add apns push token
 
 // remove Slack email
 user.remove_slack({
@@ -289,21 +289,21 @@ user.remove_slack({
   },
 });
 
-// add MS teams user or channel using conversation_id
+// remove MS teams user or channel using conversation_id
 user.remove_ms_teams({
   tenant_id: "c1981ab2-9aaf-xxxx-xxxx",
   service_url: "https://smba.trafficmanager.net/amer",
   conversation_id: "19:c1524d7c-a06f-456f-8abe-xxxx",
 });
 
-// add MS teams user using user_id
+// remove MS teams user using user_id
 user.remove_ms_teams({
   tenant_id: "c1981ab2-9aaf-xxxx-xxxx",
   service_url: "https://smba.trafficmanager.net/amer",
   user_id: "29:1nsLcmJ2RKtYH6Cxxxx-xxxx",
 });
 
-// add MS teams using incoming webhook
+// remove MS teams using incoming webhook
 user.remove_ms_teams({
   incoming_webhook: {
     url: "https://wnk1z.webhook.office.com/webhookb2/XXXXXXXXX",
