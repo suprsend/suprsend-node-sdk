@@ -489,7 +489,7 @@ event.add_attachment("https://www.adobe.com/sample_file.pdf");
 > 🚧
 > A single event api size (including attachment) must not exceed 100KB (100 x 1024 bytes).
 
-## Tenants/Brands
+## [Tenants/Brands](https://docs.suprsend.com/docs/node-brands)
 
 By default, SuprSend creates a tenant with tenant_id="default" (representing your organization) in each of your workspaces. You can create more tenants using one of our backend SDKs. After creating tenants you can use the `tenant_id` field in `Event` and `WorkflowTriggerRequest` to trigger notifications to specific tenant.
 
@@ -523,7 +523,7 @@ By default, SuprSend creates a tenant with tenant_id="default" (representing you
 }
 ```
 
-### [Tenant methods](https://docs.suprsend.com/docs/node-brands)
+### Tenant methods
 
 ```javascript
 const { Suprsend } = require("@suprsend/node-sdk");
