@@ -1,11 +1,11 @@
 # suprsend-node-sdk
 
-This package can be included in a node project to easily integrate with `Suprsend` platform.
+This package can be included in a node project to easily integrate with SuprSend platform.
 
 ## Installation
 
 ```shell
-npm install @suprsend/node-sdk
+npm install @suprsend/node-sdk@latest
 ```
 
 ## Initialization
@@ -23,7 +23,7 @@ It is a unified API to trigger workflow and doesn't require user creation before
 ```javascript
 const { Suprsend, WorkflowTriggerRequest } = require("@suprsend/node-sdk");
 
-const supr_client = new Suprsend("_workspace_key_", "_workspace_secret_");
+const supr_client = new Suprsend("workspace_key", "workspace_secret");
 
 // workflow payload
 const body = {
@@ -47,12 +47,11 @@ const body = {
 };
 
 const wf = new WorkflowTriggerRequest(body, {
-  tenant_id: "tenant_id1",
+  tenant_id: "tenant_id",
   idempotency_key: "_unique_request_identifier",
 });
 
-// trigger workflow
-const response = supr_client.workflows.trigger(wf);
+const response = supr_client.workflows.trigger(wf); // trigger workflow
 response.then((res) => console.log("response", res));
 ```
 
@@ -62,7 +61,7 @@ response.then((res) => console.log("response", res));
 | actor (_optional_) | string / object                    | Includes distinct_id and properties of the user who performed the action. You can use it for [cross-user notifications](https://docs.suprsend.com/docs/node-trigger-workflow-from-api#sending-cross-user-notifications) where you need to include actor properties in notification template. Actor properties can be added as `$actor.<prop>`. |
 | recipients         | array of string / array of objects | List of users who need to be notified. You can add upto 100 recipients in a workflow trigger. You can either pass recipients as an array of `distinct_ID` (if user is pre-synced in SuprSend database) or [define recipient information inline](https://docs.suprsend.com/docs/node-trigger-workflow-from-api#identifying-recipients-inline).  |
 | data               | object                             | variable data required to render dynamic template content or workflow properties such as dynamic delay or channel override in send node.                                                                                                                                                                                                       |
-| tenant_id          | string                             | unique identifier of the [brand / tenant](https://docs.suprsend.com/docs/brands)                                                                                                                                                                                                                                                               |
+| tenant_id          | string                             | trigger workflow for specific tenant/brand.                                                                                                                                                                                                                                                                                                    |
 | idempotency_key    | string                             | unique identifier of the request. We'll be returning idempotency_key in our [outbound webhook response](https://docs.suprsend.com/docs/outbound-webhook). You can use it to map notification statuses and replies in your system.                                                                                                              |
 
 ### Response structure
@@ -85,12 +84,12 @@ You can send notifications to anonymous users by passing `"is_transient": true` 
 const workflow_body = {
   workflow: "_workflow_slug_",
   actor: {
-    is_transient: true,
+    is_transient: true, // for anonymous actor
     name: "actor_1",
   },
   recipients: [
     {
-      is_transient: true,
+      is_transient: true, // for anonymous recipient
       $email: ["abc@example.com"],
       name: "recipient_1",
     },
@@ -106,25 +105,24 @@ const workflow_body = {
 ### Trigger Multile workflows in bulk
 
 ```javascript
-const {Suprsend, WorkflowTriggerRequest} = require("@suprsend/node-sdk");
+const { Suprsend, WorkflowTriggerRequest } = require("@suprsend/node-sdk");
 
-const supr_client = new Suprsend("_workspace_key_", "_workspace_secret_");
+const supr_client = new Suprsend("workspace_key", "workspace_secret");
 
-// prepare workflow payload
-const body1 = {...};
-const body2 = {...};
+const wf1 = new WorkflowTriggerRequest(body1, {
+  tenant_id: "tenant_id1",
+  idempotency_key: "_unique_identifier_of_the_request_",
+}); // workflow 1 request
 
-
-const w1 = new WorkflowTriggerRequest(body1, {tenant_id: "tenant_id1", idempotency_key: "_unique_identifier_of_the_request_"}) // workflow 1 request
-const w2 = new WorkflowTriggerRequest(body2)  // workflow 2 request
+const wf2 = new WorkflowTriggerRequest(body2); // workflow 2 request
 // add as many workflow requests as you want
 
-const bulk_ins = supr_client.workflows.bulk_trigger_instance() // create bulk instance
+const bulk_ins = supr_client.workflows.bulk_trigger_instance(); // create bulk instance
 
-bulk_ins.append(w1,w2)  // add workflow instances to bulk instance
+bulk_ins.append(wf1, wf2); // add workflow instances to bulk instance
 
 const response = bulk_ins.trigger(); // trigger workflows
-response.then(res => console.log("response", res));
+response.then((res) => console.log("response", res));
 ```
 
 #### Bulk API Response
@@ -145,22 +143,17 @@ response.then(res => console.log("response", res));
 To add one or more attachments to a notification (viz. Email), call `wf_instance.add_attachment()` for each file with local-path or attachment url. Ensure that file_path is proper and public (if remote url), otherwise error will be raised..
 
 ```javascript
-const {Suprsend, WorkflowTriggerRequest} = require("@suprsend/node-sdk");
-
-const body = {...};
-const wf_instance = new WorkflowTriggerRequest(body);
-
 wf_instance.add_attachment("/home/user/billing.pdf");
 wf_instance.add_attachment("https://www.adobe.com/sample_file.pdf");
 ```
 
 > 🚧
-> A single workflow body size (including attachment) must not exceed 800KB (800 x 1024 bytes).
+> A single workflow body size (including attachment) must not exceed 100KB (100 x 1024 bytes).
 
 ## [Updating User Profile](https://docs.suprsend.com/docs/node-create-user-profile)
 
 ```javascript
-const user = supr_client.user.get_instance("__uniq_user_id__");
+const user = supr_client.user.get_instance("__uniq_distinct_id__");
 
 // user methods mentioned below
 
@@ -249,8 +242,6 @@ user.add_ms_teams({
 Use `user.remove_*` method(s) to remove channels from a user profile. This method will detach provided value from the user profile specified channel.
 
 ```javascript
-// Remove channel details from user-instance. Call relevant remove_* methods
-
 user.remove_email("user@example.com"); // remove Email
 
 user.remove_sms("+15555555555"); // remove SMS
@@ -347,10 +338,6 @@ user.set({ key1: "value1", key2: "value2" });
 user.set_once(key, value); // key:string, value:any
 user.set_once({ key1: "value1", key2: "value2" });
 
-// add the given number(+/-) to an existing property
-user.increment(key, value); // key:string, value:number
-user.increment({ key1: "value1", key2: "value2" });
-
 // append a value to the list for a given property
 user.append(key, value); // key:string, value:any
 user.append({ key1: "value1", key2: "value2" });
@@ -358,6 +345,10 @@ user.append({ key1: "value1", key2: "value2" });
 // remove a value from the list for a given property
 user.remove(key, value); // key:string, value:any
 user.remove({ key1: "value1", key2: "value2" });
+
+// add the given number(+/-) to an existing property
+user.increment(key, value); // key:string, value:number
+user.increment({ key1: "value1", key2: "value2" });
 
 // remove a property permanently from user properties
 user.unset(key); // key:string
@@ -367,19 +358,23 @@ user.unset(["key1", "key2"]);
 ### Bulk user update
 
 ```javascript
+const { Suprsend } = require("@suprsend/node-sdk");
+
+const supr_client = new Suprsend("workspace_key", "workspace_secret");
+
 const bulk_ins = supr_client.bulk_users.new_instance(); // create bulk instance
 
-const u1 = supr_client.user.get_instance("distinct_id_1"); // create user 1 instance
-u1.add_email("u1@example.com");
+const user1 = supr_client.user.get_instance("distinct_id_1"); // create user 1 instance
+user1.add_email("u1@example.com");
 
-const u2 = supr_client.user.get_instance("distinct_id_2"); // create user 2 instance
-u2.add_email("u2@example.com");
+const user2 = supr_client.user.get_instance("distinct_id_2"); // create user 2 instance
+user2.add_email("u2@example.com");
 
 // adding users instance to bulk instance
-bulk_ins.append(u1);
-bulk_ins.append(u2);
+bulk_ins.append(user1);
+bulk_ins.append(user2);
 // OR
-bulk_ins.append(u1, u2);
+bulk_ins.append(user1, user2);
 
 const response = bulk_ins.save(); // trigger request
 response.then((res) => console.log("response", res));
@@ -405,7 +400,7 @@ You can send event to Suprsend platform by using the `supr_client.track_event` m
 ```javascript
 const { Suprsend, Event } = require("@suprsend/node-sdk");
 
-const supr_client = new Suprsend("_workspace_key_", "_workspace_secret_");
+const supr_client = new Suprsend("workspace_key", "workspace_secret");
 
 // dictionary containing variables or info about event, If none use {}
 const properties = {
@@ -447,14 +442,14 @@ const supr_client = new Suprsend("_workspace_key_", "_workspace_secret_");
 
 const bulk_ins = supr_client.bulk_events.new_instance(); // create bulk instance
 
-const e1 = new Event("distinct_id1", "event_name1", { k1: "v1" }); // create event 1
-const e2 = new Event("distinct_id2", "event_name2", { k2: "v2" }); // create event 2
+const event1 = new Event("distinct_id1", "event_name1", { k1: "v1" }); // create event 1
+const event2 = new Event("distinct_id2", "event_name2", { k2: "v2" }); // create event 2
 
 // add event instance to bulk instance
-bulk_ins.append(e1);
-bulk_ins.append(e2);
+bulk_ins.append(event1);
+bulk_ins.append(event2);
 // OR
-bulk_ins.append(e1, e2);
+bulk_ins.append(event1, event2);
 
 const response = bulk_ins.trigger(); // trigger request
 response.then((res) => console.log("response", res));
@@ -478,22 +473,18 @@ response.then((res) => console.log("response", res));
 To add one or more attachments to a notification (viz. Email), call `event.add_attachment()` for each file with local path or remote url. Ensure that file_path is proper and public (if remote url), otherwise error will be raised.
 
 ```javascript
-const { Suprsend, WorkflowTriggerRequest } = require("@suprsend/node-sdk");
-
-const event = new Event(distinct_id, event_name, properties);
-
 event.add_attachment("/home/user/billing.pdf");
 event.add_attachment("https://www.adobe.com/sample_file.pdf");
 ```
 
 > 🚧
-> A single event api size (including attachment) must not exceed 100KB (100 x 1024 bytes).
+> A single event instance size (including attachment) must not exceed 100KB (100 x 1024 bytes).
 
 ## [Tenants/Brands](https://docs.suprsend.com/docs/node-brands)
 
 By default, SuprSend creates a tenant with tenant_id="default" (representing your organization) in each of your workspaces. You can create more tenants using one of our backend SDKs. After creating tenants you can use the `tenant_id` field in `Event` and `WorkflowTriggerRequest` to trigger notifications to specific tenant.
 
-### Tenant Data Structure
+### Tenant data structure
 
 ```json
 {
@@ -528,18 +519,16 @@ By default, SuprSend creates a tenant with tenant_id="default" (representing you
 ```javascript
 const { Suprsend } = require("@suprsend/node-sdk");
 
-const supr_client = new Suprsend("workspace_key", "workspace_secret")
-
-const tenant_payload = {...}
+const supr_client = new Suprsend("workspace_key", "workspace_secret");
 
 // create or update tenant
 const response = supr_client.tenants.upsert(tenant_id, tenant_payload);
 
 // get specific tenant details
-const response = supr_client.tenants.get(tenant_id)
+const response = supr_client.tenants.get(tenant_id);
 
 // get tenants list
-const response = supr_client.tenants.list({limit:20, offset:0});
+const response = supr_client.tenants.list({ limit: 20, offset: 0 });
 
 response.then((res) => console.log("response", res));
 ```
@@ -602,7 +591,7 @@ const broadcast_body = {
   },
 };
 
-const broadcast_instance = new SubscriberListBroadcast(broadcast_body); // create broadcast instance
+const broadcast_instance = new SubscriberListBroadcast(broadcast_body, {tenant_id : "your_tenant_id", idempotency_key="__uniq_request_id__"}); // create broadcast instance
 
 const response = supr_client.subscriber_lists.broadcast(inst); // trigger broadcast
 response.then((res) => console.log("response", res));
@@ -613,11 +602,9 @@ response.then((res) => console.log("response", res));
 To add one or more attachments to a notification (viz. Email), call `broadcast_instance.add_attachment()` for each file with local-path or attachment url. Ensure that file_path is proper and public (if remote url), otherwise error will be raised.
 
 ```javascript
-const {Suprsend, SubscriberListBroadcast} = require("@suprsend/node-sdk");
-
-const body = {...};
-const broadcast_instance = new SubscriberListBroadcast(body);
-
 broadcast_instance.add_attachment("/home/user/billing.pdf");
 broadcast_instance.add_attachment("https://www.adobe.com/sample_file.pdf");
 ```
+
+> 🚧
+> A single broadcast instance size (including attachment) must not exceed 100KB (100 x 1024 bytes).
