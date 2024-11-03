@@ -326,7 +326,7 @@ export default class _SubscriberInternalHelper {
   }
 
   __check_ident_val_string(value, caller) {
-    const message = "value must a string with proper value";
+    const message = "value must be a string with proper value";
     if (!is_string(value)) {
       this.__errors.push(`[${caller}] ${message}`);
       return [value, false];
