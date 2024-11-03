@@ -120,10 +120,10 @@ class ObjectsApi {
         }
     }
 
-    async edit(objectType, objectId, objectPayload) {
+    async edit(objectType, objectId, editPayload) {
         const url = await this.detailUrl(objectType, objectId);
         const headers = { ...this.headers, ...this.dynamicHeaders() };
-        const contentText = JSON.stringify(objectPayload);
+        const contentText = JSON.stringify(editPayload);
         const signature = get_request_signature(
             url,
             "PATCH",
@@ -134,7 +134,7 @@ class ObjectsApi {
         headers['Authorization'] = `${this.config.workspace_key}:${signature}`;
 
         try {
-            const response = await axios.put(url, contentText, { headers });
+            const response = await axios.patch(url, contentText, { headers });
             return response.data;
         } catch (err) {
             throw new SuprsendApiError(err);
@@ -306,7 +306,7 @@ export class _Object {
 
         const signature = get_request_signature(
             this.__url,
-            "POST",
+            "PATCH",
             content_text,
             headers,
             this.config.workspace_secret
@@ -314,14 +314,14 @@ export class _Object {
         headers['Authorization'] = `${this.config.workspace_key}:${signature}`;
 
         try {
-            const response = await axios.post(this.__url, content_text, { headers });
+            const response = await axios.patch(this.__url, content_text, { headers });
             return response.data;
         } catch (err) {
             throw new SuprsendApiError(err);
         }
     }
 
-    _collect_event() {
+    _collect_payload() {
         const resp = this._helper.get_identity_events();
         if (!is_empty(resp["errors"])) {
             this.__errors = [...this.__errors, ...resp["errors"]];
@@ -348,13 +348,13 @@ export class _Object {
                 return;
             } else {
                 this._helper._append_kv(key, value, {}, caller);
-                this._collect_event();
+                this._collect_payload();
             }
         } else {
             for (let item in key) {
                 this._helper._append_kv(item, key[item], key, caller);
             }
-            this._collect_event();
+            this._collect_payload();
         }
     }
 
@@ -372,13 +372,13 @@ export class _Object {
                 return;
             } else {
                 this._helper._set_kv(key, value, {}, caller);
-                this._collect_event();
+                this._collect_payload();
             }
         } else {
             for (let item in key) {
                 this._helper._set_kv(item, key[item], key, caller);
             }
-            this._collect_event();
+            this._collect_payload();
         }
     }
 
@@ -396,13 +396,13 @@ export class _Object {
                 return;
             } else {
                 this._helper._set_once_kv(key, value, {}, caller);
-                this._collect_event();
+                this._collect_payload();
             }
         } else {
             for (let item in key) {
                 this._helper._set_once_kv(item, key[item], key, caller);
             }
-            this._collect_event();
+            this._collect_payload();
         }
     }
 
@@ -420,13 +420,13 @@ export class _Object {
                 return;
             } else {
                 this._helper._increment_kv(key, value, {}, caller);
-                this._collect_event();
+                this._collect_payload();
             }
         } else {
             for (let item in key) {
                 this._helper._increment_kv(item, key[item], key, caller);
             }
-            this._collect_event();
+            this._collect_payload();
         }
     }
 
@@ -444,13 +444,13 @@ export class _Object {
                 return;
             } else {
                 this._helper._remove_kv(key, value, {}, caller);
-                this._collect_event();
+                this._collect_payload();
             }
         } else {
             for (let item in key) {
                 this._helper._remove_kv(item, key[item], key, caller);
             }
-            this._collect_event();
+            this._collect_payload();
         }
     }
 
@@ -462,121 +462,121 @@ export class _Object {
         }
         if (is_string(key)) {
             this._helper._unset_k(key, caller);
-            this._collect_event();
+            this._collect_payload();
         } else {
             for (let item of key) {
                 this._helper._unset_k(item, caller);
             }
-            this._collect_event();
+            this._collect_payload();
         }
     }
 
     set_preferred_language(lang_code) {
         const caller = "set_preferred_language";
         this._helper._set_preferred_language(lang_code, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     set_timezone(timezone) {
         const caller = "set_timezone";
         this._helper._set_timezone(timezone, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_email(email) {
         const caller = "add_email";
         this._helper._add_email(email, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_email(email) {
         const caller = "remove_email";
         this._helper._remove_email(email, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_sms(mobile_no) {
         const caller = "add_sms";
         this._helper._add_sms(mobile_no, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_sms(mobile_no) {
         const caller = "remove_sms";
         this._helper._remove_sms(mobile_no, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_whatsapp(mobile_no) {
         const caller = "add_whatsapp";
         this._helper._add_whatsapp(mobile_no, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_whatsapp(mobile_no) {
         const caller = "remove_whatsapp";
         this._helper._remove_whatsapp(mobile_no, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_androidpush(push_token, provider = "fcm") {
         const caller = "add_androidpush";
         this._helper._add_androidpush(push_token, provider, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_androidpush(push_token, provider = "fcm") {
         const caller = "remove_androidpush";
         this._helper._remove_androidpush(push_token, provider, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_iospush(push_token, provider = "apns") {
         const caller = "add_iospush";
         this._helper._add_iospush(push_token, provider, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_iospush(push_token, provider = "apns") {
         const caller = "remove_iospush";
         this._helper._remove_iospush(push_token, provider, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_webpush(push_token, provider = "vapid") {
         const caller = "add_webpush";
         this._helper._add_webpush(push_token, provider, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_webpush(push_token, provider = "vapid") {
         const caller = "remove_webpush";
         this._helper._remove_webpush(push_token, provider, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_slack(value) {
         const caller = "add_slack";
         this._helper._add_slack(value, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_slack(value) {
         const caller = "remove_slack";
         this._helper._remove_slack(value, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     add_ms_teams(value) {
         const caller = "add_ms_teams";
         this._helper._add_ms_teams(value, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
     remove_ms_teams(value) {
         const caller = "remove_ms_teams";
         this._helper._remove_ms_teams(value, caller);
-        this._collect_event();
+        this._collect_payload();
     }
 
 }
