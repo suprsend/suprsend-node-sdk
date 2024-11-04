@@ -11,6 +11,7 @@ import BulkSubscribersFactory from "./subscribers_bulk";
 import { SubscriberListsApi, SubscriberListBroadcast } from "./subscriber_list";
 import BrandsApi from "./brands";
 import TenantsApi from "./tenant";
+import ObjectsApi from "./object";
 import { DEFAULT_URL } from "./constants";
 
 const package_json = require("../package.json");
@@ -38,6 +39,7 @@ class Suprsend {
     this.brands = new BrandsApi(this);
     this.tenants = new TenantsApi(this);
     this.workflows = new WorkflowsApi(this);
+    this.objects = new ObjectsApi(this);
 
     this.subscriber_lists = new SubscriberListsApi(this);
 

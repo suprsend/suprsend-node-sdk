@@ -236,6 +236,68 @@ declare namespace suprsend {
     trigger(): Promise<SBulkResponse>;
   }
 
+  // objects
+  interface ObjectsApi {
+    list(object_type: string, options?: {}): Promise<Dictionary>;
+
+    get(object_type: string, object_id: string): Promise<Dictionary>;
+
+    upsert(object_type: string, object_id: string, object_payload?: Dictionary): Promise<Dictionary>;
+
+    edit(object_type: string, object_id: string, edit_payload?: Dictionary): Promise<Dictionary>;
+
+    delete(object_type: string, object_id: string): Promise<Dictionary>;
+
+    bulk_delete(object_type: string, payload?: Dictionary): Promise<Dictionary>;
+
+    get_subscriptions(object_type: string, object_id: string, options?: {}): Promise<Dictionary>;
+
+    create_subscriptions(object_type: string, object_id: string, subscriptions?: Dictionary): Promise<Dictionary>;
+
+    delete_subscriptions(object_type: string, object_id: string, subscriptions?: Dictionary): Promise<Dictionary>;
+
+    get_instance(object_type: string, object_id: string): Object;
+  }
+
+  // subscribers
+  interface Object {
+    save(): Promise<SResponse>;
+
+    append(key: string | Dictionary, value?: any): void;
+    set(key: string | Dictionary, value?: any): void;
+    set_once(key: string | Dictionary, value?: any): void;
+    increment(key: string | Dictionary, value?: number): void;
+    remove(key: string | Dictionary, value?: any): void;
+    unset(keys: string | string[]): void;
+
+    set_preferred_language(lang_code: string): void;
+    set_timezone(timezone: string): void;
+
+    add_email(email: string): void;
+    remove_email(email: string): void;
+
+    add_sms(mobile_no: string): void;
+    remove_sms(mobile_no: string): void;
+
+    add_whatsapp(mobile_no: string): void;
+    remove_whatsapp(mobile_no: string): void;
+
+    add_androidpush(push_token: string, provider?: string): void;
+    remove_androidpush(push_token: string, provider?: string): void;
+
+    add_iospush(push_token: string, provider?: string): void;
+    remove_iospush(push_token: string, provider?: string): void;
+
+    add_webpush(push_token: Dictionary, provider?: string): void;
+    remove_webpush(push_token: Dictionary, provider?: string): void;
+
+    add_slack(value: Dictionary): void;
+    remove_slack(value: Dictionary): void;
+
+    add_ms_teams(value: Dictionary): void;
+    remove_ms_teams(value: Dictionary): void;
+  }
+
   interface Suprsend {
     new (
       workspace_env: string,
@@ -258,6 +320,8 @@ declare namespace suprsend {
     subscriber_lists: SubscriberListsApi;
 
     workflows: WorkflowsApi;
+
+    objects: ObjectsApi;
 
     add_attachment(
       body: Dictionary,
