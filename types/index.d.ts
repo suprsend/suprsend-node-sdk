@@ -238,23 +238,25 @@ declare namespace suprsend {
 
   // objects
   interface ObjectsApi {
-    list(object_type: any, options?: {}): Promise<Dictionary>;
+    list(object_type: string, options?: {}): Promise<Dictionary>;
 
-    get(object_type: any, object_id: any): Promise<Dictionary>;
+    get(object_type: string, object_id: string): Promise<Dictionary>;
 
-    upsert(object_type: any, object_id: any, object_payload?: Dictionary): Promise<Dictionary>;
+    upsert(object_type: string, object_id: string, object_payload?: Dictionary): Promise<Dictionary>;
 
-    edit(object_type: any, object_id: any, edit_payload?: Dictionary): Promise<Dictionary>;
+    edit(object_type: string, object_id: string, edit_payload?: Dictionary): Promise<Dictionary>;
 
-    delete(object_type: any, object_id: any): Promise<Dictionary>;
+    delete(object_type: string, object_id: string): Promise<Dictionary>;
 
-    get_subscriptions(object_type: any, object_id: any, options?: {}): Promise<Dictionary>;
+    bulk_delete(object_type: string, payload?: Dictionary): Promise<Dictionary>;
 
-    create_subscription(object_type: any, object_id: any, subscriptions?: Dictionary): Promise<Dictionary>;
+    get_subscriptions(object_type: string, object_id: string, options?: {}): Promise<Dictionary>;
 
-    delete_subscription(object_type: any, object_id: any, subscriptions?: Dictionary): Promise<Dictionary>;
+    create_subscriptions(object_type: string, object_id: string, subscriptions?: Dictionary): Promise<Dictionary>;
 
-    get_instance(object_type: any, object_id: any): Object;
+    delete_subscriptions(object_type: string, object_id: string, subscriptions?: Dictionary): Promise<Dictionary>;
+
+    get_instance(object_type: string, object_id: string): Object;
   }
 
   // subscribers

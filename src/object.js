@@ -12,28 +12,28 @@ import _ObjectInternalHelper from "./object_helper";
 class ObjectsApi {
     constructor(config) {
         this.config = config;
-        this.listUrl = this.createListUrl();
-        this.headers = this.commonHeaders();
+        this.listUrl = this.create_list_url();
+        this.headers = this.common_headers();
     }
 
-    createListUrl() {
+    create_list_url() {
         return `${this.config.base_url}v1/object/`;
     }
 
-    commonHeaders() {
+    common_headers() {
         return {
             'Content-Type': 'application/json; charset=utf-8',
             'User-Agent': this.config.user_agent,
         };
     }
 
-    dynamicHeaders() {
+    dynamic_headers() {
         return {
             'Date': new Date().toISOString(), // Adjust to your header date format
         };
     }
 
-    validateObjectEntityString(entityId) {
+    validate_object_entity_string(entityId) {
         if (!is_string(entityId)) {
             throw new InputValueError(
                 "object entity must be a string"
@@ -48,10 +48,10 @@ class ObjectsApi {
 
     async list(objectType, options = {}) {
         const params = new URLSearchParams(options).toString();
-        const validatedType = this.validateObjectEntityString(objectType);
+        const validatedType = this.validate_object_entity_string(objectType);
         const encodedType = encodeURIComponent(validatedType);
         const url = `${this.listUrl}${encodedType}/?${params}`;
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const signature = get_request_signature(
             url,
             "GET",
@@ -69,19 +69,19 @@ class ObjectsApi {
         }
     }
 
-    async detailUrl(objectType, objectId) {
-        const validatedType = this.validateObjectEntityString(objectType);
+    async detail_url(objectType, objectId) {
+        const validatedType = this.validate_object_entity_string(objectType);
         const encodedType = encodeURIComponent(validatedType);
 
-        const validatedId = this.validateObjectEntityString(objectId);
+        const validatedId = this.validate_object_entity_string(objectId);
         const encodedId = encodeURIComponent(validatedId);
 
         return `${this.listUrl}${encodedType}/${encodedId}/`;
     }
 
     async get(objectType, objectId) {
-        const url = await this.detailUrl(objectType, objectId);
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const url = await this.detail_url(objectType, objectId);
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const signature = get_request_signature(
             url,
             "GET",
@@ -100,8 +100,8 @@ class ObjectsApi {
     }
 
     async upsert(objectType, objectId, objectPayload) {
-        const url = await this.detailUrl(objectType, objectId);
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const url = await this.detail_url(objectType, objectId);
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const contentText = JSON.stringify(objectPayload);
         const signature = get_request_signature(
             url,
@@ -121,8 +121,8 @@ class ObjectsApi {
     }
 
     async edit(objectType, objectId, editPayload) {
-        const url = await this.detailUrl(objectType, objectId);
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const url = await this.detail_url(objectType, objectId);
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const contentText = JSON.stringify(editPayload);
         const signature = get_request_signature(
             url,
@@ -142,8 +142,8 @@ class ObjectsApi {
     }
 
     async delete(objectType, objectId) {
-        const url = await this.detailUrl(objectType, objectId);
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const url = await this.detail_url(objectType, objectId);
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const signature = get_request_signature(
             url,
             "DELETE",
@@ -161,11 +161,42 @@ class ObjectsApi {
         }
     }
 
+    async bulk_ops_url(objectType) {
+        const validatedType = this.validate_object_entity_string(objectType);
+        const encodedType = encodeURIComponent(validatedType);
+
+        return `${this.config.base_url}v1/bulk/object/${encodedType}/`;
+    }
+
+    async bulk_delete(objectType, payload) {
+        const url = await this.bulk_ops_url(objectType);
+        const headers = { ...this.headers, ...this.dynamic_headers() };
+        const contentText = JSON.stringify(payload);
+        const signature = get_request_signature(
+            url,
+            "DELETE",
+            contentText,
+            headers,
+            this.config.workspace_secret
+        );
+        headers['Authorization'] = `${this.config.workspace_key}:${signature}`;
+
+        try {
+            const response = await axios.delete(url, {
+                headers: headers,
+                data: payload
+            });
+            return response.data;
+        } catch (err) {
+            throw new SuprsendApiError(err);
+        }
+    }
+
     async get_subscriptions(objectType, objectId, options = {}) {
         const params = new URLSearchParams(options).toString();
-        const url = await this.detailUrl(objectType, objectId);
+        const url = await this.detail_url(objectType, objectId);
         const subscription_url = `${url}subscription/?${params}`;
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const signature = get_request_signature(
             subscription_url,
             "GET",
@@ -176,7 +207,7 @@ class ObjectsApi {
         headers['Authorization'] = `${this.config.workspace_key}:${signature}`;
 
         try {
-            const response = await axios.get(url, { headers });
+            const response = await axios.get(subscription_url, { headers });
             return response.data;
         } catch (err) {
             throw new SuprsendApiError(err);
@@ -184,9 +215,9 @@ class ObjectsApi {
     }
 
     async create_subscriptions(objectType, objectId, subscriptions) {
-        const url = await this.detailUrl(objectType, objectId);
+        const url = await this.detail_url(objectType, objectId);
         const subscription_url = `${url}subscription/`;
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const contentText = JSON.stringify(subscriptions);
         const signature = get_request_signature(
             subscription_url,
@@ -198,7 +229,7 @@ class ObjectsApi {
         headers['Authorization'] = `${this.config.workspace_key}:${signature}`;
 
         try {
-            const response = await axios.post(url, contentText, { headers });
+            const response = await axios.post(subscription_url, contentText, { headers });
             return response.data;
         } catch (err) {
             throw new SuprsendApiError(err);
@@ -206,9 +237,9 @@ class ObjectsApi {
     }
 
     async delete_subscriptions(objectType, objectId, subscriptions) {
-        const url = await this.detailUrl(objectType, objectId);
+        const url = await this.detail_url(objectType, objectId);
         const subscription_url = `${url}subscription/`;
-        const headers = { ...this.headers, ...this.dynamicHeaders() };
+        const headers = { ...this.headers, ...this.dynamic_headers() };
         const contentText = JSON.stringify(subscriptions);
         const signature = get_request_signature(
             subscription_url,
@@ -220,7 +251,10 @@ class ObjectsApi {
         headers['Authorization'] = `${this.config.workspace_key}:${signature}`;
 
         try {
-            const response = await axios.delete(url, { headers });
+            const response = await axios.delete(subscription_url, {
+                headers: headers,
+                data: subscriptions
+            });
             return response.data;
         } catch (err) {
             throw new SuprsendApiError(err);
