@@ -241,7 +241,7 @@ export default class _SubscriberInternalHelper {
     }
   }
 
-  _unset_kv(key, caller = "unset") {
+  _unset_k(key, caller = "unset") {
     const [validated_key, is_k_valid] = this.__validate_key_basic(key, caller);
     if (!is_k_valid) {
       return;

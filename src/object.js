@@ -495,11 +495,11 @@ export class _Object {
             return;
         }
         if (is_string(key)) {
-            this._helper._unset_kv(key, caller);
+            this._helper._unset_k(key, caller);
             this._collect_payload();
         } else {
             for (let item of key) {
-                this._helper._unset_kv(item, caller);
+                this._helper._unset_k(item, caller);
             }
             this._collect_payload();
         }
