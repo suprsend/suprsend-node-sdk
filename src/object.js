@@ -99,7 +99,7 @@ class ObjectsApi {
         }
     }
 
-    async upsert(objectType, objectId, objectPayload) {
+    async upsert(objectType, objectId, objectPayload = {}) {
         const url = await this.detail_url(objectType, objectId);
         const headers = { ...this.headers, ...this.dynamic_headers() };
         const contentText = JSON.stringify(objectPayload);
@@ -120,7 +120,7 @@ class ObjectsApi {
         }
     }
 
-    async edit(objectType, objectId, editPayload) {
+    async edit(objectType, objectId, editPayload = {}) {
         const url = await this.detail_url(objectType, objectId);
         const headers = { ...this.headers, ...this.dynamic_headers() };
         const contentText = JSON.stringify(editPayload);
@@ -171,6 +171,7 @@ class ObjectsApi {
     async bulk_delete(objectType, payload) {
         const url = await this.bulk_ops_url(objectType);
         const headers = { ...this.headers, ...this.dynamic_headers() };
+        payload = payload || {}
         const contentText = JSON.stringify(payload);
         const signature = get_request_signature(
             url,
@@ -218,6 +219,7 @@ class ObjectsApi {
         const url = await this.detail_url(objectType, objectId);
         const subscription_url = `${url}subscription/`;
         const headers = { ...this.headers, ...this.dynamic_headers() };
+        subscriptions = subscriptions || {}
         const contentText = JSON.stringify(subscriptions);
         const signature = get_request_signature(
             subscription_url,
@@ -240,6 +242,7 @@ class ObjectsApi {
         const url = await this.detail_url(objectType, objectId);
         const subscription_url = `${url}subscription/`;
         const headers = { ...this.headers, ...this.dynamic_headers() };
+        subscriptions = subscriptions || {}
         const contentText = JSON.stringify(subscriptions);
         const signature = get_request_signature(
             subscription_url,
