@@ -120,7 +120,8 @@ export class Subscriber {
       if (is_part_of_bulk) {
         console.log(err_msg);
       } else {
-        throw new InputValueError(err_msg);
+        // throw new InputValueError(err_msg);
+        console.log(err_msg);
       }
     }
     return this.__warnings_list;

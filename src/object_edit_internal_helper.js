@@ -68,11 +68,8 @@ const ALL_RESERVED_KEYS = [
   ...IDENT_KEYS_ALL,
 ];
 
-export default class _SubscriberInternalHelper {
-  constructor(distinct_id, workspace_key) {
-    this.distinct_id = distinct_id;
-    this.workspace_key = workspace_key;
-
+export default class _ObjectEditInternalHelper {
+  constructor() {
     this.__dict_set = {};
 
     this.__dict_set_once = {};
@@ -100,38 +97,38 @@ export default class _SubscriberInternalHelper {
     this.__info = [];
   }
 
-  get_identity_events() {
-    const evt = this.__form_event();
+  _get_operation_result() {
+    const operation = this.__form_operation();
     const ret_val = {
       errors: this.__errors,
       info: this.__info,
-      event: evt,
+      operation: operation,
     };
     this.reset();
     return ret_val;
   }
 
-  __form_event() {
-    const event = {};
+  __form_operation() {
+    const ops = {};
     if (!is_empty(this.__dict_set)) {
-      event["$set"] = this.__dict_set;
+      ops["$set"] = this.__dict_set;
     }
     if (!is_empty(this.__dict_set_once)) {
-      event["$set_once"] = this.__dict_set_once;
+      ops["$set_once"] = this.__dict_set_once;
     }
     if (!is_empty(this.__dict_increment)) {
-      event["$add"] = this.__dict_increment;
+      ops["$add"] = this.__dict_increment;
     }
     if (!is_empty(this.__dict_append)) {
-      event["$append"] = this.__dict_append;
+      ops["$append"] = this.__dict_append;
     }
     if (!is_empty(this.__dict_remove)) {
-      event["$remove"] = this.__dict_remove;
+      ops["$remove"] = this.__dict_remove;
     }
     if (!is_empty(this.__list_unset)) {
-      event["$unset"] = this.__list_unset;
+      ops["$unset"] = this.__list_unset;
     }
-    return event;
+    return ops;
   }
 
   __validate_key_basic(key, caller) {
@@ -329,8 +326,17 @@ export default class _SubscriberInternalHelper {
     return [value, true];
   }
 
+  // email methods
+  __validate_email(value, caller) {
+    const [email, is_valid] = this.__check_ident_val_string(value, caller);
+    if (!is_valid) {
+      return [email, false];
+    }
+    return [email, true];
+  }
+
   _add_email(email, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(email, caller);
+    const [value, is_valid] = this.__validate_email(email, caller);
     if (!is_valid) {
       return;
     }
@@ -338,15 +344,24 @@ export default class _SubscriberInternalHelper {
   }
 
   _remove_email(email, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(email, caller);
+    const [value, is_valid] = this.__validate_email(email, caller);
     if (!is_valid) {
       return;
     }
     this.__dict_remove[IDENT_KEY_EMAIL] = value;
   }
 
+  // mobile methods
+  __validate_mobile_no(value, caller) {
+    const [mobile, is_valid] = this.__check_ident_val_string(value, caller);
+    if (!is_valid) {
+      return [mobile, false];
+    }
+    return [mobile, true];
+  }
+
   _add_sms(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
+    const [value, is_valid] = this.__validate_mobile_no(mobile_no, caller);
     if (!is_valid) {
       return;
     }
@@ -354,7 +369,7 @@ export default class _SubscriberInternalHelper {
   }
 
   _remove_sms(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
+    const [value, is_valid] = this.__validate_mobile_no(mobile_no, caller);
     if (!is_valid) {
       return;
     }
@@ -362,7 +377,7 @@ export default class _SubscriberInternalHelper {
   }
 
   _add_whatsapp(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
+    const [value, is_valid] = this.__validate_mobile_no(mobile_no, caller);
     if (!is_valid) {
       return;
     }
@@ -370,7 +385,7 @@ export default class _SubscriberInternalHelper {
   }
 
   _remove_whatsapp(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
+    const [value, is_valid] = this.__validate_mobile_no(mobile_no, caller);
     if (!is_valid) {
       return;
     }
@@ -379,16 +394,20 @@ export default class _SubscriberInternalHelper {
 
   // android push methods
   __check_androidpush_value(value, provider, caller) {
-    const [push_token, is_valid] = this.__check_ident_val_string(value, caller);
+    let [push_token, is_valid] = this.__check_ident_val_string(value, caller);
     if (!is_valid) {
       return [push_token, provider, false];
     }
-    if (!provider) {
-      provider = "";
+
+    let [validated_provider, is_provider_valid] = this.__check_ident_val_string(
+      value,
+      caller
+    );
+    if (!is_provider_valid) {
+      return [push_token, provider, false];
     }
-    if (typeof provider === "string") {
-      provider = provider.toLocaleLowerCase();
-    }
+    provider = validated_provider.toLocaleLowerCase();
+
     return [push_token, provider, true];
   }
 
@@ -421,16 +440,20 @@ export default class _SubscriberInternalHelper {
 
   // ios push methods
   __check_iospush_value(value, provider, caller) {
-    const [push_token, is_valid] = this.__check_ident_val_string(value, caller);
+    let [push_token, is_valid] = this.__check_ident_val_string(value, caller);
     if (!is_valid) {
       return [push_token, provider, false];
     }
-    if (!provider) {
-      provider = "";
+
+    let [validated_provider, is_provider_valid] = this.__check_ident_val_string(
+      value,
+      caller
+    );
+    if (!is_provider_valid) {
+      return [push_token, provider, false];
     }
-    if (typeof provider === "string") {
-      provider = provider.toLocaleLowerCase();
-    }
+    provider = validated_provider.toLocaleLowerCase();
+
     return [push_token, provider, true];
   }
 
@@ -468,12 +491,16 @@ export default class _SubscriberInternalHelper {
       );
       return [value, provider, false];
     }
-    if (!provider) {
-      provider = "";
+
+    let [validated_provider, is_provider_valid] = this.__check_ident_val_string(
+      value,
+      caller
+    );
+    if (!is_provider_valid) {
+      return [value, provider, false];
     }
-    if (typeof provider === "string") {
-      provider = provider.toLocaleLowerCase();
-    }
+    provider = validated_provider.toLocaleLowerCase();
+
     return [value, provider, true];
   }
 
