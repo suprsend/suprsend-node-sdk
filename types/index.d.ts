@@ -238,31 +238,63 @@ declare namespace suprsend {
 
   // objects
   interface ObjectsApi {
-    list(object_type: string, options?: {}): Promise<Dictionary>;
+    list(
+      object_type: string,
+      options?: { limit?: number; after?: string; before?: string }
+    ): Promise<Dictionary>;
 
     get(object_type: string, object_id: string): Promise<Dictionary>;
 
-    upsert(object_type: string, object_id: string, object_payload?: Dictionary): Promise<Dictionary>;
+    upsert(
+      object_type: string,
+      object_id: string,
+      payload?: Dictionary
+    ): Promise<Dictionary>;
 
-    edit(object_type: string, object_id: string, edit_payload?: Dictionary): Promise<Dictionary>;
+    edit(instance: ObjectEdit): Promise<Dictionary>;
+
+    edit(
+      object_type: string,
+      object_id: string,
+      payload?: Dictionary
+    ): Promise<Dictionary>;
 
     delete(object_type: string, object_id: string): Promise<Dictionary>;
 
-    bulk_delete(object_type: string, payload?: Dictionary): Promise<Dictionary>;
+    bulk_delete(
+      object_type: string,
+      payload: { object_ids: string[] }
+    ): Promise<Dictionary>;
 
-    get_subscriptions(object_type: string, object_id: string, options?: {}): Promise<Dictionary>;
+    get_subscriptions(
+      object_type: string,
+      object_id: string,
+      options?: { limit?: number; after?: string; before?: string }
+    ): Promise<Dictionary>;
 
-    create_subscriptions(object_type: string, object_id: string, subscriptions?: Dictionary): Promise<Dictionary>;
+    create_subscriptions(
+      object_type: string,
+      object_id: string,
+      payload: Dictionary
+    ): Promise<Dictionary>;
 
-    delete_subscriptions(object_type: string, object_id: string, subscriptions?: Dictionary): Promise<Dictionary>;
+    delete_subscriptions(
+      object_type: string,
+      object_id: string,
+      payload: Dictionary
+    ): Promise<Dictionary>;
 
-    get_instance(object_type: string, object_id: string): Object;
+    get_objects_subscribed_to(
+      object_type: string,
+      object_id: string,
+      options?: { limit?: number; after?: string; before?: string }
+    ): Promise<Dictionary>;
+
+    get_instance(object_type: string, object_id: string): ObjectEdit;
   }
 
   // subscribers
-  interface Object {
-    save(): Promise<SResponse>;
-
+  interface ObjectEdit {
     append(key: string | Dictionary, value?: any): void;
     set(key: string | Dictionary, value?: any): void;
     set_once(key: string | Dictionary, value?: any): void;
@@ -298,6 +330,22 @@ declare namespace suprsend {
     remove_ms_teams(value: Dictionary): void;
   }
 
+  interface UsersApi {
+    get(distinct_id: string): Promise<Dictionary>;
+
+    delete(distinct_id: string): Promise<Dictionary>;
+
+    get_objects_subscribed_to(
+      distinct_id: string,
+      options?: { limit?: number; after?: string; before?: string }
+    ): Promise<Dictionary>;
+
+    get_lists_subscribed_to(
+      distinct_id: string,
+      options?: { limit?: number; after?: string; before?: string }
+    ): Promise<Dictionary>;
+  }
+
   interface Suprsend {
     new (
       workspace_env: string,
@@ -322,6 +370,8 @@ declare namespace suprsend {
     workflows: WorkflowsApi;
 
     objects: ObjectsApi;
+
+    users: UsersApi;
 
     add_attachment(
       body: Dictionary,
