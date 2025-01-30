@@ -22,14 +22,14 @@ const IDENT_KEYS_ALL = [
   IDENT_KEY_MS_TEAMS,
 ];
 
-const KEY_PUSHVENDOR = "$pushvendor";
+const KEY_ID_PROVIDER = "$id_provider";
 const KEY_PREFERRED_LANGUAGE = "$preferred_language";
 const KEY_TIMEZONE = "$timezone";
 
 const OTHER_RESERVED_KEYS = [
   "$messenger",
   "$inbox",
-  KEY_PUSHVENDOR,
+  KEY_ID_PROVIDER,
   "$device_id",
   "$insert_id",
   "$time",
@@ -264,13 +264,13 @@ export default class _SubscriberInternalHelper {
         this._add_whatsapp(value, new_caller);
         break;
       case IDENT_KEY_ANDROIDPUSH:
-        this._add_androidpush(value, args[KEY_PUSHVENDOR], new_caller);
+        this._add_androidpush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._add_iospush(value, args[KEY_PUSHVENDOR], new_caller);
+        this._add_iospush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_WEBPUSH:
-        this._add_webpush(value, args[KEY_PUSHVENDOR], new_caller);
+        this._add_webpush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_SLACK:
         this._add_slack(value, caller);
@@ -296,13 +296,13 @@ export default class _SubscriberInternalHelper {
         this._remove_whatsapp(value, new_caller);
         break;
       case IDENT_KEY_ANDROIDPUSH:
-        this._remove_androidpush(value, args[KEY_PUSHVENDOR], new_caller);
+        this._remove_androidpush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._remove_iospush(value, args[KEY_PUSHVENDOR], new_caller);
+        this._remove_iospush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_WEBPUSH:
-        this._remove_webpush(value, args[KEY_PUSHVENDOR], new_caller);
+        this._remove_webpush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_SLACK:
         this._remove_slack(val, caller);
@@ -402,7 +402,7 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_append[IDENT_KEY_ANDROIDPUSH] = value;
-    this.__dict_append[KEY_PUSHVENDOR] = vendor;
+    this.__dict_append[KEY_ID_PROVIDER] = vendor;
   }
 
   _remove_androidpush(push_token, provider = "fcm") {
@@ -416,7 +416,7 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_remove[IDENT_KEY_ANDROIDPUSH] = value;
-    this.__dict_remove[KEY_PUSHVENDOR] = vendor;
+    this.__dict_remove[KEY_ID_PROVIDER] = vendor;
   }
 
   // ios push methods
@@ -444,7 +444,7 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_append[IDENT_KEY_IOSPUSH] = value;
-    this.__dict_append[KEY_PUSHVENDOR] = vendor;
+    this.__dict_append[KEY_ID_PROVIDER] = vendor;
   }
 
   _remove_iospush(push_token, provider = "apns", caller) {
@@ -457,7 +457,7 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_remove[IDENT_KEY_IOSPUSH] = value;
-    this.__dict_remove[KEY_PUSHVENDOR] = vendor;
+    this.__dict_remove[KEY_ID_PROVIDER] = vendor;
   }
 
   // web push methods
@@ -487,7 +487,7 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_append[IDENT_KEY_WEBPUSH] = value;
-    this.__dict_append[KEY_PUSHVENDOR] = vendor;
+    this.__dict_append[KEY_ID_PROVIDER] = vendor;
   }
 
   _remove_webpush(push_token, provider = "vapid", caller) {
@@ -500,7 +500,7 @@ export default class _SubscriberInternalHelper {
       return;
     }
     this.__dict_remove[IDENT_KEY_WEBPUSH] = value;
-    this.__dict_remove[KEY_PUSHVENDOR] = vendor;
+    this.__dict_remove[KEY_ID_PROVIDER] = vendor;
   }
 
   __check_slack_dict(value, caller) {
