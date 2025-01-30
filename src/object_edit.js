@@ -57,7 +57,7 @@ export default class ObjectEdit {
       this.__info = [...this.__info, ...resp["info"]];
     }
     if (!is_empty(resp["operation"])) {
-      this.operations.push(resp["operation"]); // TODO: changed key name from payload to operation
+      this.operations.push(resp["operation"]);
     }
   }
 
