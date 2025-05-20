@@ -14,6 +14,9 @@ import TenantsApi from "./tenant";
 import ObjectsApi from "./objects_api";
 import { DEFAULT_URL } from "./constants";
 import UsersApi from "./users_api";
+import ObjectEdit from "./object_edit";
+import UserEdit from "./user_edit";
+import BulkUsersEdit from "./users_edit_bulk";
 
 const package_json = require("../package.json");
 
@@ -144,4 +147,7 @@ export {
   Workflow,
   SubscriberListBroadcast,
   WorkflowTriggerRequest,
+  ObjectEdit,
+  UserEdit,
+  BulkUsersEdit,
 };

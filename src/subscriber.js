@@ -1,6 +1,5 @@
 import {
   is_object,
-  SuprsendError,
   epoch_milliseconds,
   uuid,
   is_empty,
@@ -44,7 +43,7 @@ export class Subscriber {
   constructor(config, distinct_id) {
     this.config = config;
     this.distinct_id = distinct_id;
-    this.__url = this.__get_url();
+    this.__url = `${this.config.base_url}event/`;
     this.__super_props = this.__super_properties();
 
     this.__errors = [];
@@ -54,21 +53,11 @@ export class Subscriber {
     this.__warnings_list = [];
   }
 
-  __get_url() {
-    return `${this.config.base_url}event/`;
-  }
-
   __get_headers() {
     return {
       "Content-Type": "application/json; charset=utf-8",
       Date: new Date().toUTCString(),
       "User-Agent": this.config.user_agent,
-    };
-  }
-
-  __super_properties() {
-    return {
-      $ss_sdk_version: this.config.user_agent,
     };
   }
 
@@ -80,7 +69,7 @@ export class Subscriber {
       env: this.config.workspace_key,
       distinct_id: this.distinct_id,
       $user_operations: this.user_operations,
-      properties: this.__super_props,
+      properties: { $ss_sdk_version: this.config.user_agent },
     };
   }
 
@@ -370,37 +359,37 @@ export class Subscriber {
     this._collect_event();
   }
 
-  add_androidpush(push_token, provider = "fcm") {
+  add_androidpush(push_token, provider) {
     const caller = "add_androidpush";
     this._helper._add_androidpush(push_token, provider, caller);
     this._collect_event();
   }
 
-  remove_androidpush(push_token, provider = "fcm") {
+  remove_androidpush(push_token, provider) {
     const caller = "remove_androidpush";
     this._helper._remove_androidpush(push_token, provider, caller);
     this._collect_event();
   }
 
-  add_iospush(push_token, provider = "apns") {
+  add_iospush(push_token, provider) {
     const caller = "add_iospush";
     this._helper._add_iospush(push_token, provider, caller);
     this._collect_event();
   }
 
-  remove_iospush(push_token, provider = "apns") {
+  remove_iospush(push_token, provider) {
     const caller = "remove_iospush";
     this._helper._remove_iospush(push_token, provider, caller);
     this._collect_event();
   }
 
-  add_webpush(push_token, provider = "vapid") {
+  add_webpush(push_token, provider) {
     const caller = "add_webpush";
     this._helper._add_webpush(push_token, provider, caller);
     this._collect_event();
   }
 
-  remove_webpush(push_token, provider = "vapid") {
+  remove_webpush(push_token, provider) {
     const caller = "remove_webpush";
     this._helper._remove_webpush(push_token, provider, caller);
     this._collect_event();

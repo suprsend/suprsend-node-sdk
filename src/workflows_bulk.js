@@ -1,6 +1,4 @@
 import {
-  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
-  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
   BODY_MAX_APPARENT_SIZE_IN_BYTES,
   BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
   MAX_WORKFLOWS_IN_BULK_API,
@@ -77,9 +75,9 @@ class _BulkWorkflowsChunk {
     if (this.__check_limit_reached()) {
       return false;
     }
-    if (body_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (body_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new InputValueError(
-        `workflow body too big - ${body_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `workflow body too big - ${body_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     if (this.__running_size + body_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
