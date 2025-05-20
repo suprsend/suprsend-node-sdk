@@ -246,37 +246,37 @@ export default class ObjectEdit {
     this._collect_operation();
   }
 
-  add_androidpush(push_token, provider = "fcm") {
+  add_androidpush(push_token, provider) {
     const caller = "add_androidpush";
     this._helper._add_androidpush(push_token, provider, caller);
     this._collect_operation();
   }
 
-  remove_androidpush(push_token, provider = "fcm") {
+  remove_androidpush(push_token, provider) {
     const caller = "remove_androidpush";
     this._helper._remove_androidpush(push_token, provider, caller);
     this._collect_operation();
   }
 
-  add_iospush(push_token, provider = "apns") {
+  add_iospush(push_token, provider) {
     const caller = "add_iospush";
     this._helper._add_iospush(push_token, provider, caller);
     this._collect_operation();
   }
 
-  remove_iospush(push_token, provider = "apns") {
+  remove_iospush(push_token, provider) {
     const caller = "remove_iospush";
     this._helper._remove_iospush(push_token, provider, caller);
     this._collect_operation();
   }
 
-  add_webpush(push_token, provider = "vapid") {
+  add_webpush(push_token, provider) {
     const caller = "add_webpush";
     this._helper._add_webpush(push_token, provider, caller);
     this._collect_operation();
   }
 
-  remove_webpush(push_token, provider = "vapid") {
+  remove_webpush(push_token, provider) {
     const caller = "remove_webpush";
     this._helper._remove_webpush(push_token, provider, caller);
     this._collect_operation();

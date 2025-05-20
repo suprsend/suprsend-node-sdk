@@ -85,19 +85,18 @@ export default class UsersApi {
     const url = this.detail_url(distinct_id);
     payload = payload || {};
     const headers = this.__get_headers();
-
-    // Signature and Authorization-header
+    const content_text = JSON.stringify(payload);
     const sig = get_request_signature(
       url,
       "POST",
-      payload,
+      content_text,
       headers,
       this.config.workspace_secret
     );
     headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
 
     try {
-      const resp = await axios.post(url, payload, { headers });
+      const resp = await axios.post(url, content_text, { headers });
       return resp.data;
     } catch (error) {
       throw new SuprsendApiError(err);
@@ -112,21 +111,21 @@ export default class UsersApi {
     const a_payload = edit_instance.get_async_payload();
     edit_instance.validate_payload_size(a_payload);
 
-    // Signature and Authorization-header
+    const content_text = JSON.stringify(a_payload);
     const url = `${this.config.base_url}event/`;
     const headers = this.__get_headers();
     const sig = get_request_signature(
       url,
       "POST",
-      a_payload,
+      content_text,
       headers,
       this.config.workspace_secret
     );
     headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
 
     try {
-      const resp = await axios.post(url, a_payload, { headers });
-      if (response.status >= 200 && response.status < 300) {
+      const resp = await axios.post(url, content_text, { headers });
+      if (resp.status >= 200 && resp.status < 300) {
         return {
           success: true,
           status: "success",
@@ -134,10 +133,10 @@ export default class UsersApi {
           message: resp.data,
         };
       } else {
-        throw new SuprsendApiError(response.statusText);
+        throw new SuprsendApiError(resp.statusText);
       }
     } catch (error) {
-      throw new SuprsendApiError(err);
+      throw new SuprsendApiError(error);
     }
   }
 
@@ -155,18 +154,19 @@ export default class UsersApi {
     }
 
     const headers = this.__get_headers();
+    const content_text = JSON.stringify(payload);
     // Signature and Authorization-header
     const sig = get_request_signature(
       url,
       "PATCH",
-      payload,
+      content_text,
       headers,
       this.config.workspace_secret
     );
     headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
 
     try {
-      const resp = await axios.patch(url, payload, { headers });
+      const resp = await axios.patch(url, content_text, { headers });
       return resp.data;
     } catch (error) {
       throw new SuprsendApiError(error);
@@ -177,19 +177,18 @@ export default class UsersApi {
     const url = `${this.detail_url(distinct_id)}merge/`;
     const payload = { from_user_id: from_user_id };
     const headers = this.__get_headers();
-
-    // Signature and Authorization-header
+    const content_text = JSON.stringify(payload);
     const sig = get_request_signature(
       url,
       "POST",
-      payload,
+      content_text,
       headers,
       this.config.workspace_secret
     );
     headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
 
     try {
-      const resp = await axios.post(url, payload, { headers });
+      const resp = await axios.post(url, content_text, { headers });
       return resp.data;
     } catch (error) {
       throw new SuprsendApiError(error);
@@ -200,7 +199,6 @@ export default class UsersApi {
     const url = this.detail_url(distinct_id);
     const headers = this.__get_headers();
 
-    // Signature and Authorization-header
     const sig = get_request_signature(
       url,
       "DELETE",
@@ -226,19 +224,18 @@ export default class UsersApi {
     payload = payload || {};
     const url = this.bulk_url;
     const headers = this.__get_headers();
-
-    // Signature and Authorization-header
+    const content_text = JSON.stringify(payload);
     const sig = get_request_signature(
       url,
       "DELETE",
-      payload,
+      content_text,
       headers,
       this.config.workspace_secret
     );
     headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
 
     try {
-      const resp = await axios.delete(url, { data: payload, headers });
+      const resp = await axios.delete(url, { data: content_text, headers });
       if (resp.status >= 200 && resp.status < 300) {
         return { success: true, status_code: resp.status };
       } else {
@@ -250,11 +247,10 @@ export default class UsersApi {
   }
 
   async get_objects_subscribed_to(distinct_id, options = {}) {
-    const validated_distinct_id = this.validate_distinct_id(distinct_id);
     const params = new URLSearchParams(options).toString();
-    const url = this.detail_url(validated_distinct_id);
+    const url = this.detail_url(distinct_id);
     const subscription_url = `${url}subscribed_to/object/?${params}`;
-    const headers = this.get_headers();
+    const headers = this.__get_headers();
     const signature = get_request_signature(
       subscription_url,
       "GET",
@@ -273,11 +269,10 @@ export default class UsersApi {
   }
 
   async get_lists_subscribed_to(distinct_id, options = {}) {
-    const validated_distinct_id = this.validate_distinct_id(distinct_id);
     const params = new URLSearchParams(options).toString();
-    const url = this.detail_url(validated_distinct_id);
+    const url = this.detail_url(distinct_id);
     const subscription_url = `${url}subscribed_to/list/?${params}`;
-    const headers = this.get_headers();
+    const headers = this.__get_headers();
     const signature = get_request_signature(
       subscription_url,
       "GET",

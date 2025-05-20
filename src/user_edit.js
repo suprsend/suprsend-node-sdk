@@ -7,6 +7,11 @@ import {
   is_string,
   is_object,
 } from "./utils";
+import _UserEditInternalHelper from "./user_edit_internal_helper";
+import {
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
+} from "./constants";
 
 class UserEdit {
   constructor(config, distinct_id) {

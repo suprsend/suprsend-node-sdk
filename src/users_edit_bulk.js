@@ -7,6 +7,7 @@ import {
 } from "./constants";
 import get_request_signature from "./signature";
 import { invalid_record_json, uuid, InputValueError } from "./utils";
+import { cloneDeep } from "lodash";
 import BulkResponse from "./bulk_response";
 import UserEdit from "./user_edit";
 

@@ -44,7 +44,6 @@ export class Subscriber {
     this.config = config;
     this.distinct_id = distinct_id;
     this.__url = `${this.config.base_url}event/`;
-    this.__super_props = this.__super_properties();
 
     this.__errors = [];
     this.__info = [];

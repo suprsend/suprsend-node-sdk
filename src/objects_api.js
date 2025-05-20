@@ -94,7 +94,7 @@ export default class ObjectsApi {
     const url = this.detail_url(object_type, object_id);
     payload = payload || {};
     const headers = this.__get_headers();
-    const content_text = JSON.stringify(object_payload || {});
+    const content_text = JSON.stringify(payload || {});
     const signature = get_request_signature(
       url,
       "POST",
@@ -254,7 +254,7 @@ export default class ObjectsApi {
     const _detail_url = this.detail_url(object_type, object_id);
     const url = `${_detail_url}subscription/`;
     payload = payload || {};
-    const content_text = JSON.stringify(subscriptions);
+    const content_text = JSON.stringify(payload);
     const headers = this.__get_headers();
     const signature = get_request_signature(
       url,
