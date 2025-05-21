@@ -306,6 +306,12 @@ export default class ObjectsApi {
     }
   }
 
+  get_instance(object_type, object_id) {
+    object_type = this._validate_object_type(object_type);
+    object_id = this._validate_object_id(object_id);
+    return new ObjectEdit(this.config, object_type, object_id);
+  }
+
   get_edit_instance(object_type, object_id) {
     object_type = this._validate_object_type(object_type);
     object_id = this._validate_object_id(object_id);

@@ -318,6 +318,8 @@ declare namespace suprsend {
       }
     ): Promise<Dictionary>;
 
+    get_instance(object_type: string, object_id: string): ObjectEdit;
+
     get_edit_instance(object_type: string, object_id: string): ObjectEdit;
   }
 
