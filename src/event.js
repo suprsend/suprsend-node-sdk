@@ -1,6 +1,5 @@
 import {
   is_string,
-  SuprsendError,
   has_special_char,
   uuid,
   epoch_milliseconds,

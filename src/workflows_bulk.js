@@ -4,7 +4,7 @@ import {
   MAX_WORKFLOWS_IN_BULK_API,
   ALLOW_ATTACHMENTS_IN_BULK_API,
 } from "./constants";
-import { SuprsendError, invalid_record_json, InputValueError } from "./utils";
+import { invalid_record_json, InputValueError } from "./utils";
 import Workflow from "./workflow";
 import { cloneDeep } from "lodash";
 import axios from "axios";

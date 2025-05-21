@@ -7,7 +7,7 @@ import {
 import get_request_signature from "./signature";
 import BulkResponse from "./bulk_response";
 import Event from "./event";
-import { InputValueError, SuprsendError, invalid_record_json } from "./utils";
+import { InputValueError, invalid_record_json } from "./utils";
 import { cloneDeep } from "lodash";
 import axios from "axios";
 
