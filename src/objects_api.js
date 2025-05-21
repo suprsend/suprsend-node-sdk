@@ -7,52 +7,50 @@ export default class ObjectsApi {
   constructor(config) {
     this.config = config;
     this.list_url = `${this.config.base_url}v1/object/`;
+    this.bulk_url = `${this.config.base_url}v1/bulk/object/`;
   }
 
-  get_headers() {
+  __get_headers() {
     return {
       "Content-Type": "application/json; charset=utf-8",
       "User-Agent": this.config.user_agent,
-      Date: new Date().toISOString(), // Adjust to your header date format
+      Date: new Date().toISOString(),
     };
   }
 
-  validate_object_type(object_type) {
-    if (!is_string(object_type)) {
-      throw new InputValueError("object_type must be a string");
-    }
-    object_type = object_type.trim();
-    if (!object_type) {
+  _validate_object_type(object_type) {
+    if (!object_type || !is_string(object_type) || !object_type.trim()) {
       throw new InputValueError("missing object_type");
     }
-    return object_type;
+    return object_type.trim();
   }
 
-  validate_object_id(object_id) {
-    if (!is_string(object_id)) {
-      throw new InputValueError("object_id must be a string");
-    }
-    object_id = object_id.trim();
-    if (!object_id) {
+  _validate_object_id(object_id) {
+    if (!object_id || !is_string(object_id) || !object_id.trim()) {
       throw new InputValueError("missing object_id");
     }
-    return object_id;
+    return object_id.trim();
   }
 
-  async list(object_type, options = {}) {
-    const params = new URLSearchParams(options).toString();
-    const validated_type = this.validate_object_type(object_type);
-    const encoded_type = encodeURIComponent(validated_type);
-    const url = `${this.list_url}${encoded_type}/?${params}`;
-    const headers = this.get_headers();
-    const signature = get_request_signature(
+  async list(object_type, options) {
+    object_type = this._validate_object_type(object_type);
+    const object_type_encoded = encodeURIComponent(object_type);
+    const encoded_options = options
+      ? new URLSearchParams(options).toString()
+      : "";
+
+    const url = `${this.list_url}${object_type_encoded}/${
+      encoded_options ? `?${encoded_options}` : ""
+    }`;
+    const headers = this.__get_headers();
+    const sig = get_request_signature(
       url,
       "GET",
       "",
       headers,
       this.config.workspace_secret
     );
-    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
 
     try {
       const response = await axios.get(url, { headers });
@@ -63,18 +61,18 @@ export default class ObjectsApi {
   }
 
   detail_url(object_type, object_id) {
-    const validated_type = this.validate_object_type(object_type);
-    const encoded_type = encodeURIComponent(validated_type);
+    object_type = this._validate_object_type(object_type);
+    const object_type_encoded = encodeURIComponent(object_type);
 
-    const validated_id = this.validate_object_id(object_id);
-    const encoded_id = encodeURIComponent(validated_id);
+    object_id = this._validate_object_id(object_id);
+    const object_id_encoded = encodeURIComponent(object_id);
 
-    return `${this.list_url}${encoded_type}/${encoded_id}/`;
+    return `${this.list_url}${object_type_encoded}/${object_id_encoded}/`;
   }
 
   async get(object_type, object_id) {
     const url = this.detail_url(object_type, object_id);
-    const headers = this.get_headers();
+    const headers = this.__get_headers();
     const signature = get_request_signature(
       url,
       "GET",
@@ -92,10 +90,11 @@ export default class ObjectsApi {
     }
   }
 
-  async upsert(object_type, object_id, object_payload = {}) {
+  async upsert(object_type, object_id, payload = {}) {
     const url = this.detail_url(object_type, object_id);
-    const headers = this.get_headers();
-    const content_text = JSON.stringify(object_payload || {});
+    payload = payload || {};
+    const headers = this.__get_headers();
+    const content_text = JSON.stringify(payload || {});
     const signature = get_request_signature(
       url,
       "POST",
@@ -113,24 +112,22 @@ export default class ObjectsApi {
     }
   }
 
-  async edit(object_type, object_id, edit_payload = {}) {
-    let url, payload;
+  async edit(edit_ins_or_object_type, object_id, edit_payload) {
+    let payload, url;
 
-    if (object_type instanceof ObjectEdit) {
-      const edit_instance = object_type;
-      edit_instance.validate_body();
-      url = this.detail_url(
-        edit_instance.get_object_type(),
-        edit_instance.get_object_id()
-      );
-      payload = edit_instance.get_payload();
+    if (edit_ins_or_object_type instanceof ObjectEdit) {
+      const edit_ins = edit_ins_or_object_type;
+      edit_ins.validate_body();
+      payload = edit_ins.get_payload();
+      url = this.detail_url(edit_ins.object_type, edit_ins.object_id);
     } else {
+      const object_type = edit_ins_or_object_type;
+      payload = edit_payload || {};
       url = this.detail_url(object_type, object_id);
-      payload = edit_payload;
     }
 
     const content_text = JSON.stringify(payload || {});
-    const headers = this.get_headers();
+    const headers = this.__get_headers();
     const signature = get_request_signature(
       url,
       "PATCH",
@@ -150,7 +147,7 @@ export default class ObjectsApi {
 
   async delete(object_type, object_id) {
     const url = this.detail_url(object_type, object_id);
-    const headers = this.get_headers();
+    const headers = this.__get_headers();
     const signature = get_request_signature(
       url,
       "DELETE",
@@ -172,17 +169,12 @@ export default class ObjectsApi {
     }
   }
 
-  async bulk_ops_url(object_type) {
-    const validatedType = this.validate_object_type(object_type);
-    const encodedType = encodeURIComponent(validatedType);
-
-    return `${this.config.base_url}v1/bulk/object/${encodedType}/`;
-  }
-
   async bulk_delete(object_type, payload) {
-    const url = await this.bulk_ops_url(object_type);
-    const headers = this.get_headers();
+    object_type = this._validate_object_type(object_type);
+    const object_type_encoded = encodeURIComponent(object_type);
+    const url = `${this.bulk_url}${object_type_encoded}/`;
     payload = payload || {};
+    const headers = this.__get_headers();
     const content_text = JSON.stringify(payload);
     const signature = get_request_signature(
       url,
@@ -196,7 +188,7 @@ export default class ObjectsApi {
     try {
       const response = await axios.delete(url, {
         headers: headers,
-        data: payload,
+        data: content_text,
       });
       if (response.status >= 200 && response.status < 300) {
         return { success: true, status_code: response.status };
@@ -208,13 +200,17 @@ export default class ObjectsApi {
     }
   }
 
-  async get_subscriptions(object_type, object_id, options = {}) {
-    const params = new URLSearchParams(options).toString();
-    const url = this.detail_url(object_type, object_id);
-    const subscription_url = `${url}subscription/?${params}`;
-    const headers = this.get_headers();
+  async get_subscriptions(object_type, object_id, options) {
+    const encoded_options = options
+      ? new URLSearchParams(options).toString()
+      : "";
+    const _detail_url = this.detail_url(object_type, object_id);
+    const url = `${_detail_url}subscription/${
+      encoded_options ? `?${encoded_options}` : ""
+    }`;
+    const headers = this.__get_headers();
     const signature = get_request_signature(
-      subscription_url,
+      url,
       "GET",
       "",
       headers,
@@ -223,21 +219,22 @@ export default class ObjectsApi {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.get(subscription_url, { headers });
+      const response = await axios.get(url, { headers });
       return response.data;
     } catch (err) {
       throw new SuprsendApiError(err);
     }
   }
 
-  async create_subscriptions(object_type, object_id, subscriptions) {
-    const url = this.detail_url(object_type, object_id);
-    const subscription_url = `${url}subscription/`;
-    const headers = this.get_headers();
-    subscriptions = subscriptions || {};
-    const content_text = JSON.stringify(subscriptions);
+  async create_subscriptions(object_type, object_id, payload) {
+    const _detail_url = this.detail_url(object_type, object_id);
+    const url = `${_detail_url}subscription/`;
+    payload = payload || {};
+    const content_text = JSON.stringify(payload);
+    const headers = this.__get_headers();
+
     const signature = get_request_signature(
-      subscription_url,
+      url,
       "POST",
       content_text,
       headers,
@@ -246,23 +243,21 @@ export default class ObjectsApi {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.post(subscription_url, content_text, {
-        headers,
-      });
+      const response = await axios.post(url, content_text, { headers });
       return response.data;
     } catch (err) {
       throw new SuprsendApiError(err);
     }
   }
 
-  async delete_subscriptions(object_type, object_id, subscriptions) {
-    const url = this.detail_url(object_type, object_id);
-    const subscription_url = `${url}subscription/`;
-    const headers = this.get_headers();
-    subscriptions = subscriptions || {};
-    const content_text = JSON.stringify(subscriptions);
+  async delete_subscriptions(object_type, object_id, payload) {
+    const _detail_url = this.detail_url(object_type, object_id);
+    const url = `${_detail_url}subscription/`;
+    payload = payload || {};
+    const content_text = JSON.stringify(payload);
+    const headers = this.__get_headers();
     const signature = get_request_signature(
-      subscription_url,
+      url,
       "DELETE",
       content_text,
       headers,
@@ -271,9 +266,9 @@ export default class ObjectsApi {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.delete(subscription_url, {
+      const response = await axios.delete(url, {
         headers: headers,
-        data: subscriptions,
+        data: content_text,
       });
       if (response.status >= 200 && response.status < 300) {
         return { success: true, status_code: response.status };
@@ -285,13 +280,17 @@ export default class ObjectsApi {
     }
   }
 
-  async get_objects_subscribed_to(object_type, object_id, options = {}) {
-    const params = new URLSearchParams(options).toString();
-    const url = this.detail_url(object_type, object_id);
-    const subscription_url = `${url}subscribed_to/object/?${params}`;
-    const headers = this.get_headers();
+  async get_objects_subscribed_to(object_type, object_id, options = null) {
+    const encoded_options = options
+      ? new URLSearchParams(options).toString()
+      : "";
+    const _detail_url = this.detail_url(object_type, object_id);
+    const url = `${_detail_url}subscribed_to/object/${
+      encoded_options ? `?${encoded_options}` : ""
+    }`;
+    const headers = this.__get_headers();
     const signature = get_request_signature(
-      subscription_url,
+      url,
       "GET",
       "",
       headers,
@@ -300,7 +299,7 @@ export default class ObjectsApi {
     headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
 
     try {
-      const response = await axios.get(subscription_url, { headers });
+      const response = await axios.get(url, { headers });
       return response.data;
     } catch (err) {
       throw new SuprsendApiError(err);
@@ -308,9 +307,14 @@ export default class ObjectsApi {
   }
 
   get_instance(object_type, object_id) {
-    const validated_type = this.validate_object_type(object_type);
-    const validated_id = this.validate_object_id(object_id);
+    object_type = this._validate_object_type(object_type);
+    object_id = this._validate_object_id(object_id);
+    return new ObjectEdit(this.config, object_type, object_id);
+  }
 
-    return new ObjectEdit(this.config, validated_type, validated_id);
+  get_edit_instance(object_type, object_id) {
+    object_type = this._validate_object_type(object_type);
+    object_id = this._validate_object_id(object_id);
+    return new ObjectEdit(this.config, object_type, object_id);
   }
 }

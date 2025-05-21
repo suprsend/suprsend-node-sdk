@@ -1,91 +1,62 @@
+import axios from "axios";
 import {
-  ALLOW_ATTACHMENTS_IN_BULK_API,
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
+  IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
   BODY_MAX_APPARENT_SIZE_IN_BYTES,
-  BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
-  MAX_EVENTS_IN_BULK_API,
+  MAX_IDENTITY_EVENTS_IN_BULK_API,
 } from "./constants";
 import get_request_signature from "./signature";
-import BulkResponse from "./bulk_response";
-import Event from "./event";
-import { InputValueError, invalid_record_json } from "./utils";
+import { invalid_record_json, uuid, InputValueError } from "./utils";
 import { cloneDeep } from "lodash";
-import axios from "axios";
+import BulkResponse from "./bulk_response";
+import UserEdit from "./user_edit";
 
-export class BulkEventsFactory {
+class _BulkUsersEditChunk {
   constructor(config) {
-    this.config = config;
-  }
-
-  new_instance() {
-    return new BulkEvents(this.config);
-  }
-}
-
-class _BulkEventsChunk {
-  constructor(config) {
+    this._chunk_apparent_size_in_bytes = BODY_MAX_APPARENT_SIZE_IN_BYTES;
+    this._max_records_in_chunk = MAX_IDENTITY_EVENTS_IN_BULK_API;
     this.config = config;
     this.__chunk = [];
-    this.__url = this.__get_url();
-    this.__headers = this.__common_headers();
-
+    this.__url = `${this.config.base_url}event/`;
     this.__running_size = 0;
     this.__running_length = 0;
-    this.response;
+    this.response = null;
   }
 
-  __get_url() {
-    const url_formatted = `${this.config.base_url}event/`;
-    return url_formatted;
-  }
-
-  __common_headers() {
+  __get_headers() {
     return {
       "Content-Type": "application/json; charset=utf-8",
       "User-Agent": this.config.user_agent,
-    };
-  }
-
-  __dynamic_headers() {
-    return {
       Date: new Date().toUTCString(),
     };
   }
 
   __add_event_to_chunk(event, event_size) {
-    //  First add size, then body to reduce effects of race condition
     this.__running_size += event_size;
     this.__chunk.push(event);
     this.__running_length += 1;
   }
 
   __check_limit_reached() {
-    if (
-      this.__running_length >= MAX_EVENTS_IN_BULK_API ||
-      this.__running_size >= BODY_MAX_APPARENT_SIZE_IN_BYTES
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+    return (
+      this.__running_length >= this._max_records_in_chunk ||
+      this.__running_size >= this._chunk_apparent_size_in_bytes
+    );
   }
 
   try_to_add_into_chunk(event, event_size) {
-    if (!event) {
-      return true;
-    }
-    if (this.__check_limit_reached()) {
-      return false;
-    }
-    if (event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (!event) return true;
+    if (this.__check_limit_reached()) return false;
+
+    if (event_size > IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new InputValueError(
-        `Event properties too big - ${event_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `Event too big - ${event_size} Bytes, ` +
+          `must not cross ${IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
-    if (this.__running_size + event_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
+
+    if (this.__running_size + event_size > this._chunk_apparent_size_in_bytes) {
       return false;
-    }
-    if (!ALLOW_ATTACHMENTS_IN_BULK_API) {
-      delete event.properties["$attachments"];
     }
 
     this.__add_event_to_chunk(event, event_size);
@@ -93,25 +64,25 @@ class _BulkEventsChunk {
   }
 
   async trigger() {
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.__get_headers();
     const content_text = JSON.stringify(this.__chunk);
 
-    const signature = get_request_signature(
+    const sig = get_request_signature(
       this.__url,
       "POST",
       content_text,
       headers,
       this.config.workspace_secret
     );
-    headers["Authorization"] = `${this.config.workspace_key}:${signature}`;
+    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
 
     try {
-      const response = await axios.post(this.__url, content_text, { headers });
-      const ok_response = Math.floor(response.status / 100) == 2;
+      const resp = await axios.post(this.__url, content_text, { headers });
+      const ok_response = Math.floor(resp.status / 100) == 2;
       if (ok_response) {
         this.response = {
           status: "success",
-          status_code: response.status,
+          status_code: resp.status,
           total: this.__chunk.length,
           success: this.__chunk.length,
           failure: 0,
@@ -120,29 +91,28 @@ class _BulkEventsChunk {
       } else {
         this.response = {
           status: "fail",
-          status_code: response.status,
+          status_code: resp.status,
           total: this.__chunk.length,
           success: 0,
           failure: this.__chunk.length,
           failed_records: this.__chunk.map((item) => ({
             record: item,
-            error: response.statusText,
-            code: response.status,
+            error: resp.statusText,
+            code: resp.status,
           })),
         };
       }
-    } catch (err) {
+    } catch (error) {
       const error_status = err.status || 500;
       this.response = {
         status: "fail",
         status_code: error_status,
-        message: err.message,
         total: this.__chunk.length,
         success: 0,
         failure: this.__chunk.length,
-        failed_records: this.__chunk.map((item) => ({
-          record: item,
-          error: err.message,
+        failed_records: this.__chunk.map((c) => ({
+          record: c,
+          error: error.message,
           code: error_status,
         })),
       };
@@ -150,62 +120,62 @@ class _BulkEventsChunk {
   }
 }
 
-class BulkEvents {
+class BulkUsersEdit {
   constructor(config) {
     this.config = config;
-    this.__events = [];
+    this.__users = [];
     this.__pending_records = [];
+    this.__invalid_records = [];
     this.chunks = [];
     this.response = new BulkResponse();
-    // invalid_record json: {"record": event-json, "error": error_str, "code": 500}
-    this.__invalid_records = [];
   }
 
-  __validate_events() {
-    for (let ev of this.__events) {
+  __validate_users() {
+    for (const u of this.__users) {
       try {
-        const is_part_of_bulk = true;
-        const [ev_json, body_size] = ev.get_final_json(
-          this.config,
-          is_part_of_bulk
-        );
-        this.__pending_records.push([ev_json, body_size]);
+        const warnings_list = u.validate_body();
+        if (warnings_list) {
+          this.response.warnings = [
+            ...this.response.warnings,
+            ...warnings_list,
+          ];
+        }
+        const pl = u.get_async_payload();
+        const [pl_json, pl_size] = u.validate_payload_size(pl);
+        this.__pending_records.push([pl_json, pl_size]);
       } catch (ex) {
-        const inv_rec = invalid_record_json(ev.as_json(), ex);
+        const inv_rec = invalid_record_json(u.as_json_async(), ex);
         this.__invalid_records.push(inv_rec);
       }
     }
   }
 
   __chunkify(start_idx = 0) {
-    const curr_chunk = new _BulkEventsChunk(this.config);
+    const curr_chunk = new _BulkUsersEditChunk(this.config);
     this.chunks.push(curr_chunk);
     const entries = this.__pending_records.slice(start_idx).entries();
     for (const [rel_idx, rec] of entries) {
       const is_added = curr_chunk.try_to_add_into_chunk(rec[0], rec[1]);
       if (!is_added) {
-        // create chunks from remaining records
         this.__chunkify(start_idx + rel_idx);
-        // Don't forget to break. As current loop must not continue further
         break;
       }
     }
   }
 
-  append(...events) {
-    if (!events) {
-      return;
-    }
-    for (let ev of events) {
-      if (ev && ev instanceof Event) {
-        const ev_copy = cloneDeep(ev);
-        this.__events.push(ev_copy);
+  append(...users) {
+    if (!users) return;
+    for (const u of users) {
+      if (u && u instanceof UserEdit) {
+        const u_copy = cloneDeep(u);
+        this.__users.push(u_copy);
       }
     }
   }
 
-  async trigger() {
-    this.__validate_events();
+  async save() {
+    this.__validate_users();
+
     if (this.__invalid_records.length > 0) {
       const ch_response = BulkResponse.invalid_records_chunk_response(
         this.__invalid_records
@@ -213,7 +183,7 @@ class BulkEvents {
       this.response.merge_chunk_response(ch_response);
     }
 
-    if (this.__pending_records.length) {
+    if (this.__pending_records.length > 0) {
       this.__chunkify();
       for (const [c_idx, ch] of this.chunks.entries()) {
         if (this.config.req_log_level > 0) {
@@ -233,6 +203,9 @@ class BulkEvents {
         );
       }
     }
+
     return this.response;
   }
 }
+
+export default BulkUsersEdit;

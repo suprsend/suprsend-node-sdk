@@ -12,6 +12,7 @@ declare namespace suprsend {
 
   interface SBulkResponse {
     status: string;
+    status_code: number;
     failed_records: Dictionary[];
     total: number;
     success: number;
@@ -139,7 +140,11 @@ declare namespace suprsend {
 
   // tenants
   interface TenantsApi {
-    list(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
+    list(options?: {
+      limit?: number;
+      offset?: number;
+      [key: string]: any;
+    }): Promise<Dictionary>;
 
     get(tenant_id: any): Promise<Dictionary>;
 
@@ -148,7 +153,11 @@ declare namespace suprsend {
 
   // brands
   interface BrandsApi {
-    list(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
+    list(options?: {
+      limit?: number;
+      offset?: number;
+      [key: string]: any;
+    }): Promise<Dictionary>;
 
     get(brand_id: any): Promise<Dictionary>;
 
@@ -175,7 +184,11 @@ declare namespace suprsend {
   interface SubscriberListsApi {
     create(payload: Dictionary): Promise<Dictionary>;
 
-    get_all(options?: { limit?: number; offset?: number }): Promise<Dictionary>;
+    get_all(options?: {
+      limit?: number;
+      offset?: number;
+      [key: string]: any;
+    }): Promise<Dictionary>;
 
     get(list_id: string): Promise<Dictionary>;
 
@@ -240,7 +253,12 @@ declare namespace suprsend {
   interface ObjectsApi {
     list(
       object_type: string,
-      options?: { limit?: number; after?: string; before?: string }
+      options?: {
+        limit?: number;
+        after?: string;
+        before?: string;
+        [key: string]: any;
+      }
     ): Promise<Dictionary>;
 
     get(object_type: string, object_id: string): Promise<Dictionary>;
@@ -269,7 +287,12 @@ declare namespace suprsend {
     get_subscriptions(
       object_type: string,
       object_id: string,
-      options?: { limit?: number; after?: string; before?: string }
+      options?: {
+        limit?: number;
+        after?: string;
+        before?: string;
+        [key: string]: any;
+      }
     ): Promise<Dictionary>;
 
     create_subscriptions(
@@ -287,10 +310,17 @@ declare namespace suprsend {
     get_objects_subscribed_to(
       object_type: string,
       object_id: string,
-      options?: { limit?: number; after?: string; before?: string }
+      options?: {
+        limit?: number;
+        after?: string;
+        before?: string;
+        [key: string]: any;
+      }
     ): Promise<Dictionary>;
 
     get_instance(object_type: string, object_id: string): ObjectEdit;
+
+    get_edit_instance(object_type: string, object_id: string): ObjectEdit;
   }
 
   // subscribers
@@ -330,20 +360,95 @@ declare namespace suprsend {
     remove_ms_teams(value: Dictionary): void;
   }
 
+  interface UserEdit {
+    append(key: string | Dictionary, value?: any): void;
+    set(key: string | Dictionary, value?: any): void;
+    set_once(key: string | Dictionary, value?: any): void;
+    increment(key: string | Dictionary, value?: number): void;
+    remove(key: string | Dictionary, value?: any): void;
+    unset(keys: string | string[]): void;
+
+    set_preferred_language(lang_code: string): void;
+    set_timezone(timezone: string): void;
+
+    add_email(email: string): void;
+    remove_email(email: string): void;
+
+    add_sms(mobile_no: string): void;
+    remove_sms(mobile_no: string): void;
+
+    add_whatsapp(mobile_no: string): void;
+    remove_whatsapp(mobile_no: string): void;
+
+    add_androidpush(push_token: string, provider?: string): void;
+    remove_androidpush(push_token: string, provider?: string): void;
+
+    add_iospush(push_token: string, provider?: string): void;
+    remove_iospush(push_token: string, provider?: string): void;
+
+    add_webpush(push_token: Dictionary, provider?: string): void;
+    remove_webpush(push_token: Dictionary, provider?: string): void;
+
+    add_slack(value: Dictionary): void;
+    remove_slack(value: Dictionary): void;
+
+    add_ms_teams(value: Dictionary): void;
+    remove_ms_teams(value: Dictionary): void;
+  }
+
   interface UsersApi {
+    list(options?: {
+      limit?: number;
+      after?: string;
+      before?: string;
+      [key: string]: any;
+    }): Promise<Dictionary>;
+
     get(distinct_id: string): Promise<Dictionary>;
+
+    upsert(distinct_id: string, payload?: Dictionary): Promise<Dictionary>;
 
     delete(distinct_id: string): Promise<Dictionary>;
 
+    bulk_delete(payload: { distinct_ids: string[] }): Promise<Dictionary>;
+
+    async_edit(instance: UserEdit): Promise<Dictionary>;
+
+    edit(instance: UserEdit): Promise<Dictionary>;
+
+    edit(distinct_id: string, payload?: Dictionary): Promise<Dictionary>;
+
+    merge(distinct_id: string, from_distinct_id: string): Promise<Dictionary>;
+
     get_objects_subscribed_to(
       distinct_id: string,
-      options?: { limit?: number; after?: string; before?: string }
+      options?: {
+        limit?: number;
+        after?: string;
+        before?: string;
+        [key: string]: any;
+      }
     ): Promise<Dictionary>;
 
     get_lists_subscribed_to(
       distinct_id: string,
-      options?: { limit?: number; after?: string; before?: string }
+      options?: {
+        limit?: number;
+        after?: string;
+        before?: string;
+        [key: string]: any;
+      }
     ): Promise<Dictionary>;
+
+    get_edit_instance(distinct_id: string): UserEdit;
+
+    get_bulk_edit_instance(): BulkUsersEdit;
+  }
+
+  interface BulkUsersEdit {
+    append(...users: UserEdit[]): void;
+
+    save(): Promise<SBulkResponse>;
   }
 
   interface Suprsend {

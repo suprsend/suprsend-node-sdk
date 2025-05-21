@@ -10,8 +10,8 @@ import {
 import get_request_signature from "./signature";
 import axios from "axios";
 import {
-  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
-  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
+  BODY_MAX_APPARENT_SIZE_IN_BYTES,
+  BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
 } from "./constants";
 import get_attachment_json from "./attachment";
 
@@ -73,9 +73,9 @@ class SubscriberListBroadcast {
     }
     this.body = validate_list_broadcast_body_schema(this.body);
     const apparent_size = get_apparent_list_broadcast_body_size(this.body);
-    if (apparent_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (apparent_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new InputValueError(
-        `SubscriberListBroadcast body too big - ${apparent_size} Bytes, must not cross ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `SubscriberListBroadcast body too big - ${apparent_size} Bytes, must not cross ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     return [this.body, apparent_size];

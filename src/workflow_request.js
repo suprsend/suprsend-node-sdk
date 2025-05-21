@@ -5,8 +5,8 @@ import {
 } from "./utils";
 import get_attachment_json from "./attachment";
 import {
-  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES,
-  SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
+  BODY_MAX_APPARENT_SIZE_IN_BYTES,
+  BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE,
 } from "./constants";
 
 export default class WorkflowTriggerRequest {
@@ -67,9 +67,9 @@ export default class WorkflowTriggerRequest {
       this.body,
       is_part_of_bulk
     );
-    if (apparent_size > SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
+    if (apparent_size > BODY_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new InputValueError(
-        `workflow body too big - ${apparent_size} Bytes, must not exceed ${SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `workflow body too big - ${apparent_size} Bytes, must not exceed ${BODY_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
 

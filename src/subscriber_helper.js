@@ -1,5 +1,4 @@
-import { is_object, has_special_char, is_empty, is_string } from "./utils";
-import ALL_LANG_CODES from "./language_codes";
+import { is_empty, is_string } from "./utils";
 
 // ---------- Identity keys
 const IDENT_KEY_EMAIL = "$email";
@@ -25,48 +24,6 @@ const IDENT_KEYS_ALL = [
 const KEY_ID_PROVIDER = "$id_provider";
 const KEY_PREFERRED_LANGUAGE = "$preferred_language";
 const KEY_TIMEZONE = "$timezone";
-
-const OTHER_RESERVED_KEYS = [
-  "$messenger",
-  "$inbox",
-  KEY_ID_PROVIDER,
-  "$device_id",
-  "$insert_id",
-  "$time",
-  "$set",
-  "$set_once",
-  "$add",
-  "$append",
-  "$remove",
-  "$unset",
-  "$identify",
-  "$anon_id",
-  "$identified_id",
-  KEY_PREFERRED_LANGUAGE,
-  KEY_TIMEZONE,
-  "$notification_delivered",
-  "$notification_dismiss",
-  "$notification_clicked",
-];
-
-const SUPER_PROPERTY_KEYS = [
-  "$app_version_string",
-  "$app_build_number",
-  "$brand",
-  "$carrier",
-  "$manufacturer",
-  "$model",
-  "$os",
-  "$ss_sdk_version",
-  "$insert_id",
-  "$time",
-];
-
-const ALL_RESERVED_KEYS = [
-  ...SUPER_PROPERTY_KEYS,
-  ...OTHER_RESERVED_KEYS,
-  ...IDENT_KEYS_ALL,
-];
 
 export default class _SubscriberInternalHelper {
   constructor(distinct_id, workspace_key) {
@@ -149,18 +106,6 @@ export default class _SubscriberInternalHelper {
     return [key, true];
   }
 
-  __validate_key_prefix(key, caller) {
-    if (!ALL_RESERVED_KEYS.includes(key)) {
-      if (has_special_char(key)) {
-        this.__info.push(
-          `[${caller}] skipping key: ${key}. key starting with [$,ss_] are reserved`
-        );
-        return false;
-      }
-    }
-    return true;
-  }
-
   __is_identity_key(key) {
     return IDENT_KEYS_ALL.includes(key);
   }
@@ -173,10 +118,7 @@ export default class _SubscriberInternalHelper {
     if (this.__is_identity_key(validated_key)) {
       this.__add_identity(validated_key, value, args, caller);
     } else {
-      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
-      if (is_k_valid) {
-        this.__dict_append[validated_key] = value;
-      }
+      this.__dict_append[validated_key] = value;
     }
   }
 
@@ -185,10 +127,7 @@ export default class _SubscriberInternalHelper {
     if (!is_k_valid) {
       return;
     } else {
-      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
-      if (is_k_valid) {
-        this.__dict_set[validated_key] = value;
-      }
+      this.__dict_set[validated_key] = value;
     }
   }
 
@@ -197,10 +136,7 @@ export default class _SubscriberInternalHelper {
     if (!is_k_valid) {
       return;
     } else {
-      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
-      if (is_k_valid) {
-        this.__dict_set_once[validated_key] = value;
-      }
+      this.__dict_set_once[validated_key] = value;
     }
   }
 
@@ -209,10 +145,7 @@ export default class _SubscriberInternalHelper {
     if (!is_k_valid) {
       return;
     } else {
-      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
-      if (is_k_valid) {
-        this.__dict_increment[validated_key] = value;
-      }
+      this.__dict_increment[validated_key] = value;
     }
   }
 
@@ -224,10 +157,7 @@ export default class _SubscriberInternalHelper {
     if (this.__is_identity_key(validated_key)) {
       this.__remove_identity(validated_key, value, args, caller);
     } else {
-      const is_k_valid = this.__validate_key_prefix(validated_key, caller);
-      if (is_k_valid) {
-        this.__dict_remove[validated_key] = value;
-      }
+      this.__dict_remove[validated_key] = value;
     }
   }
 
@@ -240,10 +170,6 @@ export default class _SubscriberInternalHelper {
   }
 
   _set_preferred_language(lang_code, caller) {
-    if (!ALL_LANG_CODES.includes(lang_code)) {
-      this.__info.push(`[${caller}] invalid value ${lang_code}`);
-      return;
-    }
     this.__dict_set[KEY_PREFERRED_LANGUAGE] = lang_code;
   }
 
@@ -315,249 +241,73 @@ export default class _SubscriberInternalHelper {
     }
   }
 
-  __check_ident_val_string(value, caller) {
-    const message = "value must be a string with proper value";
-    if (!is_string(value)) {
-      this.__errors.push(`[${caller}] ${message}`);
-      return [value, false];
-    }
-    value = value.trim();
-    if (!value) {
-      this.__errors.push(`[${caller}] ${message}`);
-      return [value, false];
-    }
-    return [value, true];
-  }
-
   _add_email(email, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(email, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_EMAIL] = value;
+    this.__dict_append[IDENT_KEY_EMAIL] = email;
   }
 
   _remove_email(email, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(email, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_EMAIL] = value;
+    this.__dict_remove[IDENT_KEY_EMAIL] = email;
   }
 
   _add_sms(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_SMS] = value;
+    this.__dict_append[IDENT_KEY_SMS] = mobile_no;
   }
 
   _remove_sms(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_SMS] = value;
+    this.__dict_remove[IDENT_KEY_SMS] = mobile_no;
   }
 
   _add_whatsapp(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_WHATSAPP] = value;
+    this.__dict_append[IDENT_KEY_WHATSAPP] = mobile_no;
   }
 
   _remove_whatsapp(mobile_no, caller) {
-    const [value, is_valid] = this.__check_ident_val_string(mobile_no, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_WHATSAPP] = value;
+    this.__dict_remove[IDENT_KEY_WHATSAPP] = mobile_no;
   }
 
-  // android push methods
-  __check_androidpush_value(value, provider, caller) {
-    const [push_token, is_valid] = this.__check_ident_val_string(value, caller);
-    if (!is_valid) {
-      return [push_token, provider, false];
-    }
-    if (!provider) {
-      provider = "";
-    }
-    if (typeof provider === "string") {
-      provider = provider.toLocaleLowerCase();
-    }
-    return [push_token, provider, true];
+  _add_androidpush(push_token, provider, caller) {
+    this.__dict_append[IDENT_KEY_ANDROIDPUSH] = push_token;
+    this.__dict_append[KEY_ID_PROVIDER] = provider;
   }
 
-  _add_androidpush(push_token, provider = "fcm", caller) {
-    const [value, vendor, is_valid] = this.__check_androidpush_value(
-      push_token,
-      provider,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_ANDROIDPUSH] = value;
-    this.__dict_append[KEY_ID_PROVIDER] = vendor;
+  _remove_androidpush(push_token, provider) {
+    this.__dict_remove[IDENT_KEY_ANDROIDPUSH] = push_token;
+    this.__dict_remove[KEY_ID_PROVIDER] = provider;
   }
 
-  _remove_androidpush(push_token, provider = "fcm") {
-    const caller = "remove_androidpush";
-    const [value, vendor, is_valid] = this.__check_androidpush_value(
-      push_token,
-      provider,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_ANDROIDPUSH] = value;
-    this.__dict_remove[KEY_ID_PROVIDER] = vendor;
+  _add_iospush(push_token, provider, caller) {
+    this.__dict_append[IDENT_KEY_IOSPUSH] = push_token;
+    this.__dict_append[KEY_ID_PROVIDER] = provider;
   }
 
-  // ios push methods
-  __check_iospush_value(value, provider, caller) {
-    const [push_token, is_valid] = this.__check_ident_val_string(value, caller);
-    if (!is_valid) {
-      return [push_token, provider, false];
-    }
-    if (!provider) {
-      provider = "";
-    }
-    if (typeof provider === "string") {
-      provider = provider.toLocaleLowerCase();
-    }
-    return [push_token, provider, true];
+  _remove_iospush(push_token, provider, caller) {
+    this.__dict_remove[IDENT_KEY_IOSPUSH] = push_token;
+    this.__dict_remove[KEY_ID_PROVIDER] = provider;
   }
 
-  _add_iospush(push_token, provider = "apns", caller) {
-    const [value, vendor, is_valid] = this.__check_iospush_value(
-      push_token,
-      provider,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_IOSPUSH] = value;
-    this.__dict_append[KEY_ID_PROVIDER] = vendor;
+  _add_webpush(push_token, provider, caller) {
+    this.__dict_append[IDENT_KEY_WEBPUSH] = push_token;
+    this.__dict_append[KEY_ID_PROVIDER] = provider;
   }
 
-  _remove_iospush(push_token, provider = "apns", caller) {
-    const [value, vendor, is_valid] = this.__check_iospush_value(
-      push_token,
-      provider,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_IOSPUSH] = value;
-    this.__dict_remove[KEY_ID_PROVIDER] = vendor;
-  }
-
-  // web push methods
-  __check_webpush_dict(value, provider, caller) {
-    if (!is_object(value)) {
-      this.__errors.push(
-        `[${caller}] value must be a valid dict representing webpush-token`
-      );
-      return [value, provider, false];
-    }
-    if (!provider) {
-      provider = "";
-    }
-    if (typeof provider === "string") {
-      provider = provider.toLocaleLowerCase();
-    }
-    return [value, provider, true];
-  }
-
-  _add_webpush(push_token, provider = "vapid", caller) {
-    const [value, vendor, is_valid] = this.__check_webpush_dict(
-      push_token,
-      provider,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_WEBPUSH] = value;
-    this.__dict_append[KEY_ID_PROVIDER] = vendor;
-  }
-
-  _remove_webpush(push_token, provider = "vapid", caller) {
-    const [value, vendor, is_valid] = this.__check_webpush_dict(
-      push_token,
-      provider,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_WEBPUSH] = value;
-    this.__dict_remove[KEY_ID_PROVIDER] = vendor;
-  }
-
-  __check_slack_dict(value, caller) {
-    const msg = "value must be a valid dict/json with proper keys";
-    if (!(value && value instanceof Object)) {
-      this.__errors.push(`[${caller}] ${msg}`);
-      return [value, false];
-    } else {
-      return [value, true];
-    }
+  _remove_webpush(push_token, provider, caller) {
+    this.__dict_remove[IDENT_KEY_WEBPUSH] = push_token;
+    this.__dict_remove[KEY_ID_PROVIDER] = provider;
   }
 
   _add_slack(value, caller) {
-    const [validated_value, is_valid] = this.__check_slack_dict(value, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_SLACK] = validated_value;
+    this.__dict_append[IDENT_KEY_SLACK] = value;
   }
 
   _remove_slack(value, caller) {
-    const [validated_value, is_valid] = this.__check_slack_dict(value, caller);
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_SLACK] = validated_value;
-  }
-
-  __check_ms_teams_dict(value, caller) {
-    const msg = "value must be a valid dict/json with proper keys";
-    if (!(value && value instanceof Object)) {
-      this.__errors.push(`[${caller}] ${msg}`);
-      return [value, false];
-    } else {
-      return [value, true];
-    }
+    this.__dict_remove[IDENT_KEY_SLACK] = value;
   }
 
   _add_ms_teams(value, caller) {
-    const [validated_value, is_valid] = this.__check_ms_teams_dict(
-      value,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_append[IDENT_KEY_MS_TEAMS] = validated_value;
+    this.__dict_append[IDENT_KEY_MS_TEAMS] = value;
   }
 
   _remove_ms_teams(value, caller) {
-    const [validated_value, is_valid] = this.__check_ms_teams_dict(
-      value,
-      caller
-    );
-    if (!is_valid) {
-      return;
-    }
-    this.__dict_remove[IDENT_KEY_MS_TEAMS] = validated_value;
+    this.__dict_remove[IDENT_KEY_MS_TEAMS] = value;
   }
 }
