@@ -89,7 +89,7 @@ export default class Event {
     if (!(this.properties instanceof Object)) {
       console.log(
         "WARNING: attachment cannot be added. please make sure properties is a dictionary. Event" +
-          JSON.stringify(this.as_json())
+        JSON.stringify(this.as_json())
       );
       return;
     }
@@ -171,7 +171,7 @@ export class EventCollector {
   }
 
   __get_url() {
-    return `${this.config.base_url}event/`;
+    return `${this.config.base_url}v2/event/`;
   }
 
   __common_headers() {
@@ -212,6 +212,7 @@ export class EventCollector {
           status: "success",
           status_code: response.status,
           message: response.statusText,
+          raw_response: response,
         };
       } else {
         return {
@@ -219,6 +220,7 @@ export class EventCollector {
           status: "fail",
           status_code: response.status,
           message: response.statusText,
+          raw_response: response,
         };
       }
     } catch (err) {
@@ -227,6 +229,7 @@ export class EventCollector {
         status: "fail",
         status_code: err.status || 500,
         message: err.message,
+        raw_response: {},
       };
     }
   }
