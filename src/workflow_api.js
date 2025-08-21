@@ -44,7 +44,8 @@ export default class WorkflowsApi {
         success: ok_response,
         status: ok_response ? "success" : "fail",
         status_code: resp.status,
-        message: resp.data,
+        message: resp.data?.error?.message || resp.data || resp.statusText,
+        raw_response: resp,
       };
     } catch (err) {
       if (err?.response) {
