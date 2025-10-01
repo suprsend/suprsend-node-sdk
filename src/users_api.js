@@ -42,7 +42,7 @@ export default class UsersApi {
       const resp = await axios.get(url, { headers });
       return resp.data;
     } catch (error) {
-      throw new SuprsendApiError(err);
+      throw new SuprsendApiError(error);
     }
   }
 
@@ -77,7 +77,7 @@ export default class UsersApi {
       const resp = await axios.get(url, { headers });
       return resp.data;
     } catch (error) {
-      throw new SuprsendApiError(err);
+      throw new SuprsendApiError(error);
     }
   }
 
@@ -99,7 +99,7 @@ export default class UsersApi {
       const resp = await axios.post(url, content_text, { headers });
       return resp.data;
     } catch (error) {
-      throw new SuprsendApiError(err);
+      throw new SuprsendApiError(error);
     }
   }
 
