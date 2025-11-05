@@ -23,6 +23,7 @@ const IDENT_KEYS_ALL = [
 
 const KEY_ID_PROVIDER = "$id_provider";
 const KEY_PREFERRED_LANGUAGE = "$preferred_language";
+const KEY_LOCALE = "$locale";
 const KEY_TIMEZONE = "$timezone";
 
 export default class _SubscriberInternalHelper {
@@ -171,6 +172,10 @@ export default class _SubscriberInternalHelper {
 
   _set_preferred_language(lang_code, caller) {
     this.__dict_set[KEY_PREFERRED_LANGUAGE] = lang_code;
+  }
+
+  _set_locale(locale, caller) {
+    this.__dict_set[KEY_LOCALE] = locale;
   }
 
   _set_timezone(timezone, caller) {

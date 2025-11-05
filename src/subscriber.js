@@ -316,6 +316,12 @@ export class Subscriber {
     this._collect_event();
   }
 
+  set_locale(locale) {
+    const caller = "set_locale";
+    this._helper._set_locale(locale, caller);
+    this._collect_event();
+  }
+
   set_timezone(timezone) {
     const caller = "set_timezone";
     this._helper._set_timezone(timezone, caller);
