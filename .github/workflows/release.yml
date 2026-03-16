@@ -39,12 +39,12 @@ jobs:
 
       - name: Publish Package (Production)
         if: env.IS_PRODUCTION == 'true'
-        run: npm publish_sdk
+        run: npm run publish_sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Package (Dry Run)
         if: env.IS_PRODUCTION != 'true'
-        run: npm publish_dev
+        run: npm run publish_dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
