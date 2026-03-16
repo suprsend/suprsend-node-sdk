@@ -43,9 +43,9 @@ export class _BulkWorkflowTriggerChunk {
   _check_limit_reached() {
     return (
       this.__running_length >=
-        _BulkWorkflowTriggerChunk._max_records_in_chunk ||
+      _BulkWorkflowTriggerChunk._max_records_in_chunk ||
       this.__running_size >=
-        _BulkWorkflowTriggerChunk._chunk_apparent_size_in_bytes
+      _BulkWorkflowTriggerChunk._chunk_apparent_size_in_bytes
     );
   }
 
@@ -93,13 +93,21 @@ export class _BulkWorkflowTriggerChunk {
         headers,
         transformResponse: [(data) => data], // dont assume type of response
       });
+      const derived_response = BulkResponse.parse_bulk_api_v2_response(resp);
       this.response = {
-        status: "success",
+        status: derived_response.status,
         status_code: resp.status,
-        total: this.__chunk.length,
-        success: this.__chunk.length,
-        failure: 0,
-        failed_records: [],
+        total: derived_response.total,
+        success: derived_response.success,
+        failure: derived_response.failure,
+        failed_records: resp.data.records
+          .map((record, idx) => ({
+            record: this.__chunk[idx],
+            error: record.error?.message || record.error || "Unknown error",
+            code: record.status_code || record.code || 500
+          }))
+          .filter((_, idx) => resp.data.records[idx].status === "error"),
+        raw_response: resp,
       };
     } catch (err) {
       if (err?.response) {

@@ -34,7 +34,7 @@ class _BulkEventsChunk {
   }
 
   __get_url() {
-    const url_formatted = `${this.config.base_url}event/`;
+    const url_formatted = `${this.config.base_url}v2/bulk/event/`;
     return url_formatted;
   }
 
@@ -107,15 +107,23 @@ class _BulkEventsChunk {
 
     try {
       const response = await axios.post(this.__url, content_text, { headers });
+      const derived_response = BulkResponse.parse_bulk_api_v2_response(response);
       const ok_response = Math.floor(response.status / 100) == 2;
       if (ok_response) {
         this.response = {
-          status: "success",
+          status: derived_response.status,
           status_code: response.status,
-          total: this.__chunk.length,
-          success: this.__chunk.length,
-          failure: 0,
-          failed_records: [],
+          total: derived_response.total,
+          success: derived_response.success,
+          failure: derived_response.failure,
+          failed_records: response.data.records
+            .map((record, idx) => ({
+              record: this.__chunk[idx],
+              error: record.error?.message || record.error || "Unknown error",
+              code: record.status_code || record.code || 500
+            }))
+            .filter((_, idx) => response.data.records[idx].status === "error"),
+          raw_response: response,
         };
       } else {
         this.response = {
@@ -129,6 +137,7 @@ class _BulkEventsChunk {
             error: response.statusText,
             code: response.status,
           })),
+          raw_response: response,
         };
       }
     } catch (err) {
@@ -145,6 +154,7 @@ class _BulkEventsChunk {
           error: err.message,
           code: error_status,
         })),
+        raw_response: {},
       };
     }
   }

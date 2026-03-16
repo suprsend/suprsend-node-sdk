@@ -33,6 +33,22 @@ export default class BulkResponse {
     this.failed_records = [...this.failed_records, ...failed_recs];
   }
 
+  static parse_bulk_api_v2_response(response) {
+    const derived_response = {
+      status: "success",
+      total: response.records.length,
+      success: response.records.filter(rec => rec.status === "success").length
+    };
+
+    derived_response.failure = derived_response.total - derived_response.success;
+
+    if (derived_response.failure > 0) {
+      derived_response.status = derived_response.success > 0 ? "partial" : "fail";
+    }
+
+    return derived_response;
+  }
+
   static empty_chunk_success_response() {
     return {
       status: "success",
@@ -41,6 +57,7 @@ export default class BulkResponse {
       success: 0,
       failure: 0,
       failed_records: [],
+      raw_response: {},
     };
   }
 
@@ -52,6 +69,7 @@ export default class BulkResponse {
       success: 0,
       failure: invalid_records.length,
       failed_records: invalid_records,
+      raw_response: {},
     };
   }
 }
