@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "rm -rf dist && babel ./src --out-dir dist && mkdir ./dist/request_json && cp -R ./src/request_json/ ./dist/request_json/",
-    "publish_sdk": "npm run build && npm publish"
+    "publish_sdk": "npm run build && npm publish --provenance",
+    "publish_dev": "npm run build && npm publish --dry-run --provenance"
   },
   "keywords": [
     "suprsend-node-sdk",
