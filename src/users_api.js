@@ -277,6 +277,19 @@ export default class UsersApi {
     }
   }
 
+  async get_tenant_detail(distinct_id, tenant_id) {
+    const url = this.tenant_detail_url(distinct_id, tenant_id);
+    const headers = this.__get_headers();
+    const sig = get_request_signature(url, "GET", "", headers, this.config.workspace_secret);
+    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
+    try {
+      const resp = await axios.get(url, { headers });
+      return resp.data;
+    } catch (error) {
+      throw new SuprsendApiError(error);
+    }
+  }
+
   async upsert_tenant(distinct_id, tenant_id, payload = null) {
     const url = this.tenant_detail_url(distinct_id, tenant_id);
     payload = payload || {};

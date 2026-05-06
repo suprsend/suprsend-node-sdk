@@ -440,6 +440,14 @@ declare namespace suprsend {
       }
     ): Promise<Dictionary>;
 
+    get_tenants(distinct_id: string): Promise<Dictionary>;
+
+    get_tenant_detail(distinct_id: string, tenant_id: string): Promise<Dictionary>;
+
+    upsert_tenant(distinct_id: string, tenant_id: string, payload?: Dictionary): Promise<Dictionary>;
+
+    delete_tenant(distinct_id: string, tenant_id: string): Promise<Dictionary>;
+
     get_edit_instance(distinct_id: string): UserEdit;
 
     get_bulk_edit_instance(): BulkUsersEdit;
