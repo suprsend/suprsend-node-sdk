@@ -421,7 +421,7 @@ declare namespace suprsend {
       messages: Array<{ message_id: string; action: string }>
     ): Promise<Dictionary>;
 
-    get_content(message_id: string): Promise<Dictionary>;
+    // get_content(message_id: string): Promise<Dictionary>;
   }
 
   interface UsersApi {

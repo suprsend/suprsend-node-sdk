@@ -78,33 +78,33 @@ export default class MessagesApi {
     }
   }
 
-  _validate_message_id(message_id) {
-    if (!message_id || !message_id.trim()) {
-      throw new Error("missing message_id");
-    }
-    return message_id.trim();
-  }
+  // _validate_message_id(message_id) {
+  //   if (!message_id || !message_id.trim()) {
+  //     throw new Error("missing message_id");
+  //   }
+  //   return message_id.trim();
+  // }
 
-  async get_content(message_id) {
-    message_id = this._validate_message_id(message_id);
-    const message_id_encoded = encodeURIComponent(message_id);
-    const url = `${this.list_url}/${message_id_encoded}/content`;
-    const headers = this.__get_headers();
-
-    const sig = get_request_signature(
-      url,
-      "GET",
-      "",
-      headers,
-      this.config.workspace_secret
-    );
-    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
-
-    try {
-      const resp = await axios.get(url, { headers });
-      return resp.data;
-    } catch (error) {
-      throw new SuprsendApiError(error);
-    }
-  }
+  // async get_content(message_id) {
+  //   message_id = this._validate_message_id(message_id);
+  //   const message_id_encoded = encodeURIComponent(message_id);
+  //   const url = `${this.list_url}/${message_id_encoded}/content`;
+  //   const headers = this.__get_headers();
+  //
+  //   const sig = get_request_signature(
+  //     url,
+  //     "GET",
+  //     "",
+  //     headers,
+  //     this.config.workspace_secret
+  //   );
+  //   headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
+  //
+  //   try {
+  //     const resp = await axios.get(url, { headers });
+  //     return resp.data;
+  //   } catch (error) {
+  //     throw new SuprsendApiError(error);
+  //   }
+  // }
 }
