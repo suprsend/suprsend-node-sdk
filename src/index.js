@@ -14,6 +14,7 @@ import TenantsApi from "./tenant";
 import ObjectsApi from "./objects_api";
 import { DEFAULT_URL } from "./constants";
 import UsersApi from "./users_api";
+import MessagesApi from "./messages_api";
 import ObjectEdit from "./object_edit";
 import UserEdit from "./user_edit";
 import BulkUsersEdit from "./users_edit_bulk";
@@ -45,6 +46,7 @@ class Suprsend {
     this.workflows = new WorkflowsApi(this);
     this.objects = new ObjectsApi(this);
     this.users = new UsersApi(this);
+    this.messages = new MessagesApi(this);
 
     this.subscriber_lists = new SubscriberListsApi(this);
 
