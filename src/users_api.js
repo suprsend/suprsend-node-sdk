@@ -246,6 +246,84 @@ export default class UsersApi {
     }
   }
 
+  _validate_tenant_id(tenant_id) {
+    if (!tenant_id || !tenant_id.trim()) {
+      throw new Error("missing tenant_id");
+    }
+    return tenant_id.trim();
+  }
+
+  tenant_base_url(distinct_id) {
+    return `${this.detail_url(distinct_id)}tenant/`;
+  }
+
+  tenant_detail_url(distinct_id, tenant_id) {
+    tenant_id = this._validate_tenant_id(tenant_id);
+    const tenant_id_encoded = encodeURIComponent(tenant_id);
+    return `${this.tenant_base_url(distinct_id)}${tenant_id_encoded}/`;
+  }
+
+  async get_tenants(distinct_id) {
+    const url = this.tenant_base_url(distinct_id);
+    const headers = this.__get_headers();
+    const sig = get_request_signature(url, "GET", "", headers, this.config.workspace_secret);
+    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
+
+    try {
+      const resp = await axios.get(url, { headers });
+      return resp.data;
+    } catch (error) {
+      throw new SuprsendApiError(error);
+    }
+  }
+
+  async get_tenant_detail(distinct_id, tenant_id) {
+    const url = this.tenant_detail_url(distinct_id, tenant_id);
+    const headers = this.__get_headers();
+    const sig = get_request_signature(url, "GET", "", headers, this.config.workspace_secret);
+    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
+    try {
+      const resp = await axios.get(url, { headers });
+      return resp.data;
+    } catch (error) {
+      throw new SuprsendApiError(error);
+    }
+  }
+
+  async upsert_tenant(distinct_id, tenant_id, payload = null) {
+    const url = this.tenant_detail_url(distinct_id, tenant_id);
+    payload = payload || {};
+    const headers = this.__get_headers();
+    const content_text = JSON.stringify(payload);
+    const sig = get_request_signature(url, "POST", content_text, headers, this.config.workspace_secret);
+    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
+
+    try {
+      const resp = await axios.post(url, content_text, { headers });
+      return resp.data;
+    } catch (error) {
+      throw new SuprsendApiError(error);
+    }
+  }
+
+  async delete_tenant(distinct_id, tenant_id) {
+    const url = this.tenant_detail_url(distinct_id, tenant_id);
+    const headers = this.__get_headers();
+    const sig = get_request_signature(url, "DELETE", "", headers, this.config.workspace_secret);
+    headers["Authorization"] = `${this.config.workspace_key}:${sig}`;
+
+    try {
+      const response = await axios.delete(url, { headers });
+      if (response.status >= 200 && response.status < 300) {
+        return { success: true, status_code: response.status };
+      } else {
+        throw new SuprsendApiError(response.statusText);
+      }
+    } catch (error) {
+      throw new SuprsendApiError(error);
+    }
+  }
+
   async get_objects_subscribed_to(distinct_id, options = {}) {
     const params = new URLSearchParams(options).toString();
     const url = this.detail_url(distinct_id);
