@@ -21,8 +21,8 @@ function build_list_query(options) {
 export default class MessagesApi {
   constructor(config) {
     this.config = config;
-    this.list_url = `${this.config.base_url}v1/message`;
-    this.bulk_url = `${this.config.base_url}v1/bulk/message`;
+    this.list_url = `${this.config.base_url}v1/message/`;
+    this.bulk_url = `${this.config.base_url}v1/bulk/message/`;
   }
 
   __get_headers() {
@@ -55,7 +55,7 @@ export default class MessagesApi {
     }
   }
 
-  async bulk_patch(messages) {
+  async bulk_update(messages) {
     const payload = { messages };
     const url = this.bulk_url;
     const headers = this.__get_headers();
