@@ -417,7 +417,7 @@ declare namespace suprsend {
       category?: string | string[];
     }): Promise<Dictionary>;
 
-    bulk_patch(
+    bulk_update(
       messages: Array<{ message_id: string; action: string }>
     ): Promise<Dictionary>;
 
