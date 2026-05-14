@@ -26,14 +26,6 @@ export class _BulkWorkflowTriggerChunk {
     this.response = null;
   }
 
-  _get_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-      Date: new Date().toUTCString(),
-    };
-  }
-
   __add_body_to_chunk(body, body_size) {
     this.__running_size += body_size;
     this.__chunk.push(body);
@@ -77,7 +69,7 @@ export class _BulkWorkflowTriggerChunk {
   }
 
   async trigger() {
-    const headers = this._get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(this.__chunk);
 
     const signature = get_request_signature(

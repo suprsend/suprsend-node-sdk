@@ -11,14 +11,6 @@ export default class UsersApi {
     this.bulk_url = `${this.config.base_url}v1/bulk/user/`;
   }
 
-  __get_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-      Date: new Date().toISOString(),
-    };
-  }
-
   async list(options = null) {
     const encoded_options = options
       ? new URLSearchParams(options).toString()
@@ -26,7 +18,7 @@ export default class UsersApi {
     const url = `${this.list_url}${
       encoded_options ? `?${encoded_options}` : ""
     }`;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
 
     // Signature and Authorization-header
     const sig = get_request_signature(
@@ -61,7 +53,7 @@ export default class UsersApi {
 
   async get(distinct_id) {
     const url = this.detail_url(distinct_id);
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
 
     // Signature and Authorization-header
     const sig = get_request_signature(
@@ -84,7 +76,7 @@ export default class UsersApi {
   async upsert(distinct_id, payload = null) {
     const url = this.detail_url(distinct_id);
     payload = payload || {};
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(payload);
     const sig = get_request_signature(
       url,
@@ -113,7 +105,7 @@ export default class UsersApi {
 
     const content_text = JSON.stringify(a_payload);
     const url = `${this.config.base_url}event/`;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const sig = get_request_signature(
       url,
       "POST",
@@ -153,7 +145,7 @@ export default class UsersApi {
       url = this.detail_url(distinct_id);
     }
 
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(payload);
     // Signature and Authorization-header
     const sig = get_request_signature(
@@ -176,7 +168,7 @@ export default class UsersApi {
   async merge(distinct_id, from_user_id) {
     const url = `${this.detail_url(distinct_id)}merge/`;
     const payload = { from_user_id: from_user_id };
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(payload);
     const sig = get_request_signature(
       url,
@@ -197,7 +189,7 @@ export default class UsersApi {
 
   async delete(distinct_id) {
     const url = this.detail_url(distinct_id);
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
 
     const sig = get_request_signature(
       url,
@@ -223,7 +215,7 @@ export default class UsersApi {
   async bulk_delete(payload) {
     payload = payload || {};
     const url = this.bulk_url;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(payload);
     const sig = get_request_signature(
       url,
@@ -250,7 +242,7 @@ export default class UsersApi {
     const params = new URLSearchParams(options).toString();
     const url = this.detail_url(distinct_id);
     const subscription_url = `${url}subscribed_to/object/?${params}`;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       subscription_url,
       "GET",
@@ -272,7 +264,7 @@ export default class UsersApi {
     const params = new URLSearchParams(options).toString();
     const url = this.detail_url(distinct_id);
     const subscription_url = `${url}subscribed_to/list/?${params}`;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       subscription_url,
       "GET",

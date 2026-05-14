@@ -10,14 +10,6 @@ export default class ObjectsApi {
     this.bulk_url = `${this.config.base_url}v1/bulk/object/`;
   }
 
-  __get_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-      Date: new Date().toISOString(),
-    };
-  }
-
   _validate_object_type(object_type) {
     if (!object_type || !is_string(object_type) || !object_type.trim()) {
       throw new InputValueError("missing object_type");
@@ -42,7 +34,7 @@ export default class ObjectsApi {
     const url = `${this.list_url}${object_type_encoded}/${
       encoded_options ? `?${encoded_options}` : ""
     }`;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const sig = get_request_signature(
       url,
       "GET",
@@ -72,7 +64,7 @@ export default class ObjectsApi {
 
   async get(object_type, object_id) {
     const url = this.detail_url(object_type, object_id);
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       url,
       "GET",
@@ -93,7 +85,7 @@ export default class ObjectsApi {
   async upsert(object_type, object_id, payload = {}) {
     const url = this.detail_url(object_type, object_id);
     payload = payload || {};
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(payload || {});
     const signature = get_request_signature(
       url,
@@ -127,7 +119,7 @@ export default class ObjectsApi {
     }
 
     const content_text = JSON.stringify(payload || {});
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       url,
       "PATCH",
@@ -147,7 +139,7 @@ export default class ObjectsApi {
 
   async delete(object_type, object_id) {
     const url = this.detail_url(object_type, object_id);
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       url,
       "DELETE",
@@ -174,7 +166,7 @@ export default class ObjectsApi {
     const object_type_encoded = encodeURIComponent(object_type);
     const url = `${this.bulk_url}${object_type_encoded}/`;
     payload = payload || {};
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(payload);
     const signature = get_request_signature(
       url,
@@ -208,7 +200,7 @@ export default class ObjectsApi {
     const url = `${_detail_url}subscription/${
       encoded_options ? `?${encoded_options}` : ""
     }`;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       url,
       "GET",
@@ -231,7 +223,7 @@ export default class ObjectsApi {
     const url = `${_detail_url}subscription/`;
     payload = payload || {};
     const content_text = JSON.stringify(payload);
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
 
     const signature = get_request_signature(
       url,
@@ -255,7 +247,7 @@ export default class ObjectsApi {
     const url = `${_detail_url}subscription/`;
     payload = payload || {};
     const content_text = JSON.stringify(payload);
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       url,
       "DELETE",
@@ -288,7 +280,7 @@ export default class ObjectsApi {
     const url = `${_detail_url}subscribed_to/object/${
       encoded_options ? `?${encoded_options}` : ""
     }`;
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const signature = get_request_signature(
       url,
       "GET",

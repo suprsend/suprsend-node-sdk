@@ -102,21 +102,7 @@ class SubscriberListsApi {
     this.config = config;
     this.subscriber_list_url = `${this.config.base_url}v1/subscriber_list/`;
     this.broadcast_url = `${this.config.base_url}${this.config.workspace_key}/broadcast/`;
-    this.__headers = this.__common_headers();
     this.non_error_default_response = { success: true };
-  }
-
-  __common_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-    };
-  }
-
-  __dynamic_headers() {
-    return {
-      Date: new Date().toUTCString(),
-    };
   }
 
   _validate_list_id(list_id) {
@@ -141,7 +127,7 @@ class SubscriberListsApi {
     list_id = this._validate_list_id(list_id);
     payload["list_id"] = list_id;
 
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(payload);
 
     const signature = get_request_signature(
@@ -184,7 +170,7 @@ class SubscriberListsApi {
     final_url_obj.searchParams.append("offset", cleaner_offset);
     const url = final_url_obj.href;
 
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
 
     const signature = get_request_signature(
       url,
@@ -212,7 +198,7 @@ class SubscriberListsApi {
 
     const url = this.__subscriber_list_detail_url(cleaned_list_id);
 
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
 
     const signature = get_request_signature(
       url,
@@ -243,7 +229,7 @@ class SubscriberListsApi {
     const url = `${this.__subscriber_list_detail_url(
       cleaned_list_id
     )}subscriber/add/`;
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
     const signature = get_request_signature(
@@ -275,7 +261,7 @@ class SubscriberListsApi {
     const url = `${this.__subscriber_list_detail_url(
       cleaned_list_id
     )}subscriber/remove/`;
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
     const signature = get_request_signature(
@@ -301,7 +287,7 @@ class SubscriberListsApi {
 
     const url = `${this.__subscriber_list_detail_url(cleaned_list_id)}delete/`;
 
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
 
     const signature = get_request_signature(
       url,
@@ -329,7 +315,7 @@ class SubscriberListsApi {
     const [broadcast_body, body_size] = broadcast_instance.get_final_json(
       this.config
     );
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(broadcast_body);
 
     const signature = get_request_signature(
@@ -377,7 +363,7 @@ class SubscriberListsApi {
     const url = `${this.__subscriber_list_detail_url(
       cleaned_list_id
     )}start_sync/`;
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify({});
 
     const signature = get_request_signature(
@@ -421,7 +407,7 @@ class SubscriberListsApi {
       cleaned_version_id
     );
 
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
 
     const signature = get_request_signature(
       url,
@@ -455,7 +441,7 @@ class SubscriberListsApi {
       cleaned_list_id,
       cleaned_version_id
     )}subscriber/add/`;
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
     const signature = get_request_signature(
@@ -489,7 +475,7 @@ class SubscriberListsApi {
       cleaned_list_id,
       cleaned_version_id
     )}subscriber/remove/`;
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify({ distinct_ids: distinct_ids });
 
     const signature = get_request_signature(
@@ -517,7 +503,7 @@ class SubscriberListsApi {
       cleaned_list_id,
       cleaned_version_id
     )}finish_sync/`;
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify({});
 
     const signature = get_request_signature(
@@ -545,7 +531,7 @@ class SubscriberListsApi {
       cleaned_list_id,
       cleaned_version_id
     )}delete/`;
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify({});
 
     const signature = get_request_signature(
