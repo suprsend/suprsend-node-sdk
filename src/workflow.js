@@ -100,14 +100,6 @@ export class _WorkflowTrigger {
     return `${this.config.base_url}${this.config.workspace_key}/trigger/`;
   }
 
-  _get_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      Date: new Date().toUTCString(),
-      "User-Agent": this.config.user_agent,
-    };
-  }
-
   trigger(workflow) {
     const is_part_of_bulk = false;
     const [workflow_body, body_size] = workflow.get_final_json(
@@ -118,7 +110,7 @@ export class _WorkflowTrigger {
   }
 
   async send(workflow_body) {
-    const headers = this._get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(workflow_body);
 
     const signature = get_request_signature(

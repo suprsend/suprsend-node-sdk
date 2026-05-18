@@ -22,6 +22,7 @@ const IDENT_KEYS_ALL = [
 ];
 
 const KEY_ID_PROVIDER = "$id_provider";
+const IOS_BUNDLE_ID = "$bundle_id";
 const KEY_PREFERRED_LANGUAGE = "$preferred_language";
 const KEY_TIMEZONE = "$timezone";
 
@@ -190,7 +191,12 @@ export default class _ObjectEditInternalHelper {
         this._add_androidpush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._add_iospush(value, args[KEY_ID_PROVIDER], new_caller);
+        this._add_iospush(
+          value,
+          args[KEY_ID_PROVIDER],
+          args[IOS_BUNDLE_ID],
+          new_caller
+        );
         break;
       case IDENT_KEY_WEBPUSH:
         this._add_webpush(value, args[KEY_ID_PROVIDER], new_caller);
@@ -222,7 +228,12 @@ export default class _ObjectEditInternalHelper {
         this._remove_androidpush(value, args[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._remove_iospush(value, args[KEY_ID_PROVIDER], new_caller);
+        this._remove_iospush(
+          value,
+          args[KEY_ID_PROVIDER],
+          args[IOS_BUNDLE_ID],
+          new_caller
+        );
         break;
       case IDENT_KEY_WEBPUSH:
         this._remove_webpush(value, args[KEY_ID_PROVIDER], new_caller);
@@ -291,14 +302,20 @@ export default class _ObjectEditInternalHelper {
   }
 
   // ios push methods
-  _add_iospush(push_token, provider, caller) {
+  _add_iospush(push_token, provider, bundle_id, caller) {
     this.__dict_append[IDENT_KEY_IOSPUSH] = push_token;
     this.__dict_append[KEY_ID_PROVIDER] = provider;
+    if (bundle_id) {
+      this.__dict_append[IOS_BUNDLE_ID] = bundle_id;
+    }
   }
 
-  _remove_iospush(push_token, provider, caller) {
+  _remove_iospush(push_token, provider, bundle_id, caller) {
     this.__dict_remove[IDENT_KEY_IOSPUSH] = push_token;
     this.__dict_remove[KEY_ID_PROVIDER] = provider;
+    if (bundle_id) {
+      this.__dict_remove[IOS_BUNDLE_ID] = bundle_id;
+    }
   }
 
   // web push methods

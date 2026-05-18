@@ -26,7 +26,6 @@ class _BulkWorkflowsChunk {
     this.config = config;
     this.__chunk = [];
     this.__url = this.__get_url();
-    this.__headers = this.__common_headers();
 
     this.__running_size = 0;
     this.__running_length = 0;
@@ -35,19 +34,6 @@ class _BulkWorkflowsChunk {
 
   __get_url() {
     return `${this.config.base_url}${this.config.workspace_key}/trigger/`;
-  }
-
-  __common_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-    };
-  }
-
-  __dynamic_headers() {
-    return {
-      Date: new Date().toUTCString(),
-    };
   }
 
   __add_body_to_chunk(body, body_size) {
@@ -92,7 +78,7 @@ class _BulkWorkflowsChunk {
   }
 
   async trigger() {
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(this.__chunk);
 
     const signature = get_request_signature(

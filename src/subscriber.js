@@ -52,14 +52,6 @@ export class Subscriber {
     this.__warnings_list = [];
   }
 
-  __get_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      Date: new Date().toUTCString(),
-      "User-Agent": this.config.user_agent,
-    };
-  }
-
   get_events() {
     return {
       $schema: "2",
@@ -118,7 +110,7 @@ export class Subscriber {
   async save() {
     const is_part_of_bulk = false;
     this.validate_body(is_part_of_bulk);
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const event = this.get_events();
     const [validated_ev, size] = this.validate_event_size(event);
     const content_text = JSON.stringify(validated_ev);
@@ -370,15 +362,15 @@ export class Subscriber {
     this._collect_event();
   }
 
-  add_iospush(push_token, provider) {
+  add_iospush(push_token, provider, bundle_id = null) {
     const caller = "add_iospush";
-    this._helper._add_iospush(push_token, provider, caller);
+    this._helper._add_iospush(push_token, provider, bundle_id, caller);
     this._collect_event();
   }
 
-  remove_iospush(push_token, provider) {
+  remove_iospush(push_token, provider, bundle_id = null) {
     const caller = "remove_iospush";
-    this._helper._remove_iospush(push_token, provider, caller);
+    this._helper._remove_iospush(push_token, provider, bundle_id, caller);
     this._collect_event();
   }
 

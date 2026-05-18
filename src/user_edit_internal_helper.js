@@ -22,6 +22,7 @@ const IDENT_KEYS_ALL = [
 ];
 
 const KEY_ID_PROVIDER = "$id_provider";
+const IOS_BUNDLE_ID = "$bundle_id";
 const KEY_PREFERRED_LANGUAGE = "$preferred_language";
 const KEY_TIMEZONE = "$timezone";
 
@@ -171,7 +172,12 @@ class _UserEditInternalHelper {
         this._add_androidpush(val, kwargs[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._add_iospush(val, kwargs[KEY_ID_PROVIDER], new_caller);
+        this._add_iospush(
+          val,
+          kwargs[KEY_ID_PROVIDER],
+          kwargs[IOS_BUNDLE_ID],
+          new_caller
+        );
         break;
       case IDENT_KEY_WEBPUSH:
         this._add_webpush(val, kwargs[KEY_ID_PROVIDER], new_caller);
@@ -201,7 +207,12 @@ class _UserEditInternalHelper {
         this._remove_androidpush(val, kwargs[KEY_ID_PROVIDER], new_caller);
         break;
       case IDENT_KEY_IOSPUSH:
-        this._remove_iospush(val, kwargs[KEY_ID_PROVIDER], new_caller);
+        this._remove_iospush(
+          val,
+          kwargs[KEY_ID_PROVIDER],
+          kwargs[IOS_BUNDLE_ID],
+          new_caller
+        );
         break;
       case IDENT_KEY_WEBPUSH:
         this._remove_webpush(val, kwargs[KEY_ID_PROVIDER], new_caller);
@@ -254,14 +265,20 @@ class _UserEditInternalHelper {
   }
 
   // ------------------------ Iospush
-  _add_iospush(value, provider, caller) {
+  _add_iospush(value, provider, bundle_id, caller) {
     this.__dict_append[IDENT_KEY_IOSPUSH] = value;
     this.__dict_append[KEY_ID_PROVIDER] = provider;
+    if (bundle_id) {
+      this.__dict_append[IOS_BUNDLE_ID] = bundle_id;
+    }
   }
 
-  _remove_iospush(value, provider, caller) {
+  _remove_iospush(value, provider, bundle_id, caller) {
     this.__dict_remove[IDENT_KEY_IOSPUSH] = value;
     this.__dict_remove[KEY_ID_PROVIDER] = provider;
+    if (bundle_id) {
+      this.__dict_remove[IOS_BUNDLE_ID] = bundle_id;
+    }
   }
 
   // ------------------------ Webpush
