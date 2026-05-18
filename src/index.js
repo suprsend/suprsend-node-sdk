@@ -42,7 +42,7 @@ function build_user_agent(app_info) {
     _os_version = "(disabled)";
   }
   const ins = {
-    sdk: "suprsend-node-sdk",
+    sdk: package_json.name,
     sdk_version: package_json.version,
     lang: "node",
     lang_version: process.version.slice(1),
@@ -52,7 +52,7 @@ function build_user_agent(app_info) {
     app_info: app_info || null,
   };
   const cua = JSON.stringify(ins);
-  let user_agent = `suprsend-node-sdk/${ins.sdk_version} (node/${ins.lang_version}; ${ins.os})`;
+  let user_agent = `${ins.sdk}/${ins.sdk_version} (node/${ins.lang_version}; ${ins.os})`;
   const app_info_str = _format_app_info(app_info);
   if (app_info_str) {
     user_agent += ` (${app_info_str})`;
