@@ -3,6 +3,11 @@ declare namespace suprsend {
     [key: string]: any;
   }
 
+  interface AppInfo {
+    name: string;
+    version?: string;
+  }
+
   interface SResponse {
     success: boolean;
     status: string;
@@ -101,8 +106,16 @@ declare namespace suprsend {
     add_androidpush(push_token: string, provider?: string): void;
     remove_androidpush(push_token: string, provider?: string): void;
 
-    add_iospush(push_token: string, provider?: string): void;
-    remove_iospush(push_token: string, provider?: string): void;
+    add_iospush(
+      push_token: string,
+      provider?: string,
+      bundle_id?: string
+    ): void;
+    remove_iospush(
+      push_token: string,
+      provider?: string,
+      bundle_id?: string
+    ): void;
 
     add_webpush(push_token: Dictionary, provider?: string): void;
     remove_webpush(push_token: Dictionary, provider?: string): void;
@@ -347,8 +360,16 @@ declare namespace suprsend {
     add_androidpush(push_token: string, provider?: string): void;
     remove_androidpush(push_token: string, provider?: string): void;
 
-    add_iospush(push_token: string, provider?: string): void;
-    remove_iospush(push_token: string, provider?: string): void;
+    add_iospush(
+      push_token: string,
+      provider?: string,
+      bundle_id?: string
+    ): void;
+    remove_iospush(
+      push_token: string,
+      provider?: string,
+      bundle_id?: string
+    ): void;
 
     add_webpush(push_token: Dictionary, provider?: string): void;
     remove_webpush(push_token: Dictionary, provider?: string): void;
@@ -383,8 +404,16 @@ declare namespace suprsend {
     add_androidpush(push_token: string, provider?: string): void;
     remove_androidpush(push_token: string, provider?: string): void;
 
-    add_iospush(push_token: string, provider?: string): void;
-    remove_iospush(push_token: string, provider?: string): void;
+    add_iospush(
+      push_token: string,
+      provider?: string,
+      bundle_id?: string
+    ): void;
+    remove_iospush(
+      push_token: string,
+      provider?: string,
+      bundle_id?: string
+    ): void;
 
     add_webpush(push_token: Dictionary, provider?: string): void;
     remove_webpush(push_token: Dictionary, provider?: string): void;
@@ -483,7 +512,7 @@ declare namespace suprsend {
     new (
       workspace_env: string,
       workspace_secret: string,
-      config?: { base_url?: string }
+      config?: { base_url?: string; app_info?: AppInfo }
     ): Suprsend;
 
     get bulk_workflows(): BulkWorkflowsFactory;

@@ -9,14 +9,6 @@ export default class WorkflowsApi {
     this.metadata = { "User-Agent": this.config.user_agent };
   }
 
-  _get_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      Date: new Date().toUTCString(),
-      "User-Agent": this.config.user_agent,
-    };
-  }
-
   async trigger(workflow) {
     const is_part_of_bulk = false;
     const [workflow_body, body_size] = workflow.get_final_json(
@@ -24,7 +16,7 @@ export default class WorkflowsApi {
       is_part_of_bulk
     );
     try {
-      const headers = this._get_headers();
+      const headers = this.config.default_headers();
       const content_text = JSON.stringify(workflow_body);
       const url = `${this.config.base_url}trigger/`;
       const signature = get_request_signature(

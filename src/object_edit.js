@@ -258,15 +258,15 @@ export default class ObjectEdit {
     this._collect_operation();
   }
 
-  add_iospush(push_token, provider) {
+  add_iospush(push_token, provider, bundle_id = null) {
     const caller = "add_iospush";
-    this._helper._add_iospush(push_token, provider, caller);
+    this._helper._add_iospush(push_token, provider, bundle_id, caller);
     this._collect_operation();
   }
 
-  remove_iospush(push_token, provider) {
+  remove_iospush(push_token, provider, bundle_id = null) {
     const caller = "remove_iospush";
-    this._helper._remove_iospush(push_token, provider, caller);
+    this._helper._remove_iospush(push_token, provider, bundle_id, caller);
     this._collect_operation();
   }
 

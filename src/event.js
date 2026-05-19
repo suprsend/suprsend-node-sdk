@@ -167,23 +167,10 @@ export class EventCollector {
   constructor(config) {
     this.config = config;
     this.__url = this.__get_url();
-    this.__headers = this.__common_headers();
   }
 
   __get_url() {
     return `${this.config.base_url}event/`;
-  }
-
-  __common_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-    };
-  }
-  __dynamic_headers() {
-    return {
-      Date: new Date().toUTCString(),
-    };
   }
 
   collect(event) {
@@ -192,7 +179,7 @@ export class EventCollector {
   }
 
   async send(event) {
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(event);
     const signature = get_request_signature(
       this.__url,

@@ -26,7 +26,6 @@ class _BulkSubscribersChunk {
     this.config = config;
     this.__chunk = [];
     this.__url = this.__get_url();
-    this.__headers = this.__common_headers();
 
     this.__running_size = 0;
     this.__running_length = 0;
@@ -35,19 +34,6 @@ class _BulkSubscribersChunk {
 
   __get_url() {
     return `${this.config.base_url}event/`;
-  }
-
-  __common_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-    };
-  }
-
-  __dynamic_headers() {
-    return {
-      Date: new Date().toUTCString(),
-    };
   }
 
   __add_event_to_chunk(event, event_size) {
@@ -89,7 +75,7 @@ class _BulkSubscribersChunk {
   }
 
   async trigger() {
-    const headers = { ...this.__headers, ...this.__dynamic_headers() };
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(this.__chunk);
 
     const signature = get_request_signature(

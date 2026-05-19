@@ -23,14 +23,6 @@ class _BulkUsersEditChunk {
     this.response = null;
   }
 
-  __get_headers() {
-    return {
-      "Content-Type": "application/json; charset=utf-8",
-      "User-Agent": this.config.user_agent,
-      Date: new Date().toUTCString(),
-    };
-  }
-
   __add_event_to_chunk(event, event_size) {
     this.__running_size += event_size;
     this.__chunk.push(event);
@@ -64,7 +56,7 @@ class _BulkUsersEditChunk {
   }
 
   async trigger() {
-    const headers = this.__get_headers();
+    const headers = this.config.default_headers();
     const content_text = JSON.stringify(this.__chunk);
 
     const sig = get_request_signature(

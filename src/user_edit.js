@@ -305,15 +305,15 @@ class UserEdit {
   }
 
   // ------------------------ Iospush [providers: apns]
-  add_iospush(value, provider = null) {
+  add_iospush(value, provider = null, bundle_id = null) {
     const caller = "add_iospush";
-    this._helper._add_iospush(value, provider, caller);
+    this._helper._add_iospush(value, provider, bundle_id, caller);
     this._collect_operation();
   }
 
-  remove_iospush(value, provider = null) {
+  remove_iospush(value, provider = null, bundle_id = null) {
     const caller = "remove_iospush";
-    this._helper._remove_iospush(value, provider, caller);
+    this._helper._remove_iospush(value, provider, bundle_id, caller);
     this._collect_operation();
   }
 

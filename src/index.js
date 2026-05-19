@@ -1,3 +1,4 @@
+import os from "os";
 import { SuprsendConfigError, InputValueError } from "./utils";
 import get_attachment_json from "./attachment";
 import Workflow, { _WorkflowTrigger } from "./workflow";
@@ -21,6 +22,45 @@ import BulkUsersEdit from "./users_edit_bulk";
 
 const package_json = require("../package.json");
 
+function _format_app_info(info) {
+  if (!info || !info.name) {
+    return "";
+  }
+  let str = info.name;
+  if (info.version) {
+    str += `/${info.version}`;
+  }
+  return str;
+}
+
+function build_user_agent(app_info) {
+  let _os, _os_version;
+  try {
+    _os = (os.type() || "").toLowerCase();
+    _os_version = (os.release() || "").toLowerCase();
+  } catch (e) {
+    _os = "(disabled)";
+    _os_version = "(disabled)";
+  }
+  const ins = {
+    sdk: package_json.name,
+    sdk_version: package_json.version,
+    lang: "node",
+    lang_version: process.version.slice(1),
+    platform: "server",
+    os: _os,
+    os_version: _os_version,
+    app_info: app_info || null,
+  };
+  const cua = JSON.stringify(ins);
+  let user_agent = `${ins.sdk}/${ins.sdk_version} (node/${ins.lang_version}; ${ins.os})`;
+  const app_info_str = _format_app_info(app_info);
+  if (app_info_str) {
+    user_agent += ` (${app_info_str})`;
+  }
+  return [user_agent, cua];
+}
+
 class Suprsend {
   constructor(workspace_key, workspace_secret, config = {}) {
     this.workspace_key = workspace_key;
@@ -28,9 +68,9 @@ class Suprsend {
     this.config = config;
 
     this.base_url = this._get_url(config.base_url);
-    this.user_agent = `suprsend/${
-      package_json.version
-    };node/${process.version.slice(1)}`;
+    const [user_agent, client_user_agent] = build_user_agent(config.app_info);
+    this.user_agent = user_agent;
+    this.client_user_agent = client_user_agent;
 
     this._workflow_trigger = new _WorkflowTrigger(this);
     this._eventcollector = new EventCollector(this);
@@ -67,6 +107,15 @@ class Suprsend {
 
   get user() {
     return this._user;
+  }
+
+  default_headers() {
+    return {
+      "Content-Type": "application/json; charset=utf-8",
+      "User-Agent": this.user_agent,
+      "X-Suprsend-Client-User-Agent": this.client_user_agent,
+      Date: new Date().toUTCString(),
+    };
   }
 
   _validate() {
