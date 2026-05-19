@@ -425,6 +425,34 @@ declare namespace suprsend {
     remove_ms_teams(value: Dictionary): void;
   }
 
+  interface MessagesApi {
+    list(options?: {
+      limit?: number;
+      after?: string;
+      before?: string;
+      recipient_id?: string | string[];
+      status?: string | string[];
+      message_id?: string;
+      idempotency_key?: string;
+      tenant_id?: string;
+      workflow_slug?: string;
+      channel?: string;
+      execution_id?: string;
+      created_at_gte?: string;
+      created_at_lte?: string;
+      object_id?: string;
+      object_type?: string;
+      is_campaign?: boolean;
+      category?: string | string[];
+    }): Promise<Dictionary>;
+
+    bulk_update(
+      messages: Array<{ message_id: string; action: string }>
+    ): Promise<Dictionary>;
+
+    // get_content(message_id: string): Promise<Dictionary>;
+  }
+
   interface UsersApi {
     list(options?: {
       limit?: number;
@@ -506,6 +534,8 @@ declare namespace suprsend {
     objects: ObjectsApi;
 
     users: UsersApi;
+
+    messages: MessagesApi;
 
     add_attachment(
       body: Dictionary,
