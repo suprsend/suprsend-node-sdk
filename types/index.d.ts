@@ -92,6 +92,7 @@ declare namespace suprsend {
     unset(keys: string | string[]): void;
 
     set_preferred_language(lang_code: string): void;
+    set_locale(locale: string): void;
     set_timezone(timezone: string): void;
 
     add_email(email: string): void;
@@ -346,6 +347,7 @@ declare namespace suprsend {
     unset(keys: string | string[]): void;
 
     set_preferred_language(lang_code: string): void;
+    set_locale(locale: string): void;
     set_timezone(timezone: string): void;
 
     add_email(email: string): void;
@@ -390,6 +392,7 @@ declare namespace suprsend {
     unset(keys: string | string[]): void;
 
     set_preferred_language(lang_code: string): void;
+    set_locale(locale: string): void;
     set_timezone(timezone: string): void;
 
     add_email(email: string): void;

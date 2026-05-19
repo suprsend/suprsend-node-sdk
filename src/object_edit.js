@@ -37,13 +37,13 @@ export default class ObjectEdit {
     if (!is_empty(this.__info)) {
       const msg = `[object: ${this.object_type}/${
         this.object_id
-      }] ${this.__info.join("\n")}`;
+        }] ${this.__info.join("\n")}`;
       console.log(`WARNING: ${msg}`);
     }
     if (!is_empty(this.__errors)) {
       const msg = `[object: ${this.object_type}/${
         this.object_id
-      }] ${this.__errors.join("\n")}`;
+        }] ${this.__errors.join("\n")}`;
       console.log(`ERROR: ${msg}`);
     }
   }
@@ -201,6 +201,12 @@ export default class ObjectEdit {
   set_preferred_language(lang_code) {
     const caller = "set_preferred_language";
     this._helper._set_preferred_language(lang_code, caller);
+    this._collect_operation();
+  }
+
+  set_locale(locale) {
+    const caller = "set_locale";
+    this._helper._set_locale(locale, caller);
     this._collect_operation();
   }
 

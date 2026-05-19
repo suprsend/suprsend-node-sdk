@@ -24,6 +24,7 @@ const IDENT_KEYS_ALL = [
 const KEY_ID_PROVIDER = "$id_provider";
 const IOS_BUNDLE_ID = "$bundle_id";
 const KEY_PREFERRED_LANGUAGE = "$preferred_language";
+const KEY_LOCALE = "$locale";
 const KEY_TIMEZONE = "$timezone";
 
 export default class _ObjectEditInternalHelper {
@@ -169,6 +170,10 @@ export default class _ObjectEditInternalHelper {
 
   _set_preferred_language(lang_code, caller) {
     this.__dict_set[KEY_PREFERRED_LANGUAGE] = lang_code;
+  }
+
+  _set_locale(locale, caller) {
+    this.__dict_set[KEY_LOCALE] = locale;
   }
 
   _set_timezone(timezone, caller) {

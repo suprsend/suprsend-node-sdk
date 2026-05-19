@@ -64,7 +64,7 @@ class UserEdit {
     if (apparent_size > IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES) {
       throw new InputValueError(
         `User Payload size too big - ${apparent_size} Bytes, ` +
-          `must not cross ${IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
+        `must not cross ${IDENTITY_SINGLE_EVENT_MAX_APPARENT_SIZE_IN_BYTES_READABLE}`
       );
     }
     return [payload, apparent_size];
@@ -242,6 +242,13 @@ class UserEdit {
   set_preferred_language(lang_code) {
     const caller = "set_preferred_language";
     this._helper._set_preferred_language(lang_code, caller);
+    this._collect_operation();
+  }
+
+  // ------------------------ Locale
+  set_locale(locale) {
+    const caller = "set_locale";
+    this._helper._set_locale(locale, caller);
     this._collect_operation();
   }
 
